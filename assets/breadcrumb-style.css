@@ -1,0 +1,25 @@
+/**
+ * @author    sh1zen
+ * @copyright Copyright (C)  2021
+ * @license   http://www.gnu.org/licenses/gpl.html GNU/GPL
+ */
+
+.wpfs-breadcrumb{
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    padding: 0;
+    margin: 0 10px;
+}
+
+.wpfs-breadcrumb-item {
+    display: inline;
+    margin: 0;
+    padding: 0;
+    color: #f5822f;
+}
+
+.wpfs-breadcrumb-current{
+    font-weight: bold;
+    color: #5a5a5a;
+    cursor: auto;
+}

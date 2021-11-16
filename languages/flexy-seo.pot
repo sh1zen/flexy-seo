@@ -1,0 +1,780 @@
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: wpfs-translation\n"
+"Report-Msgid-Bugs-To: https://github.com/sh1zen/flexy-seo/issues\n"
+"POT-Creation-Date: 2021-11-25 15:01+0100\n"
+"PO-Revision-Date: 2020-05-13 02:34+0200\n"
+"Last-Translator: sh1zen\n"
+"Language-Team: sh1zen\n"
+"Language: en\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 3.0\n"
+"X-Poedit-Basepath: ..\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Poedit-SourceCharset: UTF-8\n"
+"X-Poedit-KeywfsrdsList: __;_e;_ex;_x;_n;_nx;_n_noop;_nx_noop;esc_html__;"
+"esc_attr__;esc_attr_e;esc_html_e;esc_attr_x;esc_html_x\n"
+"X-Poedit-KeywordsList: __;_e;_ex;_x;_n;_nx;_n_noop;_nx_noop;esc_html__;"
+"esc_attr__;esc_attr_e;esc_html_e;esc_attr_x;esc_html_x\n"
+"X-Poedit-SearchPath-0: .\n"
+"X-Poedit-SearchPathExcluded-0: languages\n"
+
+#: admin/PagesHandler.class.php:46
+msgid "WPFS Settings"
+msgstr ""
+
+#: admin/PagesHandler.class.php:46 admin/PluginInit.class.php:236
+#: modules/seo.class.php:47
+msgid "Settings"
+msgstr ""
+
+#: admin/PagesHandler.class.php:51
+msgid "WPFS FAQ"
+msgstr ""
+
+#: admin/PagesHandler.class.php:51
+msgid "FAQ"
+msgstr ""
+
+#: admin/PagesHandler.class.php:106
+msgid "N/A"
+msgstr ""
+
+#: admin/PagesHandler.class.php:107
+msgid "Settings Saved"
+msgstr ""
+
+#: admin/PagesHandler.class.php:108
+msgid "Request fail"
+msgstr ""
+
+#: admin/PagesHandler.class.php:109
+msgid "Request succeed"
+msgstr ""
+
+#: admin/PagesHandler.class.php:110
+msgid "Running"
+msgstr ""
+
+#: admin/PagesHandler.class.php:126
+msgid "How Flexy-Breadcrumbs works?"
+msgstr ""
+
+#: admin/PagesHandler.class.php:130
+msgid ""
+"To use Breadcrumbs put this code in your theme, exactly where you want "
+"breadcrumbs to be displayed."
+msgstr ""
+
+#: admin/PagesHandler.class.php:132
+msgid ""
+"You can use your own $pre and $after wrapper, default value is no "
+"wrapper."
+msgstr ""
+
+#: admin/PagesHandler.class.php:133 modules/breadcrumbs.class.php:83
+msgid "Options:"
+msgstr ""
+
+#: admin/PagesHandler.class.php:135
+msgid ""
+"In Breadcrumb page configure your options and set up your breadcrumb "
+"structure for each entity."
+msgstr ""
+
+#: admin/PagesHandler.class.php:136
+msgid ""
+"With flexed breadcrumb is possible to personalize the crumb structure "
+"with personalized url or text:"
+msgstr ""
+
+#: admin/PagesHandler.class.php:139
+msgid ">>"
+msgstr ""
+
+#: admin/PagesHandler.class.php:139
+msgid "separate each crumb"
+msgstr ""
+
+#: admin/PagesHandler.class.php:142 admin/PagesHandler.class.php:145
+msgid "Text"
+msgstr ""
+
+#: admin/PagesHandler.class.php:142
+msgid "Text will be considered only for the breadcrumb text."
+msgstr ""
+
+#: admin/PagesHandler.class.php:145
+msgid "Text will be considered only for the breadcrumb link."
+msgstr ""
+
+#: admin/PagesHandler.class.php:148
+msgid "/custom/link/"
+msgstr ""
+
+#: admin/PagesHandler.class.php:148
+msgid "Specify a custom link structure."
+msgstr ""
+
+#: admin/PagesHandler.class.php:151
+#, php-format
+msgid "%%{query_var}%%"
+msgstr ""
+
+#: admin/PagesHandler.class.php:151
+msgid ""
+"Replace the value of the corresponding query_var specified, if not "
+"available it will be discarded."
+msgstr ""
+
+#: admin/PagesHandler.class.php:154
+#, php-format
+msgid "%%meta_{var}%%"
+msgstr ""
+
+#: admin/PagesHandler.class.php:154
+msgid ""
+"Replace the meta variable of the current queried object, if not "
+"available it will be discarded."
+msgstr ""
+
+#: admin/PagesHandler.class.php:157
+#, php-format
+msgid "%%home%%"
+msgstr ""
+
+#: admin/PagesHandler.class.php:157
+msgid "Replace the home text and home url."
+msgstr ""
+
+#: admin/PagesHandler.class.php:160
+#, php-format
+msgid "%%taxonomy%%"
+msgstr ""
+
+#: admin/PagesHandler.class.php:160
+msgid "Replace the taxonomy of the current queried object"
+msgstr ""
+
+#: admin/PagesHandler.class.php:163
+#, php-format
+msgid "%%category%%"
+msgstr ""
+
+#: admin/PagesHandler.class.php:163
+msgid ""
+"Replace the category of the current queried object, if it's "
+"hierarchical will generate multiple breadcrumbs."
+msgstr ""
+
+#: admin/PagesHandler.class.php:166
+#, php-format
+msgid "%%post_parent%%"
+msgstr ""
+
+#: admin/PagesHandler.class.php:166
+msgid "Replace the parent post of the current queried object."
+msgstr ""
+
+#: admin/PagesHandler.class.php:169
+#, php-format
+msgid "%%post_type%%"
+msgstr ""
+
+#: admin/PagesHandler.class.php:169
+msgid "Replace the post type of the current queried object."
+msgstr ""
+
+#: admin/PagesHandler.class.php:172
+#, php-format
+msgid "%%queried_object%%"
+msgstr ""
+
+#: admin/PagesHandler.class.php:172
+msgid "Replace the title and link of the current queried object."
+msgstr ""
+
+#: admin/PagesHandler.class.php:176
+#, php-format
+msgid ""
+"Example: %%home%% >> (/%%meta_var%%-%%custom_var%%/)%%category%% >> "
+"%%queried_object%%"
+msgstr ""
+
+#: admin/PagesHandler.class.php:180
+msgid ""
+"Filter <em>wpfs_breadcrumb_style</em> to change the default css applied"
+msgstr ""
+
+#: admin/PagesHandler.class.php:181
+msgid ""
+"Filter <em>wpfs_breadcrumb_replacements</em> to add or change "
+"replacements based on flexed breadcrumbs, if enabled.<br><strong>return "
+"format must be array(array('text' =>, 'url' => ))</strong>"
+msgstr ""
+
+#: admin/PagesHandler.class.php:188
+msgid "How Flexy-SEO works?"
+msgstr ""
+
+#: admin/PagesHandler.class.php:192
+msgid ""
+"Uses replacements to construct the perfect description or keywords for "
+"each page."
+msgstr ""
+
+#: admin/PagesHandler.class.php:194
+#, php-format
+msgid "See about replacements <a href=\"%s\">here</a>."
+msgstr ""
+
+#: admin/PagesHandler.class.php:226
+msgid "Configuration:"
+msgstr ""
+
+#: admin/PagesHandler.class.php:231
+#, php-format
+msgid "Configure SEO options: <a href=\"%s\">here</a>."
+msgstr ""
+
+#: admin/PagesHandler.class.php:232
+#, php-format
+msgid "Configure Breadcrumbs options: <a href=\"%s\">here</a>."
+msgstr ""
+
+#: admin/PagesHandler.class.php:240
+msgid "Tips:"
+msgstr ""
+
+#: admin/PagesHandler.class.php:243
+msgid ""
+"For a better SEO optimization, it's recommended to install also <a href="
+"\"https://wordpress.org/plugins/wp-optimizer/\">this</a> plugin."
+msgstr ""
+
+#: admin/PagesHandler.class.php:254
+msgid "Support this project, buy me a coffee."
+msgstr ""
+
+#: admin/PagesHandler.class.php:268
+msgid "Want to support in other ways?"
+msgstr ""
+
+#: admin/PagesHandler.class.php:271
+msgid "Help me translating"
+msgstr ""
+
+#: admin/PagesHandler.class.php:274
+msgid "Leave a review"
+msgstr ""
+
+#: admin/PagesHandler.class.php:280
+msgid "Source code"
+msgstr ""
+
+#: admin/PagesHandler.class.php:283
+msgid "About me"
+msgstr ""
+
+#: admin/PluginInit.class.php:217
+msgid "Buy me a beer"
+msgstr ""
+
+#: modules/breadcrumbs.class.php:79
+msgid "Status:"
+msgstr ""
+
+#: modules/breadcrumbs.class.php:80 modules/seo.class.php:239
+#: modules/seo.class.php:244 modules/seo.class.php:249
+#: modules/seo.class.php:253 modules/seo.class.php:258
+#: modules/seo.class.php:262 modules/seo.class.php:266
+#: modules/seo.class.php:270 modules/seo.class.php:274
+#: modules/seo.class.php:278 modules/seo.class.php:313
+msgid "Active"
+msgstr ""
+
+#: modules/breadcrumbs.class.php:81
+msgid "Flexed Breadcrumb"
+msgstr ""
+
+#: modules/breadcrumbs.class.php:84
+msgid "Highlight last page"
+msgstr ""
+
+#: modules/breadcrumbs.class.php:86
+msgid "Separator"
+msgstr ""
+
+#: modules/breadcrumbs.class.php:87
+msgid "Home text"
+msgstr ""
+
+#: modules/breadcrumbs.class.php:88
+msgid "Author prefix"
+msgstr ""
+
+#: modules/breadcrumbs.class.php:89
+msgid "Search prefix"
+msgstr ""
+
+#: modules/breadcrumbs.class.php:90
+msgid "Archive prefix"
+msgstr ""
+
+#: modules/breadcrumbs.class.php:91
+msgid "404 prefix"
+msgstr ""
+
+#: modules/breadcrumbs.class.php:93
+msgid "Special pages format:"
+msgstr ""
+
+#: modules/breadcrumbs.class.php:94
+msgid "Author"
+msgstr ""
+
+#: modules/breadcrumbs.class.php:95
+msgid "Search"
+msgstr ""
+
+#: modules/breadcrumbs.class.php:96
+msgid "404"
+msgstr ""
+
+#: modules/breadcrumbs.class.php:103
+msgid "Breadcrumb Post Type format:"
+msgstr ""
+
+#: modules/breadcrumbs.class.php:116
+msgid "Breadcrumb Post Type Archive format:"
+msgstr ""
+
+#: modules/breadcrumbs.class.php:123
+msgid "Breadcrumb Taxonomies Archive format:"
+msgstr ""
+
+#: modules/breadcrumbs/WPFS_Breadcrumb.php:130
+msgid ""
+"Conditional query tags do not work before the query is run. Before "
+"then, they always return false."
+msgstr ""
+
+#: modules/breadcrumbs/WPFS_Breadcrumb.php:136
+msgid "Archive for:"
+msgstr ""
+
+#: modules/breadcrumbs/WPFS_Breadcrumb.php:137
+msgid "Searched:"
+msgstr ""
+
+#: modules/seo.class.php:77 modules/seo.class.php:234
+msgid "General"
+msgstr ""
+
+#: modules/seo.class.php:83
+msgid "Special pages"
+msgstr ""
+
+#: modules/seo.class.php:89
+msgid "Content types"
+msgstr ""
+
+#: modules/seo.class.php:95
+msgid "Archives"
+msgstr ""
+
+#: modules/seo.class.php:101
+msgid "Taxonomy"
+msgstr ""
+
+#: modules/seo.class.php:107
+msgid "Social"
+msgstr ""
+
+#: modules/seo.class.php:113
+msgid "Webmaster"
+msgstr ""
+
+#: modules/seo.class.php:119
+msgid "Schema.org"
+msgstr ""
+
+#: modules/seo.class.php:125
+msgid "Replacers"
+msgstr ""
+
+#: modules/seo.class.php:178 vendors/shzn-framework/Module.class.php:217
+msgid "Save Changes"
+msgstr ""
+
+#: modules/seo.class.php:200
+msgid "Titles:"
+msgstr ""
+
+#: modules/seo.class.php:201
+msgid "Rewrite titles"
+msgstr ""
+
+#: modules/seo.class.php:202
+msgid "Title separator"
+msgstr ""
+
+#: modules/seo.class.php:204
+msgid "Media:"
+msgstr ""
+
+#: modules/seo.class.php:205
+msgid "Rewrite media url to attachment"
+msgstr ""
+
+#: modules/seo.class.php:207
+msgid "Knowledge Graph configuration:"
+msgstr ""
+
+#: modules/seo.class.php:208
+msgid "Default snippet image url (wide)"
+msgstr ""
+
+#: modules/seo.class.php:208 modules/seo.class.php:209
+#: modules/seo.class.php:213 modules/seo.class.php:316
+msgid "Paste your image URL or select a new image"
+msgstr ""
+
+#: modules/seo.class.php:209
+msgid "Default snippet image url (small)"
+msgstr ""
+
+#: modules/seo.class.php:210
+msgid "Add Twitter Card metadata"
+msgstr ""
+
+#: modules/seo.class.php:211
+msgid "Use larger images for Twitter Card"
+msgstr ""
+
+#: modules/seo.class.php:212
+msgid "Enable Facebook Open-Graph metadata"
+msgstr ""
+
+#: modules/seo.class.php:213
+msgid "Facebook default share image"
+msgstr ""
+
+#: modules/seo.class.php:217
+msgid "Home:"
+msgstr ""
+
+#: modules/seo.class.php:218
+msgid "SEO title"
+msgstr ""
+
+#: modules/seo.class.php:219 modules/seo.class.php:224
+#: modules/seo.class.php:229 modules/seo.class.php:300
+#: modules/seo.class.php:307 modules/seo.class.php:344
+#: modules/seo.class.php:368 modules/seo.class.php:378
+msgid "Meta description"
+msgstr ""
+
+#: modules/seo.class.php:220
+msgid "Keywords (comma separate)"
+msgstr ""
+
+#: modules/seo.class.php:222
+msgid "Search page:"
+msgstr ""
+
+#: modules/seo.class.php:223 modules/seo.class.php:228
+#: modules/seo.class.php:299 modules/seo.class.php:306
+#: modules/seo.class.php:343 modules/seo.class.php:367
+#: modules/seo.class.php:377
+msgid "Title"
+msgstr ""
+
+#: modules/seo.class.php:225 modules/seo.class.php:230
+#: modules/seo.class.php:301 modules/seo.class.php:308
+#: modules/seo.class.php:345 modules/seo.class.php:369
+#: modules/seo.class.php:379
+msgid "Keywords"
+msgstr ""
+
+#: modules/seo.class.php:227
+msgid "404 page:"
+msgstr ""
+
+#: modules/seo.class.php:235
+msgid "Use same username"
+msgstr ""
+
+#: modules/seo.class.php:236
+msgid "Username"
+msgstr ""
+
+#: modules/seo.class.php:238
+msgid "Facebook:"
+msgstr ""
+
+#: modules/seo.class.php:240 modules/seo.class.php:245
+#: modules/seo.class.php:250 modules/seo.class.php:254
+#: modules/seo.class.php:259 modules/seo.class.php:263
+#: modules/seo.class.php:267 modules/seo.class.php:271
+#: modules/seo.class.php:275 modules/seo.class.php:279
+msgid "Profile name or url"
+msgstr ""
+
+#: modules/seo.class.php:241 modules/seo.class.php:246
+#: modules/seo.class.php:255
+msgid "Confirmation code"
+msgstr ""
+
+#: modules/seo.class.php:243
+msgid "Twitter:"
+msgstr ""
+
+#: modules/seo.class.php:248
+msgid "Linkedin:"
+msgstr ""
+
+#: modules/seo.class.php:252
+msgid "Pinterest:"
+msgstr ""
+
+#: modules/seo.class.php:257
+msgid "Instagram:"
+msgstr ""
+
+#: modules/seo.class.php:261
+msgid "YouTube:"
+msgstr ""
+
+#: modules/seo.class.php:265
+msgid "Tumblr:"
+msgstr ""
+
+#: modules/seo.class.php:269
+msgid "Yelp:"
+msgstr ""
+
+#: modules/seo.class.php:273
+msgid "SoundCloud:"
+msgstr ""
+
+#: modules/seo.class.php:277
+msgid "WikiPedia:"
+msgstr ""
+
+#: modules/seo.class.php:283
+msgid "Google:"
+msgstr ""
+
+#: modules/seo.class.php:284 modules/seo.class.php:287
+#: modules/seo.class.php:290 modules/seo.class.php:293
+msgid "Verification code"
+msgstr ""
+
+#: modules/seo.class.php:286
+msgid "Bing:"
+msgstr ""
+
+#: modules/seo.class.php:289
+msgid "Yandex:"
+msgstr ""
+
+#: modules/seo.class.php:292
+msgid "Baidu:"
+msgstr ""
+
+#: modules/seo.class.php:297
+msgid "Date archive:"
+msgstr ""
+
+#: modules/seo.class.php:298
+msgid "Show date archive in search results"
+msgstr ""
+
+#: modules/seo.class.php:303
+msgid "Author archive:"
+msgstr ""
+
+#: modules/seo.class.php:304 modules/seo.class.php:365
+msgid "Status"
+msgstr ""
+
+#: modules/seo.class.php:305
+msgid "Show author archive in search results"
+msgstr ""
+
+#: modules/seo.class.php:312
+msgid "Schema settings:"
+msgstr ""
+
+#: modules/seo.class.php:314
+msgid "Organization"
+msgstr ""
+
+#: modules/seo.class.php:315
+msgid "Organization name"
+msgstr ""
+
+#: modules/seo.class.php:316
+msgid "Organization logo"
+msgstr ""
+
+#: modules/seo.class.php:317
+msgid "Organization phone"
+msgstr ""
+
+#: modules/seo.class.php:318
+msgid "Contact Type"
+msgstr ""
+
+#: modules/seo.class.php:332
+msgid "Enable Sitelinks Search Box"
+msgstr ""
+
+#: modules/seo.class.php:342 modules/seo.class.php:375
+#, php-format
+msgid "Show \"%s\" in search results"
+msgstr ""
+
+#: modules/seo.class.php:346
+msgid "Remove type prefix"
+msgstr ""
+
+#: modules/seo.class.php:364
+#, php-format
+msgid "%s archive:"
+msgstr ""
+
+#: modules/seo.class.php:366
+#, php-format
+msgid "Show %s archive in search results"
+msgstr ""
+
+#: modules/seo.class.php:376
+msgid "Follow link directive"
+msgstr ""
+
+#: modules/seo.class.php:409
+msgid "Replacer"
+msgstr ""
+
+#: modules/seo.class.php:410
+#: modules/seo/seo_engine/extensions/XRE_MetaBox.php:98
+msgid "Description"
+msgstr ""
+
+#: modules/seo.class.php:416
+msgid "Will replace the specified query var."
+msgstr ""
+
+#: modules/seo.class.php:420
+msgid "Will replace the specified meta of the queried object."
+msgstr ""
+
+#: modules/seo.class.php:424
+msgid ""
+"Will replace the WordPress queried object property if it's available "
+"(display_name, ID, post_modified...) ."
+msgstr ""
+
+#: modules/seo.class.php:428
+msgid "Default separator."
+msgstr ""
+
+#: modules/seo.class.php:432
+msgid "The site name."
+msgstr ""
+
+#: modules/seo.class.php:436
+msgid "The resume of the current queried post."
+msgstr ""
+
+#: modules/seo.class.php:440
+msgid "The default WordPress title of the current queried object."
+msgstr ""
+
+#: modules/seo.class.php:444
+msgid "The site language."
+msgstr ""
+
+#: modules/seo.class.php:448
+msgid "Current date."
+msgstr ""
+
+#: modules/seo.class.php:452
+msgid "The site description."
+msgstr ""
+
+#: modules/seo/seo_engine/extensions/XRE_MetaBox.php:91
+msgid "Keyword phrase"
+msgstr ""
+
+#: modules/seo/seo_engine/extensions/XRE_MetaBox.php:105
+msgid "Page type (Schema.org)"
+msgstr ""
+
+#: modules/seo/seo_engine/extensions/XRE_MetaBox.php:109
+msgid "Auto Detect"
+msgstr ""
+
+#: modules/seo/seo_engine/generators/schema/graph/NewsArticle.php:28
+#, php-format
+msgid "Published on %1$s."
+msgstr ""
+
+#: modules/settings.class.php:40
+msgid "Reset Plugin options"
+msgstr ""
+
+#: modules/settings.class.php:46
+msgid "Export Plugin options"
+msgstr ""
+
+#: modules/settings.class.php:58
+msgid "Import Plugin options"
+msgstr ""
+
+#: vendors/shzn-framework/Ajax.class.php:46
+#: vendors/shzn-framework/Ajax.class.php:65
+msgid "Ajax Error: It seems that you are not allowed to do this request."
+msgstr ""
+
+#: vendors/shzn-framework/Ajax.class.php:74
+msgid "Ajax Error: wrong ajax request."
+msgstr ""
+
+#: vendors/shzn-framework/Graphic.class.php:295
+msgid "Choose a type or enter one manually."
+msgstr ""
+
+#: vendors/shzn-framework/Module.class.php:138
+msgid "Action was correctly executed"
+msgstr ""
+
+#: vendors/shzn-framework/Module.class.php:140
+msgid "Action execution failed"
+msgstr ""
+
+#: vendors/shzn-framework/Module.class.php:172
+msgid "WP Optimizer::ajax_handler -> empty ajax handler for "
+msgstr ""
+
+#: vendors/shzn-framework/Module.class.php:254
+msgid "This Module is disabled for you or for your settings."
+msgstr ""
+
+#: vendors/shzn-framework/Settings.class.php:158
+msgid "Core Settings"
+msgstr ""
+
+#: vendors/shzn-framework/Settings.class.php:215
+msgid "Modules Settings"
+msgstr ""
+
+#: vendors/shzn-framework/Settings.class.php:223
+#, php-format
+msgid "No modules enabled. To enable them go <a href='%s'>here</a>."
+msgstr ""
