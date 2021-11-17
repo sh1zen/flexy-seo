@@ -11,6 +11,7 @@ use SHZN\core\Graphic;
 use SHZN\modules\Module;
 use FlexySEO\Engine\WPFS_SEO;
 
+
 class Mod_seo extends Module
 {
     public $scopes = array('admin-page', 'settings', 'autoload');
@@ -29,6 +30,12 @@ class Mod_seo extends Module
         }
     }
 
+    public function enqueue_scripts()
+    {
+        parent::enqueue_scripts();
+        wp_enqueue_media();
+    }
+
     public function render_admin_page()
     {
         if (WPFS_DEBUG)
@@ -36,13 +43,13 @@ class Mod_seo extends Module
         else
             set_time_limit(60);
         ?>
-        <section class="wpfs-wrap">
-            <section class='wpfs-header'><h1><?php echo __('SEO Settings', 'wpfs'); ?></h1></section>
-            <div id="wpfs-ajax-message" class="wpfs-notice"></div>
+        <section class="shzn-wrap">
+            <section class='shzn-header'><h1>SEO / <?php echo __('Settings', 'wpfs'); ?></h1></section>
+            <div id="shzn-ajax-message" class="shzn-notice"></div>
             <?php
             if (!empty($this->performer_response)) {
 
-                echo '<div id="message" class="wpfs-notice">';
+                echo '<div id="message" class="shzn-notice">';
 
                 foreach ($this->performer_response as $response) {
                     list($text, $status) = $response;
@@ -53,8 +60,8 @@ class Mod_seo extends Module
                 echo '</div>';
             }
             ?>
-            <block class="wpfs">
-                <form id="wpfs-uoptions" action="options.php" method="post">
+            <block class="shzn">
+                <form id="shzn-uoptions" action="options.php" method="post">
                     <input type="hidden" name="<?php echo shzn('wpfs')->settings->option_name . "[change]" ?>"
                            value="<?php echo $this->slug; ?>">
                     <?php
@@ -154,11 +161,11 @@ class Mod_seo extends Module
             $_divider = true;
 
             if ($_header) {
-                echo "<h3 class='wpfs-setting-header'>{$_header}</h3>";
+                echo "<h3 class='shzn-setting-header'>{$_header}</h3>";
             }
 
             ?>
-            <table class="wpfs wpfs-settings">
+            <table class="shzn shzn-settings">
                 <tbody>
                 <?php
 
@@ -167,7 +174,7 @@ class Mod_seo extends Module
                 ?>
                 </tbody>
             </table>
-            <p class="wpfs-submit">
+            <p class="shzn-submit">
                 <input type="submit" class="button-primary" value="<?php _e('Save Changes', 'wpfs') ?>"/>
             </p>
             <?php
@@ -176,9 +183,9 @@ class Mod_seo extends Module
         if (!empty($_footer)) {
 
             if ($_divider)
-                echo "<hr class='wpfs-hr'>";
+                echo "<hr class='shzn-hr'>";
 
-            echo "<section class='wpfs-setting-footer'>" . $_footer . "</section>";
+            echo "<section class='shzn-setting-footer'>" . $_footer . "</section>";
         }
 
         return ob_get_clean();
@@ -188,6 +195,7 @@ class Mod_seo extends Module
     {
         $fields = $res = array();
 
+
         $fields['general'] = $this->group_setting_fields(
             $this->setting_field(__('Titles:', 'wpfs'), false, 'separator'),
             $this->setting_field(__('Rewrite titles', 'wpfs'), 'title.rewrite', 'checkbox', ['default_value' => true]),
@@ -196,10 +204,13 @@ class Mod_seo extends Module
             $this->setting_field(__('Media:', 'wpfs'), false, 'separator'),
             $this->setting_field(__('Rewrite media url to attachment', 'wpfs'), 'media.rewrite_url', 'checkbox', ['default_value' => true]),
 
-            $this->setting_field(__('Knowledge Graph and Schema.org:', 'wpfs'), false, 'separator'),
-            $this->setting_field(__('Organization name', 'wpfs'), 'org.name'),
-            $this->setting_field(__('Logo url (wide)', 'wpfs'), 'org.logo_url.wide'),
-            $this->setting_field(__('Logo url (small)', 'wpfs'), 'org.logo_url.small')
+            $this->setting_field(__('Knowledge Graph configuration:', 'wpfs'), false, 'separator'),
+            $this->setting_field(__('Default snippet image url (wide)', 'wpfs'), 'org.logo_url.wide', 'upload-input', ['placeholder' => __('Paste your image URL or select a new image', 'wpfs')]),
+            $this->setting_field(__('Default snippet image url (small)', 'wpfs'), 'org.logo_url.small', 'upload-input', ['placeholder' => __('Paste your image URL or select a new image', 'wpfs')]),
+            $this->setting_field(__('Add Twitter Card metadata', 'wpfs'), 'social.twitter.card', 'checkbox', ['default_value' => true]),
+            $this->setting_field(__('Use larger images for Twitter Card', 'wpfs'), 'social.twitter.large_images', 'checkbox', ['default_value' => true]),
+            $this->setting_field(__('Enable Facebook Open-Graph metadata', 'wpfs'), 'social.facebook.opengraph', 'checkbox', ['default_value' => true]),
+            $this->setting_field(__('Facebook default share image', 'wpfs'), 'social.facebook.logo_url', 'upload-input', ['placeholder' => __('Paste your image URL or select a new image', 'wpfs')])
         );
 
         $fields['special'] = $this->group_setting_fields(
@@ -220,30 +231,52 @@ class Mod_seo extends Module
         );
 
         $fields['social'] = $this->group_setting_fields(
+            $this->setting_field(__('General', 'wpfs'), false, 'separator'),
+            $this->setting_field(__('Use same username', 'wpfs'), 'social.sameUsername.enable', 'checkbox', ['default_value' => false]),
+            $this->setting_field(__('Username', 'wpfs'), 'social.sameUsername.username', 'text', ['depend' => 'social.sameUsername.enable']),
+
             $this->setting_field(__('Facebook:', 'wpfs'), false, 'separator'),
-            $this->setting_field(__('Add Open Graph metadata', 'wpfs'), 'social.facebook.opengraph', 'checkbox', ['default_value' => true]),
-            $this->setting_field(__('Default logo url', 'wpfs'), 'social.facebook.logo_url'),
-            $this->setting_field(__('Profile url', 'wpfs'), 'social.facebook.url'),
+            $this->setting_field(__('Active', 'wpfs'), 'social.facebook.enable', 'checkbox', ['depend' => 'social.sameUsername.enable', 'default_value' => true]),
+            $this->setting_field(__('Profile name or url', 'wpfs'), 'social.facebook.url', 'text', ['depend' => '!social.sameUsername.enable']),
             $this->setting_field(__('Confirmation code', 'wpfs'), 'social.facebook.code'),
 
             $this->setting_field(__('Twitter:', 'wpfs'), false, 'separator'),
-            $this->setting_field(__('Add Twitter Card metadata', 'wpfs'), 'social.twitter.card', 'checkbox', ['default_value' => true]),
-            $this->setting_field(__('Use large images', 'wpfs'), 'social.twitter.large_images', 'checkbox', ['default_value' => true]),
-            $this->setting_field(__('Profile name', 'wpfs'), 'social.twitter.name'),
+            $this->setting_field(__('Active', 'wpfs'), 'social.twitter.enable', 'checkbox', ['depend' => 'social.sameUsername.enable', 'default_value' => true]),
+            $this->setting_field(__('Profile name or url', 'wpfs'), 'social.twitter.url', 'text', ['depend' => '!social.sameUsername.enable']),
             $this->setting_field(__('Confirmation code', 'wpfs'), 'social.twitter.code'),
 
             $this->setting_field(__('Linkedin:', 'wpfs'), false, 'separator'),
-            $this->setting_field(__('Profile url', 'wpfs'), 'social.linkedin.url'),
+            $this->setting_field(__('Active', 'wpfs'), 'social.linkedin.enable', 'checkbox', ['depend' => 'social.sameUsername.enable', 'default_value' => true]),
+            $this->setting_field(__('Profile name or url', 'wpfs'), 'social.linkedin.url', 'text', ['depend' => '!social.sameUsername.enable']),
 
             $this->setting_field(__('Pinterest:', 'wpfs'), false, 'separator'),
-            $this->setting_field(__('Profile url', 'wpfs'), 'social.pinterest.url'),
+            $this->setting_field(__('Active', 'wpfs'), 'social.pinterest.enable', 'checkbox', ['depend' => 'social.sameUsername.enable', 'default_value' => true]),
+            $this->setting_field(__('Profile name or url', 'wpfs'), 'social.pinterest.url', 'text', ['depend' => '!social.sameUsername.enable']),
             $this->setting_field(__('Confirmation code', 'wpfs'), 'social.pinterest.code'),
 
             $this->setting_field(__('Instagram:', 'wpfs'), false, 'separator'),
-            $this->setting_field(__('Profile url', 'wpfs'), 'social.instagram.url'),
+            $this->setting_field(__('Active', 'wpfs'), 'social.instagram.enable', 'checkbox', ['depend' => 'social.sameUsername.enable', 'default_value' => true]),
+            $this->setting_field(__('Profile name or url', 'wpfs'), 'social.instagram.url', 'text', ['depend' => '!social.sameUsername.enable']),
 
             $this->setting_field(__('YouTube:', 'wpfs'), false, 'separator'),
-            $this->setting_field(__('Profile url', 'wpfs'), 'social.youtube.url')
+            $this->setting_field(__('Active', 'wpfs'), 'social.youtube.enable', 'checkbox', ['depend' => 'social.sameUsername.enable', 'default_value' => false]),
+            $this->setting_field(__('Profile name or url', 'wpfs'), 'social.youtube.url', 'text', ['depend' => '!social.sameUsername.enable']),
+
+            $this->setting_field(__('Tumblr:', 'wpfs'), false, 'separator'),
+            $this->setting_field(__('Active', 'wpfs'), 'social.tumblr.enable', 'checkbox', ['depend' => 'social.sameUsername.enable', 'default_value' => false]),
+            $this->setting_field(__('Profile name or url', 'wpfs'), 'social.tumblr.url', 'text', ['depend' => '!social.sameUsername.enable']),
+
+            $this->setting_field(__('Yelp:', 'wpfs'), false, 'separator'),
+            $this->setting_field(__('Active', 'wpfs'), 'social.yelp.enable', 'checkbox', ['depend' => 'social.sameUsername.enable', 'default_value' => false]),
+            $this->setting_field(__('Profile name or url', 'wpfs'), 'social.yelp.url', 'text', ['depend' => '!social.sameUsername.enable']),
+
+            $this->setting_field(__('SoundCloud:', 'wpfs'), false, 'separator'),
+            $this->setting_field(__('Active', 'wpfs'), 'social.soundcloud.enable', 'checkbox', ['depend' => 'social.sameUsername.enable', 'default_value' => false]),
+            $this->setting_field(__('Profile name or url', 'wpfs'), 'social.soundcloud.url', 'text', ['depend' => '!social.sameUsername.enable']),
+
+            $this->setting_field(__('WikiPedia:', 'wpfs'), false, 'separator'),
+            $this->setting_field(__('Active', 'wpfs'), 'social.wikipedia.enable', 'checkbox', ['depend' => 'social.sameUsername.enable', 'default_value' => false]),
+            $this->setting_field(__('Profile name or url', 'wpfs'), 'social.wikipedia.url', 'text', ['depend' => '!social.sameUsername.enable'])
         );
 
         $fields['webmaster'] = $this->group_setting_fields(
@@ -254,7 +287,10 @@ class Mod_seo extends Module
             $this->setting_field(__('Verification code', 'wpfs'), 'webmaster.bing.vercode'),
 
             $this->setting_field(__('Yandex:', 'wpfs'), false, 'separator'),
-            $this->setting_field(__('Verification code', 'wpfs'), 'webmaster.yandex.vercode')
+            $this->setting_field(__('Verification code', 'wpfs'), 'webmaster.yandex.vercode'),
+
+            $this->setting_field(__('Baidu:', 'wpfs'), false, 'separator'),
+            $this->setting_field(__('Verification code', 'wpfs'), 'webmaster.baidu.vercode')
         );
 
         $fields['archives'] = $this->group_setting_fields(
@@ -273,11 +309,28 @@ class Mod_seo extends Module
         );
 
         $fields['schema.org'] = $this->group_setting_fields(
-            $this->setting_field(__('Site settings:', 'wpfs'), false, 'separator'),
-            $this->setting_field(__('Organization', 'wpfs'), 'schema.org.organization', 'checkbox', ['default_value' => false]),
-            $this->setting_field(__('WebSite type', 'wpfs'), 'schema.org.type', 'dropdown', ['default_value' => "WebSite"])
-        );
+            $this->setting_field(__('Schema settings:', 'wpfs'), false, 'separator'),
+            $this->setting_field(__('Active', 'wpfs'), 'schema.enabled', 'checkbox', ['default_value' => true]),
+            $this->setting_field(__('Organization', 'wpfs'), 'schema.organization', 'checkbox', ['parent' => 'schema.enabled', 'default_value' => false]),
+            $this->setting_field(__('Organization name', 'wpfs'), 'schema.organization.name', 'text', ['parent' => 'schema.organization']),
+            $this->setting_field(__('Organization logo', 'wpfs'), 'schema.organization.logo', 'upload-input', ['parent' => 'schema.organization', 'placeholder' => __('Paste your image URL or select a new image', 'wpfs')]),
+            $this->setting_field(__('Organization phone', 'wpfs'), 'schema.organization.phone', 'text', ['parent' => 'schema.organization']),
+            $this->setting_field(__('Contact Type', 'wpfs'), 'schema.organization.contact_type', 'dropdown', ['parent' => 'schema.organization', 'value' => [
+                "Customer Service",
+                "Technical Support",
+                "Billing Support",
+                "Bill Payment",
+                "Sales",
+                "Reservations",
+                "Credit Card Support",
+                "Emergency",
+                "Baggage Tracking",
+                "Roadside Assistance",
+                "Package Tracking"
+            ]]),
 
+            $this->setting_field(__('Enable Sitelinks Search Box', 'wpfs'), 'schema.sitelink', 'checkbox', ['parent' => 'schema.enabled', 'default_value' => false])
+        );
 
         //settings for each taxonomy
         foreach (get_taxonomies(array('public' => true), 'objects') as $tax_type_object) {
@@ -353,8 +406,8 @@ class Mod_seo extends Module
         <table class="wp-list-table widefat fixed striped table-view-list tables">
             <thead>
             <tr>
-                <th><?php echo __('Replacer', 'wpfs'); ?></th>
-                <th><?php echo __('Description', 'wpfs'); ?></th>
+                <th scope="col"><?php echo __('Replacer', 'wpfs'); ?></th>
+                <th scope="col"><?php echo __('Description', 'wpfs'); ?></th>
             </tr>
             </thead>
             <tbody>

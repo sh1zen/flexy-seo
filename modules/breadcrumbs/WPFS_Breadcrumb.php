@@ -5,9 +5,6 @@
  * @license   http://www.gnu.org/licenses/gpl.html GNU/GPL
  */
 
-use FlexySEO\core\Settings;
-use FlexySEO\Engine\Helpers\CurrentPage;
-use FlexySEO\Engine\Txt_Replacer;
 
 class WPFS_Breadcrumb
 {
@@ -83,38 +80,82 @@ class WPFS_Breadcrumb
     private $home_url;
 
     /**
+     * Init the breadcrumb class
+     */
+    private function __construct()
+    {
+
+    }
+
+    /**
+     * Get breadcrumb string using the singleton instance of this class
+     *
+     * @param string $before
+     * @param string $after
+     * @param bool $display Echo or return ?
+     * @param array $args
+     * @return string
+     */
+    public static function breadcrumb($before = '', $after = '', $display = true, $args = array())
+    {
+        if (!shzn('wpfs')->settings->get('breadcrumbs.active', false))
+            return '';
+
+        if (!isset(self::$_instance)) {
+            self::$_instance = new self();
+        }
+
+        self::$_instance->generate($args);
+
+        // Remember the last used before/after for use in case the object goes __toString()
+        self::$before = $before;
+        self::$after = $after;
+
+        $output = $before . self::$_instance->output . $after;
+
+        if ($display === true) {
+            echo $output;
+        }
+
+        return $output;
+    }
+
+    /**
      * Create the breadcrumb
      * @param array $args
      */
-    private function __construct($args = array())
+    private function generate($args = array())
     {
         if (!$this->get_wp_query()) {
             _doing_it_wrong(__FUNCTION__, __('Conditional query tags do not work before the query is run. Before then, they always return false.', 'wpfs'), '1.0.0');
         }
 
-        $this->options = array_merge(array(
-            'prefix.archive'          => __('Archive for:', 'wpfs'),
-            'prefix.search'           => __('Searched:', 'wpfs'),
-            'prefix.author'           => '',
-            'post_types-post-maintax' => 'category',
-        ), $args);
+        if (empty($this->output)) {
 
-        $this->home_url = get_option('home') . '/';
+            $this->options = array_merge(array(
+                'prefix.archive'          => __('Archive for:', 'wpfs'),
+                'prefix.search'           => __('Searched:', 'wpfs'),
+                'prefix.author'           => '',
+                'post_types-post-maintax' => 'category',
+            ), $args);
 
-        $this->queried_object = $this->get_wp_query()->get_queried_object();
+            $this->home_url = shzn()->utility->home_url;
 
-        $this->show_on_front = get_option('show_on_front');
-        $this->page_for_posts = get_option('page_for_posts');
+            $this->queried_object = $this->get_wp_query()->get_queried_object();
 
-        $this->wrapper = 'ol';
-        $this->element = 'li';
+            $this->show_on_front = get_option('show_on_front');
+            $this->page_for_posts = get_option('page_for_posts');
 
-        $format = $this->get_option('flexed') ? $this->get_breadcrumb_format() : '';
+            $this->wrapper = 'ol';
+            $this->element = 'li';
 
-        $this->set_crumbs($format);
-        $this->prepare_links();
-        $this->links_to_string();
-        $this->wrap_breadcrumb();
+            $format = $this->get_option('flexed') ? $this->get_breadcrumb_format() : '';
+
+            $this->set_crumbs($format);
+            $this->prepare_links();
+            $this->links_to_string();
+            $this->wrap_breadcrumb();
+        }
     }
 
     /**
@@ -143,6 +184,9 @@ class WPFS_Breadcrumb
      */
     private function get_breadcrumb_format()
     {
+        if (!$this->queried_object)
+            return '';
+
         $wp_query = $this->get_wp_query();
 
         $format = '';
@@ -151,6 +195,7 @@ class WPFS_Breadcrumb
             $format = $this->get_option("format.post_type.{$this->queried_object->post_type}", "%%home%%");
         }
         elseif ($wp_query->is_singular()) {
+
             $format = $this->get_option("format.post_type.{$this->queried_object->post_type}", "%%home%% >> %%category%% >> %%title%%");
         }
         elseif ($wp_query->is_author()) {
@@ -164,7 +209,6 @@ class WPFS_Breadcrumb
             $format = $this->get_option("format.404", "%%home%% >> %%queried_object%%");
         }
         elseif ($wp_query->is_archive()) {
-
             if ($wp_query->is_post_type_archive())
                 $format = $this->get_option("format.post_type_archive.{$this->queried_object->post_type}", "%%home%% >> %%queried_object%%");
             elseif (is_object($this->queried_object))
@@ -348,9 +392,7 @@ class WPFS_Breadcrumb
         );
 
         foreach ($rules[0] as $rule) {
-
             $_rule = str_replace("%%", '', $rule);
-
             $format_crumb = $this->perform_replace($_rule, $format_crumb);
         }
 
@@ -363,6 +405,9 @@ class WPFS_Breadcrumb
                 $url = $this->home_url . $url;
             }
 
+            // fix multiple slashes
+            $url = preg_replace('/([^:])(\/{2,})/i', '$1/', $url);
+
             $this->add_crumb($this->generate_crumb(
 
             // remove only link format
@@ -370,6 +415,7 @@ class WPFS_Breadcrumb
                 $url
             ));
         }
+
     }
 
     private function perform_replace($rule, $format_crumb)
@@ -502,17 +548,17 @@ class WPFS_Breadcrumb
 
                 $parent_terms = $this->get_term_parents($deepest_term);
 
-                $url = '/';
-                $compact_url = '/';
+                $url = '';
+                $compact_url = '';
                 $depth = 1;
 
                 foreach ($parent_terms as $parent_term) {
 
-                    $url .= $parent_term->slug . '/';
+                    $url .= $parent_term->slug;
 
                     $replaces[] = array(
                         'text' => $parent_term->name,
-                        'url'  => $compact_url_request ? ($compact_url . "{$parent_term->slug}/") : $url
+                        'url'  => ($compact_url_request ? ($compact_url . "{$parent_term->slug}") : $url) . '/'
                     );
 
                     /**
@@ -557,7 +603,7 @@ class WPFS_Breadcrumb
          *
          * @param string $rule The rule.
          * @param array $replaces The currently generated replacements.
-         * @since 1.0
+         * @since 1.0.0
          *
          */
         return apply_filters('wpfs_breadcrumb_replacements', $replaces, $rule);
@@ -1036,34 +1082,15 @@ class WPFS_Breadcrumb
         }
     }
 
-    /**
-     * Get breadcrumb string using the singleton instance of this class
-     *
-     * @param string $before
-     * @param string $after
-     * @param bool $display Echo or return ?
-     * @param array $args
-     * @return bool
-     */
-    public static function breadcrumb($before = '', $after = '', $display = true, $args = array())
+    public static function export()
     {
-        if (!shzn('wpfs')->settings->get('breadcrumbs.active', false))
-            return '';
-
         if (!isset(self::$_instance)) {
-            self::$_instance = new self($args);
+            self::$_instance = new self();
         }
 
-        // Remember the last used before/after for use in case the object goes __toString()
-        self::$before = $before;
-        self::$after = $after;
+        self::$_instance->generate();
 
-        $output = $before . self::$_instance->output . $after;
-
-        if ($display === true) {
-            echo $output;
-        }
-
-        return $output;
+        // Remove any effectively empty crumbs
+        return array_filter(self::$_instance->crumbs);
     }
 }

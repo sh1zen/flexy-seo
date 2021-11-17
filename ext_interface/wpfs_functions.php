@@ -12,7 +12,7 @@ use FlexySEO\Engine\Txt_Replacer;
  * @param $after
  * @param bool $display
  * @param array $args
- * @return bool|string
+ * @return string
  */
 function wpfs_breadcrumb($before, $after, $display = true, $args = array())
 {
@@ -42,6 +42,7 @@ function wpfs_replace_vars($string, $object_id = 0, $type = 'post')
  */
 function wpfs_add_replacement_rule($rule, $replacement, $type = [])
 {
-    if(defined("WPFS_SEO_ENGINE_LOADED") and WPFS_SEO_ENGINE_LOADED)
+    if(defined("WPFS_SEO_ENGINE_LOADED") and WPFS_SEO_ENGINE_LOADED) {
         Txt_Replacer::add_replacer($rule, $replacement, $type);
+    }
 }

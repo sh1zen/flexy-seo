@@ -197,7 +197,7 @@ class PluginInit
     {
         /**
          * Hook for the plugin deactivation
-         * @since 1.4.0
+         * @since 1.0.0
          */
         do_action('wpfs-deactivate');
     }

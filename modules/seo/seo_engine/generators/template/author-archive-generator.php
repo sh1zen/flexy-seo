@@ -140,9 +140,8 @@ class AuthorArchive_Generator extends Generator
 
         $image_path = realpath(ABSPATH . $path);
 
-        if($image_path)
-        {
-            list($width, $height) = wp_getimagesize( $image_path );
+        if ($image_path) {
+            list($width, $height) = wp_getimagesize($image_path);
         }
 
         if ($this->current_page->is_simple_page()) {

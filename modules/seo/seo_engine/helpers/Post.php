@@ -27,12 +27,12 @@ class Post
      */
     public static function get_first_usable_image($justContent = false)
     {
-        if(!$justContent)
-        {
-            $image =  wpfseo()->post->get_main_image();
+        if (!$justContent) {
+            $image = wpfseo()->post->get_main_image();
 
-            if($image)
+            if ($image) {
                 return $image;
+            }
         }
 
         $images = wpfseo()->post->get_images();

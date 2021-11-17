@@ -23,7 +23,7 @@ class ModuleHandler
     {
         $this->context = $context;
         $this->modules_path = $load_path;
-        $this->module_settings = shzn($context)->settings->get('modules_handler');
+        $this->module_settings = shzn($context)->settings->get('modules_handler', []);
 
         $this->init_modules($this->modules_path);
     }
@@ -220,8 +220,9 @@ class ModuleHandler
      */
     private function module_is_active($module_slug)
     {
-        if (isset($this->module_settings[$module_slug]) and !$this->module_settings[$module_slug])
+        if (isset($this->module_settings[$module_slug]) and !$this->module_settings[$module_slug]) {
             return false;
+        }
 
         return true;
     }
@@ -236,21 +237,21 @@ class ModuleHandler
      */
     public function module_has_method($module, $method, $compare = 'AND')
     {
-        if (is_null($module) or empty($method))
+        if (is_null($module) or empty($method)) {
             return false;
+        }
 
-        if (!is_array($method))
+        if (!is_array($method)) {
             $method = array($method);
+        }
 
-        if (!$class = self::module2classname($module))
+        if (!$class = self::module2classname($module)) {
             return false;
+        }
 
         $methods = array_intersect($method, get_class_methods($class));
 
-        if ($compare === 'AND')
-            return count($methods) === count($method);
-        else
-            return !empty($methods);
+        return ($compare === 'AND') ? (count($methods) === count($method)) : !empty($methods);
     }
 
     /**
@@ -263,20 +264,20 @@ class ModuleHandler
      */
     public function module_has_scope($module, $scope, $compare = 'AND')
     {
-        if (is_null($module) or empty($scope))
+        if (is_null($module) or empty($scope)) {
             return false;
+        }
 
-        if (!is_array($scope))
+        if (!is_array($scope)) {
             $scope = array($scope);
+        }
 
-        if (!$class = self::module2classname($module))
+        if (!$class = self::module2classname($module)) {
             return false;
+        }
 
         $found = array_intersect($scope, get_class_vars($class)['scopes']);
 
-        if ($compare === 'AND')
-            return count($found) === count($scope);
-        else
-            return !empty($found);
+        return ($compare === 'AND') ? (count($found) === count($scope)) : !empty($found);
     }
 }

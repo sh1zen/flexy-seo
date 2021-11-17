@@ -195,13 +195,15 @@ class RuleUtil
             $data = self::get_rules();
         }
 
-        if (strstr($data, $start) === false)
+        if (strstr($data, $start) === false) {
             return false;
+        }
 
         $data = RuleUtil::erase_rules($data, $start, $end);
 
-        if ($write_out)
+        if ($write_out) {
             return self::write_rules($data);
+        }
 
         return $data;
     }

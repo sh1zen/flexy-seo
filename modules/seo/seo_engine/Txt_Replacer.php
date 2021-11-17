@@ -42,8 +42,9 @@ class Txt_Replacer
         $string = apply_filters('wpfs_before_replace', $string, $object, $type);
 
         foreach (preg_split("/[\s,;:?!]+/", $string) as $rule) {
-            if (stripos($rule, '%%') !== false)
+            if (stripos($rule, '%%') !== false) {
                 $rules[] = str_replace("%%", '', $rule);
+            }
         }
 
         $rules = apply_filters('wpfs_replacer_rules', $rules, $object, $type);
@@ -70,8 +71,9 @@ class Txt_Replacer
             else {
                 $replace = apply_filters("wpfs_custom_replace_{$type}", $rule, $object, $type);
 
-                if (!empty($replace) and $replace !== $rule)
+                if (!empty($replace) and $replace !== $rule) {
                     $replacement = $replace;
+                }
             }
 
             $replacement = apply_filters("wpfs_replacement", $replacement, $string, $rule, $object, $type);
@@ -226,15 +228,15 @@ class Txt_Replacer
      */
     public static function add_replacer($rule, $replacement, $type = [])
     {
-        if(empty($type))
+        if (empty($type)) {
             $type = CurrentPage::get_page_types();
+        }
 
-        if(is_array($type))
-        {
-           foreach ($type as $_type){
-               self::add_replacer($rule, $replacement, $_type);
-           }
-           return;
+        if (is_array($type)) {
+            foreach ($type as $_type) {
+                self::add_replacer($rule, $replacement, $_type);
+            }
+            return;
         }
 
         shzn('wpfs')->cache->set_cache("{$rule}-{$type}", $replacement, "Replacer");

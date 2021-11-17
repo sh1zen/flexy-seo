@@ -58,8 +58,9 @@ class Settings
             $setting_path = substr_replace($setting_path, '', 0, $pos + 1);
         }
 
-        if (is_array($settings) or is_object($settings))
+        if (is_array($settings) or is_object($settings)) {
             $settings = wp_parse_args($settings, $default);
+        }
 
         return $settings;
     }
@@ -72,6 +73,8 @@ class Settings
         return $default;
     }
 
+
+
     /**
      * Access to settings by path -> delimiter: "."
      * @param string $setting_path
@@ -79,7 +82,7 @@ class Settings
      * @param bool $update -> if no option were found, update theme, with defaults values
      * @return array|mixed|object|string
      */
-    public function get($setting_path = '', $default = array(), $update = false)
+    public function get($setting_path = '', $default = [], $update = false)
     {
         $settings = $this->settings;
 
@@ -116,8 +119,9 @@ class Settings
             $setting_path = substr_replace($setting_path, '', 0, $pos + 1);
         }
 
-        if (is_array($settings) or is_object($settings))
+        if (is_array($settings) or is_object($settings)) {
             $settings = wp_parse_args($settings, $default);
+        }
 
         return $settings;
     }

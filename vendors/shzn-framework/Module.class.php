@@ -95,7 +95,7 @@ class Module
             if (is_admin()) {
 
                 if (Graphic::is_on_screen($this->slug)) {
-                    $this->enqueue_scripts();
+                    add_action( 'admin_enqueue_scripts', [$this, 'enqueue_scripts']);
                 }
 
                 add_action('admin_notices', array($this, 'admin_notices'));
@@ -380,7 +380,9 @@ class Module
             'tooltips'      => false,
             'default_value' => '',
             'allow_empty'   => true,
-            'parent'        => null
+            'parent'        => false,
+            'depend'        => false,
+            'placeholder'   => ''
         ], $args);
 
         if ($id) {
@@ -390,15 +392,18 @@ class Module
             $value = '';
         }
 
-        if (empty($value) and !$args['allow_empty'])
+        if (empty($value) and !$args['allow_empty']) {
             $value = $args['default_value'];
+        }
 
         return [
-            'type'   => $type,
-            'name'   => $name,
-            'id'     => $id,
-            'value'  => $value,
-            'parent' => $args['parent']
+            'type'        => $type,
+            'name'        => $name,
+            'id'          => $id,
+            'value'       => $value,
+            'parent'      => $args['parent'],
+            'depend'      => $args['depend'],
+            'placeholder' => $args['placeholder']
         ];
     }
 

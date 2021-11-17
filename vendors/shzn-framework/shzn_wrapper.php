@@ -25,6 +25,11 @@ class shzn_wrapper
     public $storage;
 
     /**
+     * @var Utility
+     */
+    public $utility;
+
+    /**
      * @var Settings
      */
     public $settings;
@@ -65,7 +70,7 @@ class shzn_wrapper
             'path'          => '',
             'use_wp_cache'  => false,
             'disk_autosave' => true
-        ], $args);
+        ], (array)$args);
     }
 
     private function filter_components($components)
@@ -77,7 +82,8 @@ class shzn_wrapper
             'settings'      => false,
             'cron'          => false,
             'ajax'          => false,
-            'moduleHandler' => false
+            'moduleHandler' => false,
+            'utility'       => false
         ] : $this->components;
 
         $this->components = array_merge($defaults, $components);
@@ -92,6 +98,9 @@ class shzn_wrapper
 
     public function setup()
     {
+        if ($this->components['utility'])
+            $this->utility = new Utility();
+
         if ($this->components['meter'])
             $this->meter = new PerformanceMeter("loading-{$this->context}");
 

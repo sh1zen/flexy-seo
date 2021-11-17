@@ -38,12 +38,12 @@ class Storage
             return self::generate_key($identifier, ...$args);
         }
 
-        return 'ID:' . $identifier . '_' . crc32($identifier . serialize($args));
+        return 'ID:' . $identifier . '_' . self::generate_key($identifier . serialize($args));
     }
 
     public static function generate_key(...$args)
     {
-        return md5(serialize($args));
+        return hash('xxh128', serialize($args));
     }
 
     public function disable_autosave()
@@ -93,8 +93,9 @@ class Storage
         if (!($data = unserialize($data)))
             return false;
 
-        if (boolval($data['expire']) and $data['expire'] < time())
+        if (boolval($data['expire']) and $data['expire'] < time()) {
             return false;
+        }
 
         if ($cache) {
             $this->cache[$context][$key] = $data;
@@ -103,18 +104,18 @@ class Storage
         return $data['data'];
     }
 
-    public function use_custom_storage_name($name)
-    {
-        $this->t_storage_name = $name;
-    }
-
     private function generate_path($context, $key = '')
     {
         $context = str_replace('default', '', $context);
 
-        $sub_folder = $this->t_storage_name ? $this->t_storage_name :  $this->storage_name;
+        $sub_folder = $this->t_storage_name ? $this->t_storage_name : $this->storage_name;
 
         return WP_CONTENT_DIR . "/{$sub_folder}/{$context}/{$key}";
+    }
+
+    public function use_custom_storage_name($name)
+    {
+        $this->t_storage_name = $name;
     }
 
     public function delete($context = 'default', $key = '', $blog_id = 0)
@@ -153,7 +154,7 @@ class Storage
         $context = $this->filter_context($context, $blog_id);
 
         if (!$force and isset($this->cache[$context][$key])) {
-            $force = md5(serialize($data)) !== md5(serialize($this->cache[$context][$key]['data']));
+            $force = self::generate_key($data) !== self::generate_key($this->cache[$context][$key]['data']);
 
             if (!$force)
                 return;
@@ -169,7 +170,7 @@ class Storage
             'data'      => $data,
             'file_name' => $key,
             'context'   => $context,
-            'force'     => $force,
+            'force'     => $force
         );
 
         $this->cache[$context][$key] = $args;
@@ -199,19 +200,23 @@ class Storage
 
             foreach ($context as $element) {
 
-                if ($element['expire'] and $element['expire'] < time())
+                if ($element['expire'] and $element['expire'] < time()) {
                     continue;
+                }
 
                 $path = $this->generate_path($element['context']);
 
-                if (file_exists($path . $element['file_name']) and !$element['force'])
+                if (file_exists($path . $element['file_name']) and !$element['force']) {
                     continue;
+                }
 
-                if (!($cached = serialize($element)))
+                if (!($cached = serialize($element))) {
                     continue;
+                }
 
-                if (!file_exists($path))
+                if (!file_exists($path)) {
                     mkdir($path, 0774, true);
+                }
 
                 file_put_contents($path . $element['file_name'], $cached);
             }
@@ -225,7 +230,7 @@ class Storage
             'file_name' => 'main',
             'context'   => 'default',
             'force'     => false,
-            'data'      => array(),
+            'data'      => []
         ), $args);
 
         $args['context'] = $this->filter_context($args['context'], $blog_id);
@@ -236,8 +241,9 @@ class Storage
 
         $path = $this->generate_path($args['context']);
 
-        if (file_exists($path . $args['file_name']) and !$args['force'])
+        if (file_exists($path . $args['file_name']) and !$args['force']) {
             return false;
+        }
 
         $cached = serialize($args);
 

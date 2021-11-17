@@ -7,9 +7,6 @@
 
 namespace FlexySEO\Engine;
 
-use FlexySEO\Engine\Helpers\CurrentPage;
-use FlexySEO\core\Settings;
-
 class Rewriter
 {
     private static $_instance;
@@ -31,52 +28,56 @@ class Rewriter
         $this->register_hooks();
     }
 
-    public function get_pagenum_link($pagenum = 1, $escape = true){
+    public function get_pagenum_link($pagenum = 1, $escape = true)
+    {
 
         global $wp_rewrite;
 
-        $pagenum = (int) $pagenum;
+        $pagenum = (int)$pagenum;
 
-        $request = remove_query_arg( 'paged' );
+        $request = remove_query_arg('paged');
 
-        $home_root = parse_url( home_url() );
-        $home_root = ( isset( $home_root['path'] ) ) ? $home_root['path'] : '';
-        $home_root = preg_quote( $home_root, '|' );
+        $home_root = parse_url(shzn()->utility->home_url);
+        $home_root = (isset($home_root['path'])) ? $home_root['path'] : '';
+        $home_root = preg_quote($home_root, '|');
 
-        $request = preg_replace( '|^' . $home_root . '|i', '', $request );
-        $request = preg_replace( '|^/+|', '', $request );
+        $request = preg_replace('|^' . $home_root . '|i', '', $request);
+        $request = preg_replace('|^/+|', '', $request);
 
-        if ( ! $wp_rewrite->using_permalinks() || is_admin() ) {
-            $base = trailingslashit( get_bloginfo( 'url' ) );
+        if (!$wp_rewrite->using_permalinks() || is_admin()) {
+            $base = trailingslashit(get_bloginfo('url'));
 
-            if ( $pagenum > 1 ) {
-                $result = add_query_arg( 'paged', $pagenum, $base . $request );
-            } else {
+            if ($pagenum > 1) {
+                $result = add_query_arg('paged', $pagenum, $base . $request);
+            }
+            else {
                 $result = $base . $request;
             }
-        } else {
+        }
+        else {
             $qs_regex = '|\?.*?$|';
-            preg_match( $qs_regex, $request, $qs_match );
+            preg_match($qs_regex, $request, $qs_match);
 
-            if ( ! empty( $qs_match[0] ) ) {
+            if (!empty($qs_match[0])) {
                 $query_string = $qs_match[0];
-                $request      = preg_replace( $qs_regex, '', $request );
-            } else {
+                $request = preg_replace($qs_regex, '', $request);
+            }
+            else {
                 $query_string = '';
             }
 
-            $request = preg_replace( "|$wp_rewrite->pagination_base/\d+/?$|", '', $request );
-            $request = preg_replace( '|^' . preg_quote( $wp_rewrite->index, '|' ) . '|i', '', $request );
-            $request = ltrim( $request, '/' );
+            $request = preg_replace("|$wp_rewrite->pagination_base/\d+/?$|", '', $request);
+            $request = preg_replace('|^' . preg_quote($wp_rewrite->index, '|') . '|i', '', $request);
+            $request = ltrim($request, '/');
 
-            $base = trailingslashit( get_bloginfo( 'url' ) );
+            $base = trailingslashit(get_bloginfo('url'));
 
-            if ( $wp_rewrite->using_index_permalinks() && ( $pagenum > 1 || '' !== $request ) ) {
+            if ($wp_rewrite->using_index_permalinks() && ($pagenum > 1 || '' !== $request)) {
                 $base .= $wp_rewrite->index . '/';
             }
 
-            if ( $pagenum > 1 ) {
-                $request = ( ( ! empty( $request ) ) ? trailingslashit( $request ) : $request ) . user_trailingslashit( $wp_rewrite->pagination_base . '/' . $pagenum, 'paged' );
+            if ($pagenum > 1) {
+                $request = ((!empty($request)) ? trailingslashit($request) : $request) . user_trailingslashit($wp_rewrite->pagination_base . '/' . $pagenum, 'paged');
             }
 
             $result = $base . $request . $query_string;
@@ -85,18 +86,18 @@ class Rewriter
         /**
          * Filters the page number link for the current request.
          *
-         * @since 2.5.0
-         * @since 5.2.0 Added the `$pagenum` argument.
+         * @param string $result The page number link.
+         * @param int $pagenum The page number.
+         * @since 1.2.0
          *
-         * @param string $result  The page number link.
-         * @param int    $pagenum The page number.
          */
-        $result = apply_filters( 'get_pagenum_link', $result, $pagenum );
+        $result = apply_filters('get_pagenum_link', $result, $pagenum);
 
-        if ( $escape ) {
-            return esc_url( $result );
-        } else {
-            return esc_url_raw( $result );
+        if ($escape) {
+            return esc_url($result);
+        }
+        else {
+            return esc_url_raw($result);
         }
     }
 
@@ -128,19 +129,19 @@ class Rewriter
     public function static_redirects()
     {
         if (!shzn('wpfs')->settings->get('seo.archives.date.active', true) and $this->current_page->is_date_archive()) {
-            Rewriter::redirect(get_bloginfo('url'));
+            Rewriter::redirect(shzn()->utility->home_url);
         }
 
         if (!shzn('wpfs')->settings->get('seo.archives.author.active', true) and $this->current_page->is_author_archive()) {
-            Rewriter::redirect(get_bloginfo('url'));
+            Rewriter::redirect(shzn()->utility->home_url);
         }
 
         if (!shzn('wpfs')->settings->get('seo.tax.post_format.active', true) and $this->current_page->is_post_format_archive()) {
-            Rewriter::redirect(get_bloginfo('url'));
+            Rewriter::redirect(shzn()->utility->home_url);
         }
 
         if (!shzn('wpfs')->settings->get('seo.tax.post_format.active', true) and $this->current_page->is_post_format_archive()) {
-            Rewriter::redirect(get_bloginfo('url'));
+            Rewriter::redirect(shzn()->utility->home_url);
         }
 
         /**

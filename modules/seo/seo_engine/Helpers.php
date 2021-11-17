@@ -7,8 +7,6 @@
 
 namespace FlexySEO\Engine\Helpers;
 
-use FlexySEO\core\Cache;
-
 class Helpers
 {
     private static $_Instance;
@@ -18,7 +16,45 @@ class Helpers
      */
     public $main_query;
 
-    public $cache;
+    /**
+     * @var \FlexySEO\Engine\Helpers\StringHelper
+     */
+    public $string;
+
+    /**
+     * @var \FlexySEO\Engine\Helpers\Images
+     */
+    public $images;
+
+    /**
+     * @var \FlexySEO\Engine\Helpers\currentPage
+     */
+    public $currentPage;
+
+    /**
+     * @var \FlexySEO\Engine\Helpers\Post
+     */
+    public $post;
+
+    /**
+     * @var \FlexySEO\Engine\Helpers\Term
+     */
+    public $term;
+
+    /**
+     * @var \FlexySEO\Engine\Helpers\ECommerce
+     */
+    public $ecommerce;
+
+    /**
+     * @var \FlexySEO\Engine\Helpers\Language
+     */
+    public $language;
+
+    /**
+     * @var \SHZN\core\Cache
+     */
+    private $cache;
 
     /**
      * @param \WP_Query $main_query
@@ -28,6 +64,10 @@ class Helpers
         $this->main_query = $main_query;
 
         $this->cache = shzn('wpfs')->cache;
+
+        $this->string = new StringHelper();
+
+        $this->language = new Language();
 
         $this->currentPage = new CurrentPage($main_query);
 
@@ -41,7 +81,7 @@ class Helpers
     }
 
     /**
-     * @return CurrentPage|null
+     * @return Helpers|null
      */
     public static function get_Instance()
     {
@@ -75,7 +115,7 @@ class Helpers
      * Checks whether the current request is an AJAX, CRON or REST request.
      *
      * @return bool Wether the request is an AJAX, CRON or REST request.
-     * @since 4.1.3
+     * @since 1.2.0
      *
      */
     public function isAjaxCronRest()
@@ -88,7 +128,7 @@ class Helpers
      * This function was copied from WooCommerce and improved.
      *
      * @return bool True if this is a REST API request.
-     * @since 4.1.2
+     * @since 1.2.0
      *
      */
     public function isRestApiRequest()

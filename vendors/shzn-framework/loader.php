@@ -14,6 +14,8 @@ require_once SHZN_FRAMEWORK . 'functions.php';
 
 require_once SHZN_FRAMEWORK . 'shzn_wrapper.php';
 
+require_once SHZN_FRAMEWORK . 'Utility.class.php';
+
 require_once SHZN_FRAMEWORK . 'UtilEnv.php';
 
 require_once SHZN_FRAMEWORK . 'Cache.class.php';
@@ -37,11 +39,13 @@ function shzn_admin_enqueue_scripts()
 {
     $shzn_assets_url = plugin_dir_url(__FILE__);
 
-    wp_register_style('vendor-shzn-css', $shzn_assets_url . 'assets/css/style.css');
-    wp_register_script('vendor-shzn-js', $shzn_assets_url . 'assets/js/core.js', ['jquery']);
+    $min = shzn()->utility->online ? '.min' : '';
+
+    wp_register_style('vendor-shzn-css', "{$shzn_assets_url}assets/css/style{$min}.css");
+    wp_register_script('vendor-shzn-js', "{$shzn_assets_url}assets/js/core{$min}.js", ['jquery']);
 }
 
-function shzn($context, $args = false, $components = [])
+function shzn($context = 'common', $args = false, $components = [])
 {
     static $cached = [];
 
@@ -70,3 +74,6 @@ function shzn($context, $args = false, $components = [])
     return $cached[$context];
 }
 
+shzn('common', false, [
+    'utility' => true
+]);

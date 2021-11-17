@@ -115,8 +115,9 @@ class UtilEnv
     {
         // using wp-content instead of document_root as known dir since dirbased
         // multisite wp adds blogname to the path inside site_url
-        if (substr($filename, 0, strlen(WP_CONTENT_DIR)) != WP_CONTENT_DIR)
+        if (substr($filename, 0, strlen(WP_CONTENT_DIR)) != WP_CONTENT_DIR) {
             return '';
+        }
 
         $uri_from_wp_content = substr($filename, strlen(WP_CONTENT_DIR));
 
@@ -818,9 +819,11 @@ class UtilEnv
         }
 
         $rel = parse_url($relative_url);
+
         // it's full url already
-        if (isset($rel['scheme']) || isset($rel['host']))
+        if (isset($rel['scheme']) || isset($rel['host'])) {
             return $relative_url;
+        }
 
         if (!isset($rel['host'])) {
             $home_parsed = parse_url(get_home_url());

@@ -18,7 +18,7 @@ class Mod_breadcrumbs extends Module
     {
         parent::__construct('wpfs');
 
-        if (!(wp_doing_ajax() or wp_doing_ajax() or is_admin())) {
+        if (!(wp_doing_cron() or wp_doing_ajax() or is_admin())) {
             include_once WPFS_MODULES . 'breadcrumbs/WPFS_Breadcrumb.php';
 
             add_action('wp_head', array($this, 'print_style'));
@@ -62,9 +62,9 @@ class Mod_breadcrumbs extends Module
     public function render_admin_page()
     {
         ?>
-        <section class="wpfs-wrap">
-            <section class='wpfs-header'><h1>Breadcrumbs</h1></section>
-            <block class="wpfs">
+        <section class="shzn-wrap">
+            <section class='shzn-header'><h1>SEO / Breadcrumbs</h1></section>
+            <block class="shzn">
                 <?php
                 echo $this->render_settings('');
                 ?>

@@ -7,9 +7,6 @@
 
 namespace FlexySEO\Engine\Helpers;
 
-
-use FlexySEO\core\Cache;
-
 /**
  * Image_Utils.
  */
@@ -22,26 +19,22 @@ class Images
      *
      * @return int The found attachment ID, or 0 if none was found.
      */
-    public static function get_attachment_by_url($url)
+    public function get_attachment_by_url($url)
     {
         /*
          * As get_attachment_by_url won't work on resized versions of images,
          * we strip out the size part of an image URL.
          */
-        $url = preg_replace('/(.*)-\d+x\d+\.(jpg|png|gif)$/', '$1.$2', $url);
+        $url = preg_replace('/(.*)-\d+x\d+\.(jpg|png|gif)$/i', '$1.$2', $url);
 
-        static $uploads;
-
-        if ($uploads === null) {
-            $uploads = wp_get_upload_dir();
-        }
+        $uploads = shzn()->utility->wp_upload_dir;
 
         // Don't try to do this for external URLs.
         if (strpos($url, $uploads['baseurl']) !== 0) {
             return 0;
         }
 
-        return self::attachmentUrlToPostId($url);
+        return $this->attachmentUrlToPostId($url);
     }
 
     /**
@@ -51,12 +44,12 @@ class Images
      *
      * @return int The Post ID belonging to the attachment, 0 if not found.
      */
-    public static function attachmentUrlToPostId($url)
+    public function attachmentUrlToPostId($url)
     {
         if (is_numeric($url))
             return $url;
 
-        $cache_key = sprintf('attachmentUrlToPostId_%s', md5($url));
+        $cache_key = 'attachmentUrlToPostId_' . hash('xxh128', $url);
 
         // Set the ID based on the hashed URL in the cache.
         $id = shzn('wpfs')->cache->get_cache($cache_key, 'ImageHelper');
@@ -84,6 +77,154 @@ class Images
         return $id;
     }
 
+    public function getSiteLogoId()
+    {
+        if (!get_theme_support('custom-logo')) {
+            return [];
+        }
+        return get_theme_mod('custom_logo');
+    }
+
+    /**
+     * Check original size of image. If original image is too small, return false, else return true.
+     *
+     * Filters a list of variations by a certain set of usable dimensions.
+     *
+     * @param array $usable_dimensions {
+     *    The parameters to check against.
+     *
+     * @type int $min_width Minimum width of image.
+     * @type int $max_width Maximum width of image.
+     * @type int $min_height Minimum height of image.
+     * @type int $max_height Maximum height of image.
+     * }
+     * @param array $variations The variations that should be considered.
+     *
+     * @return array Whether a variation is fit for display or not.
+     */
+    public function filter_usable_dimensions($usable_dimensions, $variations)
+    {
+        $filtered = [];
+
+        foreach ($variations as $variation) {
+            $dimensions = $variation;
+
+            if ($this->has_usable_dimensions($dimensions, $usable_dimensions)) {
+                $filtered[] = $variation;
+            }
+        }
+
+        return $filtered;
+    }
+
+    /**
+     * Checks whether an img sizes up to the parameters.
+     *
+     * @param array $dimensions The image values.
+     * @param array $usable_dimensions The parameters to check against.
+     *
+     * @return bool True if the image has usable measurements, false if not.
+     */
+    private function has_usable_dimensions($dimensions, $usable_dimensions)
+    {
+        foreach (['width', 'height'] as $param) {
+            $minimum = $usable_dimensions['min_' . $param];
+            $maximum = $usable_dimensions['max_' . $param];
+
+            $current = $dimensions[$param];
+            if (($current < $minimum) || ($current > $maximum)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * Filters a list of variations by (disk) file size.
+     *
+     * @param array $variations The variations to consider.
+     *
+     * @return array The validations that pass the required file size limits.
+     */
+    public function filter_usable_file_size($variations)
+    {
+        foreach ($variations as $variation) {
+            // We return early to prevent measuring the file size of all the variations.
+            if ($this->has_usable_file_size($variation)) {
+                return [$variation];
+            }
+        }
+
+        return [];
+    }
+
+    /**
+     * Checks a size version of an image to see if it's not too heavy.
+     *
+     * @param array $image Image to check the file size of.
+     *
+     * @return bool True when the image is within limits, false if not.
+     */
+    public function has_usable_file_size($image)
+    {
+        if (!is_array($image) || $image === []) {
+            return false;
+        }
+
+        /**
+         * Filter: 'wpfs_image_image_weight_limit' - Determines what the maximum weight
+         * (in bytes) of an image is allowed to be, default is 2 MB.
+         *
+         * @api int - The maximum weight (in bytes) of an image.
+         */
+        $max_size = apply_filters('wpfs_image_image_weight_limit', 2097152);
+
+        // We cannot check without a path, so assume it's fine.
+        if (!isset($image['path'])) {
+            return true;
+        }
+
+        return ($this->get_file_size($image) <= $max_size);
+    }
+
+    /**
+     * Get the image file size.
+     *
+     * @param array $image An image array object.
+     *
+     * @return int The file size in bytes.
+     */
+    public function get_file_size($image)
+    {
+        if (isset($image['filesize'])) {
+            return $image['filesize'];
+        }
+
+        // If the file size for the file is over our limit, we're going to go for a smaller version.
+        // phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged -- If file size doesn't properly return, we'll not fail.
+        return @filesize($this->get_absolute_path($image['path']));
+    }
+
+    /**
+     * Finds the full file path for a given image file.
+     *
+     * @param string $path The relative file path.
+     *
+     * @return string The full file path.
+     */
+    public function get_absolute_path($path)
+    {
+        $uploads = shzn()->utility->wp_upload_dir;
+
+        // Add the uploads basedir if the path does not start with it.
+        if (empty($uploads['error']) && strpos($path, $uploads['basedir']) !== 0) {
+            return $uploads['basedir'] . DIRECTORY_SEPARATOR . ltrim($path, DIRECTORY_SEPARATOR);
+        }
+
+        return $path;
+    }
+
     /**
      * Get the relative path of the image.
      *
@@ -91,7 +232,7 @@ class Images
      *
      * @return string The expanded image URL.
      */
-    public static function get_relative_path($img)
+    public function get_relative_path($img)
     {
         if ($img[0] !== '/') {
             return $img;
@@ -99,7 +240,7 @@ class Images
 
         // If it's a relative URL, it's relative to the domain, not necessarily to the WordPress install, we
         // want to preserve domain name and URL scheme (http / https) though.
-        $parsed_url = wp_parse_url(home_url());
+        $parsed_url = wp_parse_url(shzn()->utility->home_url);
         $img = $parsed_url['scheme'] . '://' . $parsed_url['host'] . $img;
 
         return $img;
@@ -112,12 +253,12 @@ class Images
      *
      * @return array The different variations possible for this attachment ID.
      */
-    public static function get_variations($attachment_id)
+    public function get_variations($attachment_id)
     {
         $variations = [];
 
-        foreach (self::get_sizes() as $size) {
-            $variation = self::get_image($attachment_id, $size);
+        foreach ($this->get_sizes() as $size) {
+            $variation = $this->get_image($attachment_id, $size);
 
             // The get_image function returns false if the size doesn't exist for this attachment.
             if ($variation) {
@@ -133,7 +274,7 @@ class Images
      *
      * @return array $image_sizes An array of image sizes.
      */
-    public static function get_sizes()
+    public function get_sizes()
     {
         /**
          * Filter: 'wpfs_image_sizes' - Determines which image sizes we'll loop through to get an appropriate image.
@@ -151,11 +292,11 @@ class Images
      *
      * @return array|false Returns an array with image data on success, false on failure.
      */
-    public static function get_image($attachment_id, $size)
+    public function get_image($attachment_id, $size)
     {
         $image = false;
         if ($size === 'full') {
-            $image = self::get_full_size_image_data($attachment_id);
+            $image = $this->get_full_size_image_data($attachment_id);
         }
 
         if (!$image) {
@@ -167,7 +308,7 @@ class Images
             return false;
         }
 
-        return self::get_data($image, $attachment_id);
+        return $this->get_data($image, $attachment_id);
     }
 
     /**
@@ -177,7 +318,7 @@ class Images
      *
      * @return array|false Array when there is a full size image. False if not.
      */
-    protected static function get_full_size_image_data($attachment_id)
+    private function get_full_size_image_data($attachment_id)
     {
         $image = wp_get_attachment_metadata($attachment_id);
         if (!is_array($image)) {
@@ -210,7 +351,7 @@ class Images
      * @type int $filesize The file size in bytes, if already set.
      * }
      */
-    public static function get_data($image, $attachment_id)
+    public function get_data($image, $attachment_id)
     {
         if (!is_array($image)) {
             return false;
@@ -222,7 +363,7 @@ class Images
         }
 
         $image['id'] = $attachment_id;
-        $image['alt'] = self::get_alt_tag($attachment_id);
+        $image['alt'] = $this->get_alt_tag($attachment_id);
         $image['pixels'] = ((int)$image['width'] * (int)$image['height']);
 
         if (!isset($image['type'])) {
@@ -263,154 +404,9 @@ class Images
      *
      * @return string The image alt text.
      */
-    public static function get_alt_tag($attachment_id)
+    public function get_alt_tag($attachment_id)
     {
         return (string)get_post_meta($attachment_id, '_wp_attachment_image_alt', true);
-    }
-
-    /**
-     * Check original size of image. If original image is too small, return false, else return true.
-     *
-     * Filters a list of variations by a certain set of usable dimensions.
-     *
-     * @param array $usable_dimensions {
-     *    The parameters to check against.
-     *
-     * @type int $min_width Minimum width of image.
-     * @type int $max_width Maximum width of image.
-     * @type int $min_height Minimum height of image.
-     * @type int $max_height Maximum height of image.
-     * }
-     * @param array $variations The variations that should be considered.
-     *
-     * @return array Whether a variation is fit for display or not.
-     */
-    public static function filter_usable_dimensions($usable_dimensions, $variations)
-    {
-        $filtered = [];
-
-        foreach ($variations as $variation) {
-            $dimensions = $variation;
-
-            if (self::has_usable_dimensions($dimensions, $usable_dimensions)) {
-                $filtered[] = $variation;
-            }
-        }
-
-        return $filtered;
-    }
-
-    /**
-     * Checks whether an img sizes up to the parameters.
-     *
-     * @param array $dimensions The image values.
-     * @param array $usable_dimensions The parameters to check against.
-     *
-     * @return bool True if the image has usable measurements, false if not.
-     */
-    private static function has_usable_dimensions($dimensions, $usable_dimensions)
-    {
-        foreach (['width', 'height'] as $param) {
-            $minimum = $usable_dimensions['min_' . $param];
-            $maximum = $usable_dimensions['max_' . $param];
-
-            $current = $dimensions[$param];
-            if (($current < $minimum) || ($current > $maximum)) {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    /**
-     * Filters a list of variations by (disk) file size.
-     *
-     * @param array $variations The variations to consider.
-     *
-     * @return array The validations that pass the required file size limits.
-     */
-    public static function filter_usable_file_size($variations)
-    {
-        foreach ($variations as $variation) {
-            // We return early to prevent measuring the file size of all the variations.
-            if (self::has_usable_file_size($variation)) {
-                return [$variation];
-            }
-        }
-
-        return [];
-    }
-
-    /**
-     * Checks a size version of an image to see if it's not too heavy.
-     *
-     * @param array $image Image to check the file size of.
-     *
-     * @return bool True when the image is within limits, false if not.
-     */
-    public static function has_usable_file_size($image)
-    {
-        if (!is_array($image) || $image === []) {
-            return false;
-        }
-
-        /**
-         * Filter: 'wpfs_image_image_weight_limit' - Determines what the maximum weight
-         * (in bytes) of an image is allowed to be, default is 2 MB.
-         *
-         * @api int - The maximum weight (in bytes) of an image.
-         */
-        $max_size = apply_filters('wpfs_image_image_weight_limit', 2097152);
-
-        // We cannot check without a path, so assume it's fine.
-        if (!isset($image['path'])) {
-            return true;
-        }
-
-        return (self::get_file_size($image) <= $max_size);
-    }
-
-    /**
-     * Get the image file size.
-     *
-     * @param array $image An image array object.
-     *
-     * @return int The file size in bytes.
-     */
-    public static function get_file_size($image)
-    {
-        if (isset($image['filesize'])) {
-            return $image['filesize'];
-        }
-
-        // If the file size for the file is over our limit, we're going to go for a smaller version.
-        // @todo Save the filesize to the image metadata.
-        // phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged -- If file size doesn't properly return, we'll not fail.
-        return @filesize(self::get_absolute_path($image['path']));
-    }
-
-    /**
-     * Finds the full file path for a given image file.
-     *
-     * @param string $path The relative file path.
-     *
-     * @return string The full file path.
-     */
-    public static function get_absolute_path($path)
-    {
-        static $uploads;
-
-        if ($uploads === null) {
-            $uploads = wp_get_upload_dir();
-        }
-
-        // Add the uploads basedir if the path does not start with it.
-        if (empty($uploads['error']) && strpos($path, $uploads['basedir']) !== 0) {
-            return $uploads['basedir'] . DIRECTORY_SEPARATOR . ltrim($path, DIRECTORY_SEPARATOR);
-        }
-
-        return $path;
     }
 
     /**
@@ -448,12 +444,40 @@ class Images
             return [];
         }
 
-        preg_match_all('`<img [^>]+>`', $content, $matches);
-        if (isset($matches[0])) {
-            return $matches[0];
+        preg_match_all('#<img[^>]+src="([^">]+)"#', $content, $matches);
+
+        if (isset($matches[1])) {
+            return $matches[1];
         }
 
         return [];
+    }
+
+    /**
+     * Removes image dimensions from the slug of a URL.
+     *
+     * @param string $url The image URL.
+     * @return string      The formatted image URL.
+     * @since 1.2.0
+     *
+     */
+    public function removeImageDimensions($url)
+    {
+        return $this->isValidAttachment($url) ? preg_replace('#(-[0-9]*x[0-9]*)#', '', $url) : $url;
+    }
+
+    /**
+     * Checks whether the given URL is a valid attachment.
+     *
+     * @param string $url The URL.
+     * @return boolean      Whether the URL is a valid attachment.
+     * @since 1.2.0
+     *
+     */
+    public function isValidAttachment($url)
+    {
+        $uploadDirUrl = wpfseo()->string->escapeRegex(shzn()->utility->wp_upload_dir['baseurl']);
+        return preg_match("/$uploadDirUrl.*/", $url);
     }
 
     /**

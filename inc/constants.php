@@ -1,7 +1,5 @@
 <?php
 
-const WPFS_VERSION = '1.1.0';
-
-const WPFS_NAMESPACE = "WPFS";
+const WPFS_VERSION = '1.2.0';
 
 define('WPFS_DEBUG', $_SERVER["SERVER_ADDR"] === '127.0.0.1');

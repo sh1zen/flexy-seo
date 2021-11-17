@@ -18,7 +18,7 @@ class Generator
 {
     /**
      * @var CurrentPage
-    */
+     */
     protected $current_page;
 
     protected $settings_path;
@@ -49,6 +49,9 @@ class Generator
 
         if (!empty($code = shzn('wpfs')->settings->get('seo.webmaster.baidu.vercode', '')))
             $codes['baidu-site-verification'] = $code;
+
+        if (!empty($code = shzn('wpfs')->settings->get('seo.webmaster.bing.vercode', '')))
+            $codes['msvalidate.01'] = $code;
 
         if (!empty($code = shzn('wpfs')->settings->get('seo.webmaster.yandex.vercode', '')))
             $codes['yandex-verification'] = $code;
@@ -123,7 +126,7 @@ class Generator
 
     public function schema()
     {
-        $schema = new Schema();
+        $schema = new Schema($this);
 
         $schema->build();
 
@@ -155,7 +158,7 @@ class Generator
 
         $rewriter = Rewriter::get_instance();
 
-        $page = max($this->current_page->get('paged', 0), 1) + $shift;
+        $page = $this->get_page_number() + $shift;
 
         $max_pages = $this->current_page->get_main_query()->max_num_pages;
 
@@ -169,6 +172,13 @@ class Generator
         $this->set_cache("permalink-{$shift}", $url);
 
         return $url;
+    }
+
+    public function get_page_number()
+    {
+        $page = get_query_var('page');
+        $paged = get_query_var('paged');
+        return !empty($page) ? $page : (!empty($paged) ? $paged : 1);
     }
 
     /**
@@ -218,8 +228,9 @@ class Generator
      */
     public function generate_rel_prev()
     {
-        if ($this->current_page->is_paged() or $this->current_page->get_main_query()->max_num_pages)
+        if ($this->current_page->is_paged() or $this->current_page->get_main_query()->max_num_pages) {
             return $this->get_paged_permalink(-1);
+        }
 
         return '';
     }
@@ -231,8 +242,9 @@ class Generator
      */
     public function generate_rel_next()
     {
-        if ($this->current_page->is_paged() or $this->current_page->get_main_query()->max_num_pages)
+        if ($this->current_page->is_paged() or $this->current_page->get_main_query()->max_num_pages) {
             return $this->get_paged_permalink(1);
+        }
 
         return '';
     }
@@ -376,8 +388,12 @@ class Generator
 
         if (shzn('wpfs')->settings->get("seo.social.twitter.card", false)) {
             $tc->add_card(shzn('wpfs')->settings->get("seo.social.twitter.large_images", true) ? 'summary_large_image' : 'summary');
-            $tc->add_creator(shzn('wpfs')->settings->get("seo.social.twitter.name", ''));
-            $tc->add_site(shzn('wpfs')->settings->get("seo.social.twitter.name", ''));
+
+            preg_match('/(https?:\/\/twitter\.com\/)?(?<name>[^\?]+)(\??.*)?/i', shzn('wpfs')->settings->get("seo.social.twitter.url", ''), $m);
+            $twitterName = '@' . trim($m['name'], ' @');
+
+            $tc->add_creator($twitterName);
+            $tc->add_site($twitterName);
         }
 
         return $tc;

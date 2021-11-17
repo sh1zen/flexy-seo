@@ -60,13 +60,16 @@ class XRE_MetaBox
 
             $value = $metas[$meta_name];
 
-            if (isset($field_meta['sanitize_callback']) and is_callable($field_meta['sanitize_callback']))
+            if (isset($field_meta['sanitize_callback']) and is_callable($field_meta['sanitize_callback'])) {
                 $value = call_user_func($field_meta['sanitize_callback'], $value);
+            }
 
-            if (empty($value))
+            if (empty($value)) {
                 Options::remove($post_id, $meta_name, "customMeta");
-            else
+            }
+            else {
                 Options::update($post_id, $meta_name, $value, "customMeta");
+            }
         }
     }
 

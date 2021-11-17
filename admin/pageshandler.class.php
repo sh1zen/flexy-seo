@@ -68,7 +68,6 @@ class PagesHandler
     {
         wp_enqueue_style('wpfs_css');
         wp_enqueue_script('wpfs_js');
-
     }
 
     public function render_core_settings()
@@ -96,9 +95,11 @@ class PagesHandler
     {
         $assets_url = PluginInit::getInstance()->plugin_base_url;
 
-        wp_register_style('wpfs_css', $assets_url . 'assets/style.css', ['vendor-shzn-css']);
+        $min = shzn()->utility->online ? '.min' : '';
 
-        wp_register_script('wpfs_js', $assets_url . 'assets/settings.js', ['jquery', 'vendor-shzn-js']);
+        wp_register_style('wpfs_css', "{$assets_url}assets/style{$min}.css", ['vendor-shzn-css']);
+
+        wp_register_script('wpfs_js', "{$assets_url}assets/settings{$min}.js", ['jquery', 'vendor-shzn-js']);
 
         wp_localize_script('wpfs_js', 'wpfs', array(
             'strings' => array(
@@ -115,79 +116,79 @@ class PagesHandler
     {
         $this->enqueue_scripts();
         ?>
-        <section class="wpfs wpfs-wrap">
-            <block class="wpfs">
-                <section class='wpfs-header'><h1>FAQ</h1></section>
+        <section class="shzn-wrap">
+            <block class="shzn">
+                <section class='shzn-header'><h1>FAQ</h1></section>
                 <br>
-                <div class="wpfs-faq-list">
-                    <div class="wpfs-faq-item">
-                        <div class="wpfs-faq-question-wrapper ">
-                            <div class="wpfs-faq-question wpfs-collapse-handler"><?php echo __('How Flexy-Breadcrumbs works?', 'wpfs') ?>
-                                <icon class="wpfs-collapse-icon">+</icon>
+                <div class="shzn-faq-list">
+                    <div class="shzn-faq-item">
+                        <div class="shzn-faq-question-wrapper ">
+                            <div class="shzn-faq-question shzn-collapse-handler"><?php echo __('How Flexy-Breadcrumbs works?', 'wpfs') ?>
+                                <icon class="shzn-collapse-icon">+</icon>
                             </div>
-                            <div class="wpfs-faq-answer wpfs-collapse">
+                            <div class="shzn-faq-answer shzn-collapse">
                                 <p><?php echo __('To use Breadcrumbs put this code in your theme, exactly where you want breadcrumbs to be displayed.', 'wpfs'); ?></p>
                                 <code>&lt;?php if(function_exists('wpfs_breadcrumb')) wpfs_breadcrumb($pre='', $after=''); ?&gt;</code><br>
                                 <p><?php echo __('You can use your own $pre and $after wrapper, default value is no wrapper.', 'wpfs'); ?></p>
-                                <b><?php echo __('Options:', 'wpfs'); ?></b>
-                                <ul class="wpfs-ulli">
+                                <strong><?php echo __('Options:', 'wpfs'); ?></strong>
+                                <ul class="shzn-ulli">
                                     <li><?php echo __('In Breadcrumb page configure your options and set up your breadcrumb structure for each entity.', 'wpfs'); ?></li>
                                     <li><?php echo __('With flexed breadcrumb is possible to personalize the crumb structure with personalized url or text:', 'wpfs'); ?>
-                                        <ul class="wpfs-ulli">
+                                        <ul class="shzn-ulli">
                                             <li>
-                                                <b><?php echo __('>>', 'wpfs'); ?></b> : <?php echo __('separate each crumb', 'wpfs'); ?>
+                                                <strong><?php echo __('>>', 'wpfs'); ?></strong> : <?php echo __('separate each crumb', 'wpfs'); ?>
                                             </li>
                                             <li>
-                                                <b>[<?php echo __('Text', 'wpfs'); ?>]</b> : <?php echo __('Text will be considered only for the breadcrumb text.', 'wpfs'); ?>
+                                                <strong>[<?php echo __('Text', 'wpfs'); ?>]</strong> : <?php echo __('Text will be considered only for the breadcrumb text.', 'wpfs'); ?>
                                             </li>
                                             <li>
-                                                <b>(<?php echo __('Text', 'wpfs'); ?>)</b> : <?php echo __('Text will be considered only for the breadcrumb link.', 'wpfs'); ?>
+                                                <strong>(<?php echo __('Text', 'wpfs'); ?>)</strong> : <?php echo __('Text will be considered only for the breadcrumb link.', 'wpfs'); ?>
                                             </li>
                                             <li>
-                                                <b><?php echo __('/custom/link/', 'wpfs'); ?></b> : <?php echo __('Specify a custom link structure.', 'wpfs'); ?>
+                                                <strong><?php echo __('/custom/link/', 'wpfs'); ?></strong> : <?php echo __('Specify a custom link structure.', 'wpfs'); ?>
                                             </li>
                                             <li>
-                                                <b><?php echo __('%%{query_var}%%', 'wpfs'); ?></b> : <?php echo __('Replace the value of the corresponding query_var specified, if not available it will be discarded.', 'wpfs'); ?>
+                                                <strong><?php echo __('%%{query_var}%%', 'wpfs'); ?></strong> : <?php echo __('Replace the value of the corresponding query_var specified, if not available it will be discarded.', 'wpfs'); ?>
                                             </li>
                                             <li>
-                                                <b><?php echo __('%%meta_{var}%%', 'wpfs'); ?></b> : <?php echo __('Replace the meta variable of the current queried object, if not available it will be discarded.', 'wpfs'); ?>
+                                                <strong><?php echo __('%%meta_{var}%%', 'wpfs'); ?></strong> : <?php echo __('Replace the meta variable of the current queried object, if not available it will be discarded.', 'wpfs'); ?>
                                             </li>
                                             <li>
-                                                <b><?php echo __('%%home%%', 'wpfs'); ?></b> : <?php echo __('Replace the home text and home url.', 'wpfs'); ?>
+                                                <strong><?php echo __('%%home%%', 'wpfs'); ?></strong> : <?php echo __('Replace the home text and home url.', 'wpfs'); ?>
                                             </li>
                                             <li>
-                                                <b><?php echo __('%%taxonomy%%', 'wpfs'); ?></b> : <?php echo __('Replace the taxonomy of the current queried object', 'wpfs'); ?>
+                                                <strong><?php echo __('%%taxonomy%%', 'wpfs'); ?></strong> : <?php echo __('Replace the taxonomy of the current queried object', 'wpfs'); ?>
                                             </li>
                                             <li>
-                                                <b><?php echo __('%%category%%', 'wpfs'); ?></b> : <?php echo __('Replace the category of the current queried object, if it\'s hierarchical will generate multiple breadcrumbs.', 'wpfs'); ?>
+                                                <strong><?php echo __('%%category%%', 'wpfs'); ?></strong> : <?php echo __('Replace the category of the current queried object, if it\'s hierarchical will generate multiple breadcrumbs.', 'wpfs'); ?>
                                             </li>
                                             <li>
-                                                <b><?php echo __('%%post_parent%%', 'wpfs'); ?></b> : <?php echo __('Replace the parent post of the current queried object.', 'wpfs'); ?>
+                                                <strong><?php echo __('%%post_parent%%', 'wpfs'); ?></strong> : <?php echo __('Replace the parent post of the current queried object.', 'wpfs'); ?>
                                             </li>
                                             <li>
-                                                <b><?php echo __('%%post_type%%', 'wpfs'); ?></b> : <?php echo __('Replace the post type of the current queried object.', 'wpfs'); ?>
+                                                <strong><?php echo __('%%post_type%%', 'wpfs'); ?></strong> : <?php echo __('Replace the post type of the current queried object.', 'wpfs'); ?>
                                             </li>
                                             <li>
-                                                <b><?php echo __('%%queried_object%%', 'wpfs'); ?></b> : <?php echo __('Replace the title and link of the current queried object.', 'wpfs'); ?>
+                                                <strong><?php echo __('%%queried_object%%', 'wpfs'); ?></strong> : <?php echo __('Replace the title and link of the current queried object.', 'wpfs'); ?>
                                             </li>
                                         </ul>
                                         <br>
-                                        <i><b><?php echo __('Example: %%home%% >> (/%%meta_var%%-%%custom_var%%/)%%category%% >> %%queried_object%%', 'wpfs'); ?></b></i>
+                                        <em><strong><?php echo __('Example: %%home%% >> (/%%meta_var%%-%%custom_var%%/)%%category%% >> %%queried_object%%', 'wpfs'); ?></strong></em>
                                         <br>
                                         <br>
                                     </li>
-                                    <li><?php echo __('Filter <i>wpfs_breadcrumb_style</i> to change the default css applied', 'wpfs'); ?></li>
-                                    <li><?php echo __('Filter <i>wpfs_breadcrumb_replacements</i> to add or change replacements based on flexed breadcrumbs, if enabled.<br><strong>return format must be array(array(\'text\' =>, \'url\' => ))</strong>', 'wpfs'); ?></li>
+                                    <li><?php echo __('Filter <em>wpfs_breadcrumb_style</em> to change the default css applied', 'wpfs'); ?></li>
+                                    <li><?php echo __('Filter <em>wpfs_breadcrumb_replacements</em> to add or change replacements based on flexed breadcrumbs, if enabled.<br><strong>return format must be array(array(\'text\' =>, \'url\' => ))</strong>', 'wpfs'); ?></li>
                                 </ul>
                             </div>
                         </div>
                     </div>
-                    <div class="wpfs-faq-item">
-                        <div class="wpfs-faq-question-wrapper ">
-                            <div class="wpfs-faq-question wpfs-collapse-handler"><?php echo __('How Flexy-SEO works?', 'wpfs') ?>
-                                <icon class="wpfs-collapse-icon">+</icon>
+                    <div class="shzn-faq-item">
+                        <div class="shzn-faq-question-wrapper ">
+                            <div class="shzn-faq-question shzn-collapse-handler"><?php echo __('How Flexy-SEO works?', 'wpfs') ?>
+                                <icon class="shzn-collapse-icon">+</icon>
                             </div>
-                            <div class="wpfs-faq-answer wpfs-collapse">
+                            <div class="shzn-faq-answer shzn-collapse">
                                 <p><?php echo __('Uses replacements to construct the perfect description or keywords for each page.', 'wpfs'); ?></p>
                                 <br>
                                 <?php echo sprintf(__('See about replacements <a href="%s">here</a>.', 'wpfs'), admin_url('admin.php?page=seo#seo-vars')); ?>
@@ -216,31 +217,30 @@ class PagesHandler
         $conf_level = round((count(array_filter($conf)) / count($conf)) * 100);
 
         ?>
-        <section class="wpfs-wrap-flex wpfs-wrap wpfs-home">
-            <section class="wpfs">
-                <block class="wpfs-header">
+        <section class="shzn-wrap-flex shzn-wrap shzn-home">
+            <section class="shzn">
+                <block class="shzn-header">
                     <h1>Flexy SEO</h1>
-                    <h3><strong><?php _e('Optimize your WordPress SEO in few easy steps.', 'wpfs'); ?></strong>
-                    </h3>
                 </block>
-                <block class="wpfs">
+                <block class="shzn">
                     <h2><?php _e('Configuration:', 'wpfs'); ?></h2>
                     <p>
                         <?php
-                        echo '<div><b>' . sprintf(__('Configuration level %s', 'wpfs'), $conf_level) . '%</b></div><br>';
-                        echo '<div><b>' . sprintf(__('Configure Breadcrumbs options: <a href="%s">here</a>.', 'wpfs'), admin_url('admin.php?page=breadcrumbs')) . '</b></div><br>';
-                        echo '<div><b>' . sprintf(__('Configure SEO options: <a href="%s">here</a>.', 'wpfs'), admin_url('admin.php?page=seo')) . '</b></div><br>';
+                        $color = $conf_level > 75 ? '#00e045' : ($conf_level > 45 ? '#e7f100' : '#f10000');
+                        echo "<div class='shzn-progressbarCircle' data-percent='{$conf_level}' data-stroke='2' data-size='155' data-color='{$color}'></div>";
+                        echo '<div class="shzn-highlighted">' . sprintf(__('Configure SEO options: <a href="%s">here</a>.', 'wpfs'), admin_url('admin.php?page=seo')) . '</div>';
+                        echo '<div class="shzn-highlighted">' . sprintf(__('Configure Breadcrumbs options: <a href="%s">here</a>.', 'wpfs'), admin_url('admin.php?page=breadcrumbs')) . '</div>';
                         ?>
                     </p>
                 </block>
                 <?php
                 if (!is_plugin_active('wp-optimizer/wp-optimizer.php')) {
                     ?>
-                    <block class="wpfs">
+                    <block class="shzn">
                         <h2><?php _e('Tips:', 'wpfs'); ?></h2>
                         <h3>
                             <?php
-                            echo '<b>' . __('For a better SEO optimization, it\'s recommended to install also <a href="https://wordpress.org/plugins/wp-optimizer/">this</a> plugin.', 'wpfs') . '</b>';
+                            echo '<strong>' . __('For a better SEO optimization, it\'s recommended to install also <a href="https://wordpress.org/plugins/wp-optimizer/">this</a> plugin.', 'wpfs') . '</strong>';
                             ?>
                         </h3>
                     </block>
@@ -248,25 +248,25 @@ class PagesHandler
                 }
                 ?>
             </section>
-            <aside class="wpfs">
-                <section class="wpfs-box">
-                    <div class="dn-wrap">
-                        <div class="dn-title"><?php _e('Support this project, buy me a coffee.', 'wpfs'); ?></div>
+            <aside class="shzn">
+                <section class="shzn-box">
+                    <div class="shzn-donation-wrap">
+                        <div class="shzn-donation-title"><?php _e('Support this project, buy me a coffee.', 'wpfs'); ?></div>
                         <br>
                         <a href="https://www.paypal.com/donate/?business=dev.sh1zen%40outlook.it&item_name=Thank+you+in+advanced+for+the+kind+donations.+You+will+sustain+me+building+better+software.&currency_code=EUR">
                             <img src="https://www.paypalobjects.com/en_US/IT/i/btn/btn_donateCC_LG.gif"
                                  title="PayPal - The safer, easier way to pay online!" alt="Donate with PayPal button"/>
                         </a>
-                        <div class="dn-hr"></div>
-                        <div class="dn-btc">
-                            <div class="dn-name">BTC:</div>
-                            <p class="dn-value">3QE5CyfTxb5kufKxWtx4QEw4qwQyr9J5eo</p>
+                        <div class="shzn-donation-hr"></div>
+                        <div class="shzn-donation-btc">
+                            <div class="shzn-donation-name">BTC:</div>
+                            <p class="shzn-donation-value">3QE5CyfTxb5kufKxWtx4QEw4qwQyr9J5eo</p>
                         </div>
                     </div>
                 </section>
-                <section class="wpfs-box">
+                <section class="shzn-box">
                     <h3><?php _e('Want to support in other ways?', 'wpfs'); ?></h3>
-                    <ul class="wpfs">
+                    <ul class="shzn">
                         <li>
                             <a href="https://translate.wordpress.org/projects/wp-plugins/flexy-seo/"><?php _e('Help me translating', 'wpfs'); ?></a>
                         </li>
@@ -275,7 +275,7 @@ class PagesHandler
                         </li>
                     </ul>
                     <h3>Flexy SEO:</h3>
-                    <ul class="wpfs">
+                    <ul class="shzn">
                         <li>
                             <a href="https://github.com/sh1zen/flexy-seo/"><?php _e('Source code', 'wpfs'); ?></a>
                         </li>

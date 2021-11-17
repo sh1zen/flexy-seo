@@ -3,7 +3,7 @@ Contributors: sh1zen
 Tags: SEO, Breadcrumbs, Content analysis, Readability, Schema 
 Donate link: https://www.paypal.com/donate?business=dev.sh1zen%40outlook.it&item_name=Thank+you+in+advanced+for+the+kind+donations.+You+will+sustain+me+building+better+software.&currency_code=EUR
 Requires at least: 4.6.0
-Tested up to: 5.8
+Tested up to: 5.9
 Requires PHP: 5.3 
 Stable tag: 1.2.0
 License: GNU v3.0 License
@@ -104,16 +104,20 @@ work! Otherwise, go to the new added module "Setting" and try a reset.
 == Upgrade Notice ==
 
 = 1.2.0 =
- * Welcome to Flexy SEO, now supporting schema!
+ * Welcome to Flexy SEO, now supporting @schema.org!
 
 == Changelog ==
 
 = 1.2.0 =
 
 * updated translations
-* added schema support, enabled by default
-* rewritten core code to be a shared framework with WP-Optimizer to ensure best performances
+* added @schema.org support
+* added integration with WordPress media uploader
+* improved user interface
+* rewritten core code to be a shared framework with WP-Optimizer to ensure the best performances if both are installed
+* extended WordPress support to version 5.9
 * moved minimum WordPress support to version 4.6.0
+
 
 = 1.1.1 =
 

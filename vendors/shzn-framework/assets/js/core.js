@@ -1,3 +1,9 @@
+/**
+ * @author    sh1zen
+ * @copyright Copyright (C)  2021
+ * @license   http://www.gnu.org/licenses/gpl.html GNU/GPL
+ */
+
 "use strict";
 
 function SHZNSemaphore() {
@@ -68,10 +74,10 @@ function shzn_ajaxHandler(options) {
 
                 let res = shzn_is_json(jqXHR.responseText);
 
-                if(!res)
+                if (!res)
                     res = jqXHR.responseText;
 
-                if(typeof res.data !== 'undefined')
+                if (typeof res.data !== 'undefined')
                     setTimeout(options.callback(res.data, res.success), 100);
                 else
                     setTimeout(options.callback(res, res.success), 100);
@@ -116,15 +122,15 @@ function shzn_ajaxHandler(options) {
         // Store current URL hash.
         let hash = window.location.hash.substring(1);
 
-        if (!$tabs instanceof $) {
-            console.log("Error initializing flex_tabHandler");
+        if (!($tabs instanceof jQuery)) {
+            console.log("Error initializing shzn_tabHandler");
             return;
         }
 
         if ($tabs.length === 0)
             return;
 
-        let $tab_list = $tabs.find(".ar-tablist");
+        let $tab_list = $tabs.find(".shzn-ar-tablist");
 
         if ($tab_list.length === 0)
             return;
@@ -137,8 +143,8 @@ function shzn_ajaxHandler(options) {
         $tab_list.each(function () {
 
             let $this_tab_list = $(this),
-                $this_tab_list_items = $this_tab_list.children(".ar-tab"),
-                $this_tab_list_links = $this_tab_list.find(".ar-tab_link");
+                $this_tab_list_items = $this_tab_list.children(".shzn-ar-tab"),
+                $this_tab_list_links = $this_tab_list.find(".shzn-ar-tab_link");
 
             // roles init
             $this_tab_list.attr("role", "tablist"); // ul
@@ -166,7 +172,7 @@ function shzn_ajaxHandler(options) {
         /**
          * handle tab content
          */
-        $(".ar-tabcontent").attr({
+        $(".shzn-ar-tabcontent").attr({
             "role": "tabpanel", // contents
             "aria-hidden": "true", // all hidden
             //"tabindex": -1
@@ -180,17 +186,17 @@ function shzn_ajaxHandler(options) {
         // search if hash is ON not disabled tab
         if (hash !== "") {
 
-            let $tab_content = $("#" + hash + ".ar-tabcontent");
+            let $tab_content = $("#" + hash + ".shzn-ar-tabcontent");
 
             if ($tab_content.length !== 0) {
 
-                if ($("#lbl_" + hash + ".ar-tab_link:not([aria-disabled='true'])").length) {
+                if ($("#lbl_" + hash + ".shzn-ar-tab_link:not([aria-disabled='true'])").length) {
 
                     // display not disabled
                     $tab_content.removeAttr("aria-hidden");
 
                     // selection menu
-                    $("#lbl_" + hash + ".ar-tab_link").attr({
+                    $("#lbl_" + hash + ".shzn-ar-tab_link").attr({
                         "aria-selected": "true",
                         "tabindex": 0
                     });
@@ -204,8 +210,8 @@ function shzn_ajaxHandler(options) {
         // if no selected => select first not disabled
         $tabs.each(function () {
             let $this = $(this),
-                $tab_selected = $this.find('.ar-tab_link[aria-selected="true"]'),
-                $first_link = $this.find('.ar-tab_link:not([aria-disabled="true"]):first'),
+                $tab_selected = $this.find('.shzn-ar-tab_link[aria-selected="true"]'),
+                $first_link = $this.find('.shzn-ar-tab_link:not([aria-disabled="true"]):first'),
                 $first_content = $('#' + $first_link.attr('aria-controls'));
 
             if ($tab_selected.length === 0) {
@@ -219,19 +225,19 @@ function shzn_ajaxHandler(options) {
 
         /* Events ---------------------------------------------------------------------------------------------------------- */
         /* click on a tab link disabled */
-        $body.on("click", ".ar-tab_link[aria-disabled='true']", function (e) {
+        $body.on("click", ".shzn-ar-tab_link[aria-disabled='true']", function (e) {
             e.preventDefault();
         });
 
-        $body.on("click", ".ar-tab_link:not([aria-disabled='true'])", function (event) {
+        $body.on("click", ".shzn-ar-tab_link:not([aria-disabled='true'])", function (event) {
 
             let $this = $(this),
                 $hash_to_update = $this.attr("aria-controls"),
                 $tab_content_linked = $("#" + $this.attr("aria-controls")),
-                $parent = $this.closest(".ar-tabs"),
+                $parent = $this.closest(".shzn-ar-tabs"),
 
-                $all_tab_links = $parent.find(".ar-tab_link"),
-                $all_tab_contents = $parent.find(".ar-tabcontent"),
+                $all_tab_links = $parent.find(".shzn-ar-tab_link"),
+                $all_tab_contents = $parent.find(".shzn-ar-tabcontent"),
 
                 $form = $tab_content_linked.find('#shzn-uoptions');
 
@@ -265,30 +271,30 @@ function shzn_ajaxHandler(options) {
         });
 
         /* Key down in tabs */
-        $body.on("keydown", ".ar-tablist", function (event) {
+        $body.on("keydown", ".shzn-ar-tablist", function (event) {
 
-            let $parent = $(this).closest('.ar-tabs');
+            let $parent = $(this).closest('.shzn-ar-tabs');
 
             // some event should be activated only if the focus is on tabs (not on tabpanel)
-            if (!$(document.activeElement).is($parent.find('.ar-tab_link'))) {
+            if (!$(document.activeElement).is($parent.find('.shzn-ar-tab_link'))) {
                 return;
             }
 
             // catch keyboard event only if focus is on tab
             if (!event.ctrlKey) {
 
-                let $activated = $parent.find('.ar-tab_link[aria-selected="true"]').parent();
+                let $activated = $parent.find('.shzn-ar-tab_link[aria-selected="true"]').parent();
 
                 // strike left in the tab
                 if (event.keyCode === 37) {
 
-                    let $last_link = $parent.find('.ar-tab:last-child .ar-tab_link'),
+                    let $last_link = $parent.find('.shzn-ar-tab:last-child .shzn-ar-tab_link'),
                         $prev = $activated;
 
                     // search valid previous
                     do {
                         // if we are on first => activate last
-                        if ($prev.is(".ar-tab:first-child")) {
+                        if ($prev.is(".shzn-ar-tab:first-child")) {
                             $prev = $last_link.parent();
                         }
                         // else previous
@@ -296,22 +302,22 @@ function shzn_ajaxHandler(options) {
                             $prev = $prev.prev();
                         }
                     }
-                    while ($prev.children('.ar-tab_link').attr('aria-disabled') === 'true' && $prev !== $activated);
+                    while ($prev.children('.shzn-ar-tab_link').attr('aria-disabled') === 'true' && $prev !== $activated);
 
-                    $prev.children(".ar-tab_link").click().focus();
+                    $prev.children(".shzn-ar-tab_link").click().focus();
 
                     event.preventDefault();
                 }
                 // strike  right in the tab
                 else if (event.keyCode === 39) {
 
-                    let $first_link = $parent.find('.ar-tab:first-child .ar-tab_link'),
+                    let $first_link = $parent.find('.shzn-ar-tab:first-child .shzn-ar-tab_link'),
                         $next = $activated;
 
                     // search valid next
                     do {
                         // if we are on last => activate first
-                        if ($next.is(".ar-tab:last-child")) {
+                        if ($next.is(".shzn-ar-tab:last-child")) {
                             $next = $first_link.parent();
                         }
                         // else previous
@@ -319,9 +325,9 @@ function shzn_ajaxHandler(options) {
                             $next = $next.next();
                         }
                     }
-                    while ($next.children('.ar-tab_link').attr('aria-disabled') === 'true' && $next !== $activated);
+                    while ($next.children('.shzn-ar-tab_link').attr('aria-disabled') === 'true' && $next !== $activated);
 
-                    $next.children(".ar-tab_link").click().focus();
+                    $next.children(".shzn-ar-tab_link").click().focus();
 
                     event.preventDefault();
 
@@ -331,7 +337,69 @@ function shzn_ajaxHandler(options) {
         });
     };
 
+    function handleDependent(parent, visible = true, deep = true) {
+
+        $('.shzn *[data-parent*="' + parent + '"]').each(function () {
+            let $this = $(this),
+                cntx = $this,
+                visibleAction = $this.data('parent').charAt(0) === "!" ? !visible : visible;
+
+            if (!$this.hasClass('shzn-separator')) {
+                cntx = $this.closest('tr');
+            }
+
+            if ($this.is('input')) {
+                $this.prop("readonly", !visibleAction);
+            }
+
+            if (deep && this.id) {
+                handleDependent(this.id, visible, deep)
+            }
+
+            visibleAction ? cntx.removeClass('shzn-disabled-blur') : cntx.addClass('shzn-disabled-blur');
+        });
+    }
+
+    function createCircleChart(percent, color, size, stroke) {
+        return `<svg class="shzn-progressbarCircle__chart" viewbox="0 0 36 36" width="${size}" height="${size}" xmlns="http://www.w3.org/2000/svg">
+        <path class="shzn-progressbarCircle__bg" stroke="#eeeeee" stroke-width="${stroke * 0.5}" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+        <path class="shzn-progressbarCircle__stroke" stroke="${color}" stroke-width="${stroke}" stroke-dasharray="${percent},100" stroke-linecap="round" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+        <text class="shzn-progressbarCircle__info" x="50%" y="50%" alignment-baseline="central" text-anchor="middle" font-size="8">${percent}%</text></svg>`;
+    }
+
     $document.ready(function () {
+
+        let media_uploader;
+        $(".shzn-uploader__init").on('click', function (e) {
+            e.preventDefault();
+            let btn_uploader = $(this);
+            if (media_uploader) {
+                media_uploader.open();
+                return;
+            }
+            media_uploader = wp.media({
+                title: 'Upload media',
+                library: {type: btn_uploader.data('type') || 'image'},
+                multiple: false
+            }).on('select', function (e) {
+                // This will return the selected media from the Media Uploader, the result is an object
+                let uploaded_media = media_uploader.state().get('selection').first();
+                // Convert uploaded_media to a JSON object to make accessing it easier
+                let media_url = uploaded_media.toJSON().url;
+                // Assign the url value to the input field
+                btn_uploader.parent().find('input').val(media_url);
+            }).open();
+        });
+
+        $('.shzn-progressbarCircle').each((i, chart) => {
+            let $chart = $(chart);
+            let percent = $chart.data("percent") || 0,
+                color = $chart.data("color") || "var(--main-dark-color)",
+                size = $chart.data("size") || 100,
+                stroke = $chart.data("stroke") || 1;
+
+            $chart.html(createCircleChart(percent, color, size, stroke));
+        })
 
         $(".shzn-collapse-handler").on("click", function () {
             let $this = $(this);
@@ -339,17 +407,33 @@ function shzn_ajaxHandler(options) {
             $this.next().toggle(300);
         });
 
-        shzn_tabHandler($('.ar-tabs'));
+        $(".shzn-dropdown").on("click", ".shzn-dropdown__opener", function (event) {
+
+            event.preventDefault();
+
+            let $dropDown = $(this).closest(".shzn-dropdown");
+
+            $dropDown.find(".shzn-multiselect__wrapper").slideToggle();
+            $dropDown.toggleClass("is-open");
+
+            $dropDown.off("click", "li");
+            $dropDown.on("click", "li", function (e) {
+                e.stopPropagation();
+                let $selectedLI = $(this);
+
+                $dropDown.find("input").val($selectedLI.data('value'));
+
+                $dropDown.find(".shzn-multiselect__wrapper").slideToggle();
+                $dropDown.toggleClass("is-open");
+            });
+        });
+
+        shzn_tabHandler($('.shzn-ar-tabs'));
 
         $(".shzn-apple-switch").each(function () {
 
             if (!$(this).prop('checked')) {
-                $('input[data-parent="' + this.id + '"]').each(function () {
-                    let $this = $(this);
-
-                    $this.closest('tr').addClass('shzn-disabled-blur');
-                    $this.prop("readonly", true);
-                });
+                handleDependent(this.id, false)
             }
 
             $(this).on('click', function () {
@@ -358,10 +442,7 @@ function shzn_ajaxHandler(options) {
 
                 if ($this.prop("checked")) {
 
-                    $('input[data-parent="' + this.id + '"]').each(function () {
-                        $(this).closest('tr').removeClass('shzn-disabled-blur');
-                        $(this).prop("readonly", false);
-                    });
+                    handleDependent(this.id)
 
                     let parent = $this.data('parent');
 
@@ -373,12 +454,8 @@ function shzn_ajaxHandler(options) {
                             $parent.prop("checked", true);
                     }
                 } else {
-                    $('input[data-parent="' + this.id + '"]').each(function () {
-                        let $this = $(this);
 
-                        $this.closest('tr').addClass('shzn-disabled-blur');
-                        $this.prop("readonly", true);
-                    });
+                    handleDependent(this.id, false)
                 }
             });
         });
@@ -391,4 +468,4 @@ function shzn_ajaxHandler(options) {
         }
     });
 
-})(jQuery);
+})(jQuery.noConflict());

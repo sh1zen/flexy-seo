@@ -26,8 +26,9 @@ class Title
         // If there is a post
         if (is_attachment() or is_single() or (is_home() and !is_front_page()) or (is_page() and !is_front_page())) {
 
-           if(empty($post_type))
-               $post_type = get_post_type();
+            if (empty($post_type)) {
+                $post_type = get_post_type();
+            }
 
             $title = shzn('wpfs')->settings->get("seo.post_type.{$post_type}.title", $default);
         }

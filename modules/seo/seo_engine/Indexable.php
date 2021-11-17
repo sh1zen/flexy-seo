@@ -16,7 +16,7 @@ class Indexable
 
     /**
      * @var string
-    */
+     */
     public $type;
 
     /**
@@ -24,9 +24,10 @@ class Indexable
      */
     public $object;
 
-    public function __construct(){
+    public function __construct()
+    {
 
-        $this->type =  wpfseo()->currentPage->get_page_type();
+        $this->type = wpfseo()->currentPage->get_page_type();
 
         $this->object_id = wpfseo()->currentPage->get_queried_object_id();
 

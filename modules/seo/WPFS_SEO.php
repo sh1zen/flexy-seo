@@ -20,7 +20,7 @@ class WPFS_SEO
 
     /**
      * @var Helpers
-    */
+     */
     public $helpers;
 
     public $metaBox;
@@ -39,7 +39,7 @@ class WPFS_SEO
 
     private function register_actions()
     {
-        if(!is_admin()) {
+        if (!is_admin()) {
             add_action('wp', array($this, 'set_up'), 1);
 
             remove_action('wp_head', 'rel_canonical');
@@ -98,7 +98,7 @@ class WPFS_SEO
      * @param CurrentPage $current_page
      * @return Generator
      */
-    private function load_generator($current_page)
+    public function load_generator($current_page)
     {
         if ($current_page->is_search()):
             include_once WPFS_SEO_ENGINE . 'generators/template/search-generator.php';

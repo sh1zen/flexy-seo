@@ -83,6 +83,9 @@ class CurrentPage
         return $this->is_term_archive() ? $this->get_queried_object() : null;
     }
 
+    /**
+     * @return \WP_Post
+     */
     public function get_post()
     {
         return $this->is_simple_page() ? $this->get_queried_object() : null;

@@ -18,6 +18,8 @@ require_once WPFS_SEO_ENGINE_HELPERS . 'Images.php';
 require_once WPFS_SEO_ENGINE_HELPERS . 'Post.php';
 require_once WPFS_SEO_ENGINE_HELPERS . 'Term.php';
 require_once WPFS_SEO_ENGINE_HELPERS . 'CurrentPage.php';
+require_once WPFS_SEO_ENGINE_HELPERS . 'StringHelper.php';
+require_once WPFS_SEO_ENGINE_HELPERS . 'Language.php';
 
 require_once WPFS_SEO_ENGINE . 'Helpers.php';
 
@@ -38,8 +40,6 @@ require_once WPFS_SEO_ENGINE_EXTENSIONS . 'XRE_MetaBox.php';
 require_once WPFS_SEO_ENGINE_GENERATORS . 'social/opengraph.php';
 require_once WPFS_SEO_ENGINE_GENERATORS . 'social/twittercard.php';
 require_once WPFS_SEO_ENGINE_GENERATORS . 'schema/schema.php';
-require_once WPFS_SEO_ENGINE_GENERATORS . 'schema/Graph.php';
-
 
 /**
  * @param string $context

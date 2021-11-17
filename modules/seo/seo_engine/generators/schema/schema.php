@@ -9,8 +9,7 @@ namespace FlexySEO\Engine\Generators;
 
 use FlexySEO\core\Options;
 use FlexySEO\Engine\Helpers\CurrentPage;
-
-// C:\Program Files (x86)\EasyPHP-Devserver-17\eds-www\casabitare\cms\extensions\wordpress-seo\src\generators\schema
+use SHZN\core\UtilEnv;
 
 class Schema
 {
@@ -46,7 +45,12 @@ class Schema
     private $schema;
 
     /**
-     * @var \FlexySEO\Engine\Generators\Schema\Graph[]
+     * @var String[]
+     */
+    private $graphTypes;
+
+    /**
+     * @var String[]
      */
     private $graphs;
 
@@ -55,16 +59,30 @@ class Schema
      */
     private $current_page;
 
-    public function __construct()
+    /**
+     * @var \FlexySEO\Engine\Generator
+     */
+    private $generator;
+
+    public function __construct($generator = null)
     {
+        $this->current_page = wpfseo()->currentPage;
+
         $this->schema = [
             "@context" => "https://schema.org",
             "@graph"   => []
         ];
 
+        $this->graphTypes = [];
+
         $this->graphs = [];
 
-        $this->current_page = wpfseo()->currentPage;
+        if (!$generator) {
+            UtilEnv::write_log('Generator not valid in schema.org');
+            $generator = wpfseo('core')->load_generator($this->current_page);
+        }
+
+        $this->generator = $generator;
     }
 
     public function build()
@@ -78,23 +96,23 @@ class Schema
     {
         $cPage = $this->current_page;
 
-        $this->graphs = [
+        $this->graphTypes = [
             'WebSite'
         ];
 
-        if (shzn('wpfs')->settings->get("seo.schema.org.organization", false)) {
-            $this->graphs[] = 'Organization';
+        if (shzn('wpfs')->settings->get("seo.schema.organization", false)) {
+            $this->graphTypes[] = 'Organization';
         }
 
-        $this->graphs[] = 'BreadcrumbList';
+        $this->graphTypes[] = 'BreadcrumbList';
 
         if ($cPage->is_static_posts_page() or $cPage->is_home_posts_page() or wpfseo()->ecommerce->isWooCommerceShopPage()) {
-            $this->graphs[] = 'CollectionPage';
+            $this->graphTypes[] = 'CollectionPage';
             return;
         }
 
         if ($cPage->is_home_static_page() or $cPage->is_front_page()) {
-            $this->graphs[] = 'posts' === get_option('show_on_front') ? 'CollectionPage' : 'WebPage';
+            $this->graphTypes[] = 'posts' === get_option('show_on_front') ? 'CollectionPage' : 'WebPage';
             return;
         }
 
@@ -102,39 +120,39 @@ class Schema
 
             // Check if we're on a BuddyPress member page.
             if (function_exists('bp_is_user') and bp_is_user()) {
-                array_push($this->graphs, 'ProfilePage', 'PersonAuthor');
+                array_push($this->graphTypes, 'ProfilePage', 'PersonAuthor');
                 return;
             }
 
             $postGraphs = $this->getPostGraphs($cPage->get_post());
 
             if (is_array($postGraphs)) {
-                $this->graphs = array_merge($this->graphs, $postGraphs);
+                $this->graphTypes = array_merge($this->graphTypes, $postGraphs);
             }
             else {
-                $this->graphs[] = $postGraphs;
+                $this->graphTypes[] = $postGraphs;
             }
 
             return;
         }
 
         if ($cPage->is_author_archive()) {
-            array_push($this->graphs, 'CollectionPage', 'PersonAuthor');
+            array_push($this->graphTypes, 'CollectionPage', 'PersonAuthor');
             return;
         }
 
         if ($cPage->is_post_type_archive() or $cPage->is_date_archive() or $cPage->is_term_archive()) {
-            $this->graphs[] = 'CollectionPage';
+            $this->graphTypes[] = 'CollectionPage';
             return;
         }
 
         if ($cPage->is_search()) {
-            $this->graphs[] = 'SearchResultsPage';
+            $this->graphTypes[] = 'SearchResultsPage';
             return;
         }
 
         if ($cPage->is_404()) {
-            //$this->graphs[] = '404';
+            //$this->graphTypes[] = '404';
         }
     }
 
@@ -152,7 +170,7 @@ class Schema
         if ($post) {
 
             if ('page' !== $post->post_type) {
-                $this->graphs[] = 'PersonAuthor';
+                $this->graphTypes[] = 'PersonAuthor';
             }
 
             if (wpfseo()->post->get_main_image()) {
@@ -174,37 +192,88 @@ class Schema
 
     private function graphs2schema()
     {
-        $graphs = apply_filters('wpfs_schema_graphs', array_unique(array_filter($this->graphs)), $this->current_page);
+        require_once WPFS_SEO_ENGINE_GENERATORS . 'schema/graph/Graph.php';
+        require_once WPFS_SEO_ENGINE_GENERATORS . 'schema/graph/WebPage.php';
+        require_once WPFS_SEO_ENGINE_GENERATORS . 'schema/graph/Person.php';
+        require_once WPFS_SEO_ENGINE_GENERATORS . 'schema/graph/Article.php';
 
-        flex_var_dump($graphs);
+        $graphTypes = apply_filters('wpfs_schema_graphs', array_unique(array_filter($this->graphTypes)), $this->current_page);
 
-        foreach ($graphs as $graph) {
+        foreach ($graphTypes as $graphType) {
 
-            if (file_exists(WPFS_SEO_ENGINE . 'generators/schema/graph/' . $graph)) {
+            $filter = "wpfs_schema_type_" . strtolower($graphType);
 
-                require_once WPFS_SEO_ENGINE . 'generators/schema/graph/' . $graph;
+            if (file_exists(WPFS_SEO_ENGINE . 'generators/schema/graph/' . $graphType . '.php')) {
 
-                if (class_exists("FlexySEO\Engine\Generators\Schema\\$graph")) {
-                    $namespace = "FlexySEO\Engine\Generators\Schema\\$graph";
+                require_once WPFS_SEO_ENGINE . "generators/schema/graph/{$graphType}.php";
+
+                if (class_exists("FlexySEO\Engine\Generators\Schema\Graphs\\$graphType")) {
+                    $namespace = "FlexySEO\Engine\Generators\Schema\Graphs\\$graphType";
 
                     //if graph is actually a fully qualified class name
-                    if (class_exists($graph)) {
-                        $namespace = $graph;
+                    if (class_exists($graphType)) {
+                        $namespace = $graphType;
                     }
 
-                    $this->add(array_filter((new $namespace)->get()));
+                    $this->add(apply_filters($filter, (new $namespace($this->generator))->get(), $graphType));
                 }
+            }
+            elseif (in_array($graphType, self::$webPageGraphs)) {
+
+                $namespace = "FlexySEO\Engine\Generators\Schema\Graphs\WebPage";
+
+                //if graph is actually a fully qualified class name
+                if (class_exists($graphType)) {
+                    $namespace = $graphType;
+                }
+
+                $this->add(apply_filters($filter, (new $namespace($this->generator))->get($graphType), $graphType));
             }
         }
 
-        $this->schema['@graph'] = apply_filters('wpfs_schema_build', $this->schema['@graph']);
+        $graphs = apply_filters('wpfs_schema_build', $this->graphs, $graphTypes);
 
-        $this->schema['@graph'] = $this->cleanData($this->schema['@graph']);
+        $graphs = $this->validate_type($graphs);
+
+        $graphs = array_values($this->cleanData($graphs));
+
+        $this->schema['@graph'] = $graphs;
     }
 
     public function add($property)
     {
-        $this->schema["@graph"][] = $property;
+        $this->graphs[] = $property;
+    }
+
+    /**
+     * Validates a graph piece's type.
+     *
+     * Ensure the values are unique.
+     * Only 1 value? Use that value without the array wrapping.
+     *
+     * @param array $piece The graph piece.
+     *
+     * @return array The graph piece.
+     */
+    private function validate_type($piece)
+    {
+        if (!isset($piece['@type']) or !\is_array($piece['@type'])) {
+            // No type to validate.
+            return $piece;
+        }
+
+        /*
+         * Ensure the types are unique.
+         * Use array_values to reset the indices (e.g. no 0, 2 because 1 was a duplicate).
+         */
+        $piece['@type'] = \array_values(\array_unique($piece['@type']));
+
+        // Use the first value if there is only 1 type.
+        if (\count($piece['@type']) === 1) {
+            $piece['@type'] = \reset($piece['@type']);
+        }
+
+        return $piece;
     }
 
     /**
@@ -212,7 +281,7 @@ class Schema
      *
      * @param array $data The graph data.
      * @return array       The cleaned graph data.
-     * @since 4.0.13
+     * @since 1.2.0
      *
      */
     private function cleanData($data)
@@ -243,120 +312,13 @@ class Schema
     /**
      * Returns the JSON schema for the requested page.
      *
-     * @return string The JSON schema.
+     * @return \string The JSON schema.
      * @since 1.2.0
      *
      */
     public function export()
     {
         return WPFS_DEBUG ? wp_json_encode($this->schema, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) : wp_json_encode($this->schema);
-
-        ?>
-        <script type="application/hal+json">
-            {
-                "@graph": [
-                    {
-                        "@type": "WebSite",
-                        "@id": "https://casabitare.it/news/#website",
-                        "url": "https://casabitare.it/news/",
-                        "name": "casabitare.it - news",
-                        "description": "Importanti notizia da casabitare.it",
-                        "potentialAction": [
-                            {
-                                "@type": "SearchAction",
-                                "target": {
-                                    "@type": "EntryPoint",
-                                    "urlTemplate": "https://casabitare.it/news/?s={search_term_string}"
-                                },
-                                "query-input": "required name=search_term_string"
-                            }
-                        ],
-                        "inLanguage": "it-IT"
-                    },
-                    {
-                        "@type": "CollectionPage",
-                        "@id": "https://casabitare.it/news/category/immobiliare/#webpage",
-                        "url": "https://casabitare.it/news/category/immobiliare/",
-                        "name": "Immobiliare Archivi - casabitare.it - news",
-                        "isPartOf": {
-                            "@id": "https://casabitare.it/news/#website"
-                        },
-                        "breadcrumb": {
-                            "@id": "https://casabitare.it/news/category/immobiliare/#breadcrumb"
-                        },
-                        "inLanguage": "it-IT",
-                        "potentialAction": [
-                            {
-                                "@type": "ReadAction",
-                                "target": [
-                                    "https://casabitare.it/news/category/immobiliare/"
-                                ]
-                            }
-                        ]
-                    },
-                    {
-                        "@type": "BreadcrumbList",
-                        "@id": "https://casabitare.it/news/category/immobiliare/#breadcrumb",
-                        "itemListElement": [
-                            {
-                                "@type": "ListItem",
-                                "position": 1,
-                                "name": "Home",
-                                "item": "https://casabitare.it/news/"
-                            },
-                            {
-                                "@type": "ListItem",
-                                "position": 2,
-                                "name": "Immobiliare"
-                            }
-                        ]
-                    }
-                ]
-            }
-        </script>
-        <?php
-    }
-
-    /**
-     * Sanitizes a HTML string by stripping all tags except headings, breaks, lists, links, paragraphs and formatting.
-     *
-     * @param string $html The original HTML.
-     *
-     * @return string The sanitized HTML.
-     */
-    private function sanitize($html)
-    {
-        return \strip_tags($html, '<h1><h2><h3><h4><h5><h6><br><ol><ul><li><a><p><b><strong><i><em>');
-    }
-
-    /**
-     * Strips the tags in a smart way.
-     *
-     * @param string $html The original HTML.
-     *
-     * @return string The sanitized HTML.
-     */
-    private function smart_strip_tags($html)
-    {
-        // Replace all new lines with spaces.
-        $html = \preg_replace('/(\r|\n)/', ' ', $html);
-
-        // Replace <br> tags with spaces.
-        $html = \preg_replace('/<br(\s*)?\/?>/i', ' ', $html);
-
-        // Replace closing </p> and other tags with the same tag with a space after it, so we don't end up connecting words when we remove them later.
-        $html = \preg_replace('/<\/(p|div|h\d)>/i', '</$1> ', $html);
-
-        // Replace list items with list identifiers so it still looks natural.
-        $html = \preg_replace('/(<li[^>]*>)/i', '$1• ', $html);
-
-        // Strip tags.
-        $html = \wp_strip_all_tags($html);
-
-        // Replace multiple spaces with one space.
-        $html = \preg_replace('!\s+!', ' ', $html);
-
-        return \trim($html);
     }
 }
 

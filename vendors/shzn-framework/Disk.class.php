@@ -60,12 +60,11 @@ class Disk
 
         if (is_dir($target)) {
 
-            if (empty($identifier))
-            {
+            if (empty($identifier)) {
                 /**
                  * get all folders/files (even the hidden ones)
                  * This will prevent listing "." or ".." in the result
-                */
+                 */
                 $identifier = '{,.}[!.,!..]*';
             }
 
@@ -102,20 +101,14 @@ class Disk
      */
     public static function calc_size($directory)
     {
-        $totalSize = 0;
-        $directoryArray = scandir($directory);
-
-        foreach ($directoryArray as $key => $fileName) {
-            if ($fileName != ".." and $fileName != ".") {
-                if (is_dir($directory . "/" . $fileName)) {
-                    $totalSize = $totalSize + self::calc_size($directory . "/" . $fileName);
-                }
-                else if (is_file($directory . "/" . $fileName)) {
-                    $totalSize = $totalSize + filesize($directory . "/" . $fileName);
-                }
+        $bytesTotal = 0;
+        $path = realpath($directory);
+        if ($path !== false && $path != '' && file_exists($path)) {
+            foreach (new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($path, \FilesystemIterator::SKIP_DOTS)) as $object) {
+                $bytesTotal += $object->getSize();
             }
         }
-        return $totalSize;
+        return $bytesTotal;
     }
 
 
@@ -179,8 +172,9 @@ class Disk
         $search_path = UtilEnv::normalize_path($search_path, true);
 
         // to prevent go upper than ABSPATH
-        if (strpos($search_path, $abspath) === false)
+        if (strpos($search_path, $abspath) === false) {
             $search_path = $abspath;
+        }
 
         $dir_list = scandir($search_path);
 
