@@ -390,6 +390,10 @@ class Generator
             $tc->add_card(shzn('wpfs')->settings->get("seo.social.twitter.large_images", true) ? 'summary_large_image' : 'summary');
 
             preg_match('/(https?:\/\/twitter\.com\/)?(?<name>[^\?]+)(\??.*)?/i', shzn('wpfs')->settings->get("seo.social.twitter.url", ''), $m);
+
+            if(!isset($m['name']))
+                return $tc;
+
             $twitterName = '@' . trim($m['name'], ' @');
 
             $tc->add_creator($twitterName);

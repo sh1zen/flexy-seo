@@ -100,7 +100,7 @@ class Schema
             'WebSite'
         ];
 
-        if (shzn('wpfs')->settings->get("seo.schema.organization", false)) {
+        if (shzn('wpfs')->settings->get("seo.schema.organization.is", false)) {
             $this->graphTypes[] = 'Organization';
         }
 
@@ -177,9 +177,9 @@ class Schema
                 $postGraphs[] = "ImageObject";
             }
 
-            $graphType = Options::get($post->ID, "graphType", "schema", "");
+            $graphType = Options::get($post->ID, "graphType", "customMeta", "");
 
-            if ($graphType) {
+            if (!empty($graphType)) {
                 $postGraphs[] = ucfirst($graphType);
             }
             elseif ($post->post_type !== 'page') {
@@ -193,9 +193,10 @@ class Schema
     private function graphs2schema()
     {
         require_once WPFS_SEO_ENGINE_GENERATORS . 'schema/graph/Graph.php';
-        require_once WPFS_SEO_ENGINE_GENERATORS . 'schema/graph/WebPage.php';
         require_once WPFS_SEO_ENGINE_GENERATORS . 'schema/graph/Person.php';
         require_once WPFS_SEO_ENGINE_GENERATORS . 'schema/graph/Article.php';
+        require_once WPFS_SEO_ENGINE_GENERATORS . 'schema/graph/WebPage.php';
+        require_once WPFS_SEO_ENGINE_GENERATORS . 'schema/graph/Organization.php';
 
         $graphTypes = apply_filters('wpfs_schema_graphs', array_unique(array_filter($this->graphTypes)), $this->current_page);
 

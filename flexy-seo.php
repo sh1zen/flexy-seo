@@ -7,26 +7,17 @@
  * Author URI: https://sh1zen.github.io/
  * Text Domain: wpfs
  * Domain Path: /languages
- * Version: 1.2.0
+ * Version: 1.3.3
  */
+
+const WPFS_VERSION = '1.3.3';
 
 const WPFS_FILE = __FILE__;
 define('WPFS_ABSPATH', dirname(__FILE__) . '/');
-const WPFS_INCPATH = WPFS_ABSPATH . 'inc/';
 const WPFS_MODULES = WPFS_ABSPATH . 'modules/';
 const WPFS_ADMIN = WPFS_ABSPATH . 'admin/';
 const WPFS_ASSETS = WPFS_ABSPATH . 'assets/';
-const WPFS_EXTENSIONS = WPFS_ABSPATH . 'extensions/';
 const WPFS_VENDORS = WPFS_ABSPATH . 'vendors/';
-
-// setup constants
-require_once WPFS_INCPATH . 'constants.php';
-
-// essential
-require_once WPFS_ADMIN . 'Options.class.php';
-
-// main class
-require_once WPFS_ADMIN . 'PluginInit.class.php';
 
 // shzn-framework commons
 if (!defined('SHZN_FRAMEWORK')) {
@@ -42,11 +33,18 @@ shzn('wpfs', ['path' => WPFS_MODULES], [
     'moduleHandler' => true,
 ]);
 
+const WPFS_DEBUG = SHZN_DEBUG;
+
+// essential
+require_once WPFS_ADMIN . 'Options.class.php';
+
+// main class
+require_once WPFS_ADMIN . 'PluginInit.class.php';
+
 /**
  * Starts the plugin.
  */
 FlexySEO\core\PluginInit::Initialize();
-
 
 require_once WPFS_ABSPATH . 'ext_interface/wpfs_functions.php';
 

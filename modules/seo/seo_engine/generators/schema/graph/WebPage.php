@@ -59,7 +59,6 @@ class WebPage extends Graph
 
             if (is_singular() and !is_page()) {
 
-
                 $author = get_author_posts_url($queried_object->post_author);
                 if (!empty($author)) {
                     $data['author'] = $author . '#author';
@@ -86,7 +85,7 @@ class WebPage extends Graph
         }
 
         if (is_front_page()) {
-            $data['about'] = ['@id' => shzn()->utility->home_url . '#' . (shzn('wpfs')->settings->get('seo.schema.organization', false) ? 'organization' : 'person')];
+            $data['about'] = ['@id' => shzn()->utility->home_url . '#' . (shzn('wpfs')->settings->get('seo.schema.organization.is', false) ? 'organization' : 'person')];
         }
 
         return $data;

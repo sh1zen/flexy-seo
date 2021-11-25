@@ -19,9 +19,9 @@ class Utility
 
     public function __construct()
     {
-        $this->home_url = trailingslashit(home_url());;
+        $this->home_url = trailingslashit(\home_url());;
 
-        $this->cu_id = get_current_user_id();
+        $this->cu_id = \get_current_user_id();
 
         $this->online = $_SERVER["SERVER_ADDR"] !== '127.0.0.1';
 

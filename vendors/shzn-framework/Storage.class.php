@@ -34,7 +34,7 @@ class Storage
 
     public static function generate_identifier($identifier, ...$args)
     {
-        if (!is_array($identifier) or is_object($identifier)) {
+        if (is_array($identifier) or is_object($identifier)) {
             return self::generate_key($identifier, ...$args);
         }
 
@@ -43,7 +43,7 @@ class Storage
 
     public static function generate_key(...$args)
     {
-        return hash('xxh128', serialize($args));
+        return hash('md5', serialize($args));
     }
 
     public function disable_autosave()

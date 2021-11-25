@@ -26,7 +26,7 @@ class WebSite extends Graph
             'name'        => wpfseo()->string->decodeHtmlEntities(get_bloginfo('name')),
             'description' => wpfseo()->string->decodeHtmlEntities(get_bloginfo('description')),
             'inLanguage'  => wpfseo()->language->currentLanguageCodeBCP47(),
-            'publisher'   => ['@id' => $homeUrl . '#' . (shzn('wpfs')->settings->get('seo.schema.organization', false) ? 'organization' : 'person')]
+            'publisher'   => ['@id' => $homeUrl . '#' . (shzn('wpfs')->settings->get('seo.schema.organization.is', false) ? 'organization' : 'person')]
         ];
 
         if (is_front_page() and shzn('wpfs')->settings->get('seo.schema.sitelink', false)) {

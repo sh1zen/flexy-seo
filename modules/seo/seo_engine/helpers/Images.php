@@ -7,6 +7,8 @@
 
 namespace FlexySEO\Engine\Helpers;
 
+use FlexySEO\core\Options;
+
 /**
  * Image_Utils.
  */
@@ -49,10 +51,7 @@ class Images
         if (is_numeric($url))
             return $url;
 
-        $cache_key = 'attachmentUrlToPostId_' . hash('xxh128', $url);
-
-        // Set the ID based on the hashed URL in the cache.
-        $id = shzn('wpfs')->cache->get_cache($cache_key, 'ImageHelper');
+        $id = Options::get($url, 'attachmentUrlToPostId', 'cache');
 
         if ($id === 'not_found') {
             return 0;
@@ -67,12 +66,12 @@ class Images
         $id = attachment_url_to_postid($url);
 
         if (empty($id)) {
-            shzn('wpfs')->cache->set_cache($cache_key, 'not_found', 'ImageHelper', DAY_IN_SECONDS);
+            Options::update($url, 'attachmentUrlToPostId', 'not_found', 'cache', WEEK_IN_SECONDS);
             return 0;
         }
 
         // We have the Post ID, but it's not in the cache yet. We do that here and return.
-        shzn('wpfs')->cache->set_cache($cache_key, $id, 'ImageHelper', DAY_IN_SECONDS);
+        Options::update($url, 'attachmentUrlToPostId', $id, 'cache', WEEK_IN_SECONDS);
 
         return $id;
     }

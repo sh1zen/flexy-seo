@@ -109,9 +109,9 @@ class PluginInit
             require_once WPFS_ADMIN . 'PagesHandler.class.php';
 
             /**
-             * Load the admin pages handler and store it here
+             * Load the admin pages handler
              */
-            $object->pages_handler = new PagesHandler();
+            new PagesHandler();
 
             /**
              * Instancing all modules that need to interact in admin area
