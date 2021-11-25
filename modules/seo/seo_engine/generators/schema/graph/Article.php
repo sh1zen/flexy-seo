@@ -38,7 +38,7 @@ class Article extends Graph
             'inLanguage'       => wpfseo()->language->currentLanguageCodeBCP47(),
             'headline'         => $post->post_title,
             'author'           => ['@id' => get_author_posts_url($post->post_author) . '#author'],
-            'publisher'        => ['@id' => shzn()->utility->home_url . '#' . (shzn('wpfs')->settings->get('seo.schema.organization', false) ? 'organization' : 'person')],
+            'publisher'        => ['@id' => shzn()->utility->home_url . '#' . (shzn('wpfs')->settings->get('seo.schema.organization.is', false) ? 'organization' : 'person')],
             'datePublished'    => mysql2date(DATE_W3C, $post->post_date_gmt, false),
             'dateModified'     => mysql2date(DATE_W3C, $post->post_modified_gmt, false),
             'commentCount'     => get_comment_count($post->ID)['approved'],
@@ -80,9 +80,9 @@ class Article extends Graph
             return $this->image($image, 'articleImage');
         }
 
-        if (shzn('wpfs')->settings->get('seo.schema.organization', false)) {
+        if (shzn('wpfs')->settings->get('seo.schema.organization.is', false)) {
 
-            $logo = (new Organization())->logo();
+            $logo = (new Organization($this->generator))->logo();
             if (!empty($logo)) {
                 $logo['@id'] = shzn()->utility->home_url . '#articleImage';
                 return $logo;

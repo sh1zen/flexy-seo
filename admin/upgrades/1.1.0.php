@@ -9,11 +9,11 @@ shzn('wpfs')->settings->reset();
 
 SHZN\core\UtilEnv::create_db("flexy_seo", [
         "fields"      => [
-            "id"       => "bigint NOT NULL AUTO_INCREMENT",
-            "obj_id"   => "bigint",
+            "id"      => "bigint NOT NULL AUTO_INCREMENT",
+            "obj_id"  => "varchar(255)",
             "context" => "varchar(255)",
-            "item"      => "varchar(255)",
-            "value"    => "longtext NOT NULL",
+            "item"    => "varchar(255)",
+            "value"   => "longtext NOT NULL",
         ],
         "primary_key" => "id"
     ]

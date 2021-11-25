@@ -311,11 +311,11 @@ class Mod_seo extends Module
         $fields['schema.org'] = $this->group_setting_fields(
             $this->setting_field(__('Schema settings:', 'wpfs'), false, 'separator'),
             $this->setting_field(__('Active', 'wpfs'), 'schema.enabled', 'checkbox', ['default_value' => true]),
-            $this->setting_field(__('Organization', 'wpfs'), 'schema.organization', 'checkbox', ['parent' => 'schema.enabled', 'default_value' => false]),
-            $this->setting_field(__('Organization name', 'wpfs'), 'schema.organization.name', 'text', ['parent' => 'schema.organization']),
-            $this->setting_field(__('Organization logo', 'wpfs'), 'schema.organization.logo', 'upload-input', ['parent' => 'schema.organization', 'placeholder' => __('Paste your image URL or select a new image', 'wpfs')]),
-            $this->setting_field(__('Organization phone', 'wpfs'), 'schema.organization.phone', 'text', ['parent' => 'schema.organization']),
-            $this->setting_field(__('Contact Type', 'wpfs'), 'schema.organization.contact_type', 'dropdown', ['parent' => 'schema.organization', 'value' => [
+            $this->setting_field(__('Organization', 'wpfs'), 'schema.organization.is', 'checkbox', ['parent' => 'schema.enabled', 'default_value' => false]),
+            $this->setting_field(__('Organization name', 'wpfs'), 'schema.organization.name', 'text', ['parent' => 'schema.organization.is']),
+            $this->setting_field(__('Organization logo', 'wpfs'), 'schema.organization.logo', 'upload-input', ['parent' => 'schema.organization.is', 'placeholder' => __('Paste your image URL or select a new image', 'wpfs')]),
+            $this->setting_field(__('Organization phone', 'wpfs'), 'schema.organization.phone', 'text', ['parent' => 'schema.organization.is']),
+            $this->setting_field(__('Contact Type', 'wpfs'), 'schema.organization.contact_type', 'dropdown', ['parent' => 'schema.organization.is', 'list' => [
                 "Customer Service",
                 "Technical Support",
                 "Billing Support",

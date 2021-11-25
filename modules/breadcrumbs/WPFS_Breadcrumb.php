@@ -943,7 +943,6 @@ class WPFS_Breadcrumb
             }
         }
         else {
-            // var_dump($terms);
 
             $link_info = array(
                 'url'  => get_term_link($terms),

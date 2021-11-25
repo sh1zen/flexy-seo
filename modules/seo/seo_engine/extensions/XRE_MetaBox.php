@@ -8,7 +8,7 @@
 namespace FlexySEO\Engine\Helpers;
 
 use FlexySEO\core\Options;
-use FlexySEO\core\Settings;
+use FlexySEO\Engine\Generators\Schema;
 
 class XRE_MetaBox
 {
@@ -16,11 +16,18 @@ class XRE_MetaBox
     {
         add_action('add_meta_boxes', [$this, 'add']);
         add_action('save_post', [$this, 'save'], 10, 3);
+
+        //add_action('admin_enqueue_scripts', [$this, 'enqueue_scripts']);
     }
 
     public static function get_value($id, $item, $context, $default = false)
     {
         return Options::get($id, $item, $context, $default);
+    }
+
+    public function enqueue_scripts()
+    {
+        wp_enqueue_style('vendor-shzn-css');
     }
 
     /**
@@ -76,14 +83,18 @@ class XRE_MetaBox
     private function fields($post)
     {
         $keyword = $description = "";
-        $indexable = shzn('wpfs')->settings->get('seo.post_type.post.show');
+        $post_id = 0;
 
-        if (isset($post->ID) and $post->ID > 0) {
+        if (isset($post->ID) and $post->ID) {
             $post_id = $post->ID;
             $keyword = Options::get($post_id, "keywords", "customMeta", "");
             $description = Options::get($post_id, "description", "customMeta", "");
-            $indexable = Options::get($post_id, "indexable", "customMeta", $indexable);
         }
+
+        $supportedGraphs = array_map(function ($graph) {
+
+            return ['text' => $graph, 'value' => $graph];
+        }, Schema::$webPageGraphs);
 
         return [
             [
@@ -101,24 +112,13 @@ class XRE_MetaBox
                 'values'            => [['value' => $description]]
             ],
             [
-                'name'              => 'schema.org',
+                'name'              => 'graphType',
                 'label'             => __('Page type (Schema.org)', 'wpfs'),
                 'type'              => 'select',
                 'sanitize_callback' => 'sanitize_text_field',
-                'values'            => [
-                    ['text' => __('Auto Detect', 'wpfs'), 'value' => ""],
-                ]
+                'values'            => $supportedGraphs,
+                'value'             => Options::get($post_id, "graphType", "customMeta")
             ],
-            /*[
-                'name'   => 'indexable',
-                'label'  => __('Show in search result', 'wpfs'),
-                'type'   => 'radio',
-                'sanitize_callback' => ,
-                'values' => [
-                    ['text' => __('Yes', 'wpfs'), 'checked' => $indexable, 'value' => "index"],
-                    ['text' => __('No', 'wpfs'), 'checked' => !$indexable, 'value' => "noindex"]
-                ]
-            ],*/
         ];
     }
 
@@ -130,11 +130,28 @@ class XRE_MetaBox
     public function print_html($post)
     {
         ?>
+        <style>
+            .wpfs {
+                width: 100%;
+            }
+
+            .wpfs_label {
+                width: 100%;
+            }
+
+            .wpfs_option {
+                width: 100%;
+            }
+
+            .wpfs_input {
+                width: 100%;
+            }
+        </style>
         <section>
             <?php
             foreach ($this->fields($post) as $field) {
-                echo "<h3 class='wpfs_label'>{$field['label']}</h3>";
 
+                echo "<h3 class='wpfs_label'>{$field['label']}</h3>";
                 echo "<section class='wpfs'>";
 
                 $values = [];
@@ -153,7 +170,7 @@ class XRE_MetaBox
                     case 'select':
                         echo "<select name='wpfs_metabox[{$field['name']}]' class='wpfs_option'>";
                         foreach ($values as $value) {
-                            echo "<{$value['type']} value='{$value['value']}' {$value['checked']}>{$value['text']}</{$value['type']}>";
+                            echo "<{$value['type']} value='{$value['value']}' " . ($value['value'] === $field['value'] ? 'selected' : '') . " {$value['checked']}>{$value['text']}</{$value['type']}>";
                         }
                         echo "</select>";
                         break;

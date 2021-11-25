@@ -79,11 +79,7 @@ class Graphic
             $_oInner .= self::generate_field($args['before'], false);
         }
 
-        $input_name = $args['id'];
-
-        if ($args['name_prefix']) {
-            $input_name = "{$args['name_prefix']}[{$input_name}]";
-        }
+        $args['input_name'] = $args['name_prefix'] ? "{$args['name_prefix']}[{$args['id']}]" : $args['id'];
 
         if (!is_array($args['classes']))
             $args['classes'] = [$args['classes']];
@@ -156,7 +152,7 @@ class Graphic
                         'class'        => self::classes($args['classes']),
                         'autocomplete' => 'off',
                         'type'         => $args['type'],
-                        'name'         => $input_name,
+                        'name'         => $args['input_name'],
                         'id'           => $args['id'],
                         'placeholder'  => $args['placeholder'],
                         'value'        => (string)$args['value']
@@ -174,7 +170,7 @@ class Graphic
                 $_oInner .= "<input " . self::buildProps([
                         'autocomplete' => 'off',
                         'type'         => 'text',
-                        'name'         => $input_name,
+                        'name'         => $args['input_name'],
                         'id'           => $args['id'],
                         'placeholder'  => $args['placeholder'],
                         'value'        => (string)$args['value']
@@ -193,7 +189,7 @@ class Graphic
                 $_oInner .= "<input " . self::buildProps([
                         'class' => self::classes($args['classes']),
                         'type'  => 'checkbox',
-                        'name'  => $input_name,
+                        'name'  => $args['input_name'],
                         'id'    => $args['id'],
                         'value' => (bool)$args['value']
                     ]) . " " . checked(1, $args['value'], false) . "  {$dataValues}/>";
@@ -208,7 +204,7 @@ class Graphic
                         'rows'  => '4',
                         'cols'  => '80',
                         'type'  => 'textarea',
-                        'name'  => $input_name,
+                        'name'  => $args['input_name'],
                         'id'    => $args['id'],
                     ]) . " {$dataValues}/>{$args['value']}</textarea>";
                 break;
@@ -235,7 +231,7 @@ class Graphic
 
                 $_oInner .= "<div " . self::buildProps([
                         'class' => self::classes($args['classes']),
-                    ]) . " {$dataValues}>" . self::buildDropdown($args['value']) . "</div>";
+                    ]) . " {$dataValues}>" . self::buildDropdown($args) . "</div>";
                 break;
 
             case 'raw':
@@ -284,20 +280,30 @@ class Graphic
         return trim($_props);
     }
 
-    private static function buildDropdown($items)
+    private static function buildDropdown($args)
     {
         ob_start();
+
+        $args = array_merge([
+            'id'         => '',
+            'list'       => [],
+            'value'      => '',
+            'input_name' => ''
+        ], $args);
+
+        $items = $args['list'];
 
         ?>
         <div class="shzn-dropdown">
             <div class="shzn-input__wrapper">
-                <input name="" type="text" autocomplete="off"
+                <input name="<?php echo $args['input_name'] ?>" id="<?php echo $args['id'] ?>" type="text"
+                       value="<?php echo $args['value'] ?>" autocomplete="off"
                        placeholder="<?php _e("Choose a type or enter one manually.", 'shzn'); ?>">
-                <label class="shzn-dropdown__opener">
+                <div class="shzn-dropdown__opener">
                     <svg class="shzn-icon shzn-icon__arrow" viewBox="0 0 16 16" width="16" height="16">
                         <path d="M11.293 8L4.646 1.354l.708-.708L12.707 8l-7.353 7.354-.708-.708z"></path>
                     </svg>
-                </label>
+                </div>
             </div>
             <div class="shzn-multiselect__wrapper">
                 <ul class='shzn-multiselect'>
@@ -427,6 +433,6 @@ class Graphic
 
     public static function is_on_screen($slug)
     {
-        return isset($_GET['page']) ? $_GET['page'] == $slug : false;
+        return isset($_GET['page']) ? trim($_GET['page'], ' \t\n\r\0\x0B') === trim($slug, ' \t\n\r\0\x0B') : false;
     }
 }

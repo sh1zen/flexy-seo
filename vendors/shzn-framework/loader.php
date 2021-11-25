@@ -9,6 +9,8 @@ use SHZN\core\shzn_wrapper;
 
 define('SHZN_FRAMEWORK', dirname(__FILE__) . '/');
 
+const SHZN_VERSION = "1.1.0";
+
 require_once SHZN_FRAMEWORK . 'back-compat.php';
 require_once SHZN_FRAMEWORK . 'functions.php';
 
@@ -41,8 +43,8 @@ function shzn_admin_enqueue_scripts()
 
     $min = shzn()->utility->online ? '.min' : '';
 
-    wp_register_style('vendor-shzn-css', "{$shzn_assets_url}assets/css/style{$min}.css");
-    wp_register_script('vendor-shzn-js', "{$shzn_assets_url}assets/js/core{$min}.js", ['jquery']);
+    wp_register_style('vendor-shzn-css', "{$shzn_assets_url}assets/css/style{$min}.css", [], SHZN_VERSION);
+    wp_register_script('vendor-shzn-js', "{$shzn_assets_url}assets/js/core{$min}.js", ['jquery'], SHZN_VERSION);
 }
 
 function shzn($context = 'common', $args = false, $components = [])

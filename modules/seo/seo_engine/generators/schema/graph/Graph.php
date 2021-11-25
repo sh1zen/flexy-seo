@@ -7,6 +7,8 @@
 
 namespace FlexySEO\Engine\Generators\Schema\Graphs;
 
+use FlexySEO\core\Options;
+
 /**
  * The base graph class.
  *
@@ -44,13 +46,29 @@ abstract class Graph
      */
     protected function image($imageId, $graphId)
     {
-        $attachmentId = wpfseo()->images->attachmentUrlToPostId($imageId);
+        if (!filter_var($imageId, FILTER_VALIDATE_URL)) {
 
-        if (!$attachmentId) {
-            return [];
+            $cacheData = Options::get($imageId, 'imageURLID', 'cache');
+
+            if ($cacheData and is_array($cacheData)) {
+                list($imageUrl, $attachmentId) = $cacheData;
+            }
+            else {
+                $attachmentId = wpfseo()->images->attachmentUrlToPostId($imageId);
+
+                if (!$attachmentId) {
+                    return [];
+                }
+
+                $imageUrl = wp_get_attachment_image_url($attachmentId, 'full');
+
+                Options::update($imageId, 'imageURLID', [$imageUrl, $attachmentId], 'cache');
+            }
         }
-
-        $imageUrl = wp_get_attachment_image_url($attachmentId, 'full');
+        else {
+            $imageUrl = $imageId;
+            $attachmentId = wpfseo()->images->attachmentUrlToPostId($imageId);
+        }
 
         $data = [
             '@type' => 'ImageObject',
@@ -58,16 +76,19 @@ abstract class Graph
             'url'   => $imageUrl ? $imageUrl : $imageId,
         ];
 
-        $metaData = wp_get_attachment_metadata($attachmentId);
-        if ($metaData) {
-            $data['width'] = $metaData['width'];
-            $data['height'] = $metaData['height'];
+        if ($attachmentId) {
+            $metaData = wp_get_attachment_metadata($attachmentId);
+            if ($metaData) {
+                $data['width'] = $metaData['width'];
+                $data['height'] = $metaData['height'];
+            }
+
+            $caption = wp_get_attachment_caption($attachmentId);
+            if (!empty($caption)) {
+                $data['caption'] = $caption;
+            }
         }
 
-        $caption = wp_get_attachment_caption($attachmentId);
-        if (!empty($caption)) {
-            $data['caption'] = $caption;
-        }
         return $data;
     }
 

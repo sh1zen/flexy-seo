@@ -68,6 +68,7 @@ class Module
     public function __construct($context, $args = array())
     {
         $this->context = $context;
+
         $this->slug = shzn($this->context)->moduleHandler->module_slug(get_class($this), true);
 
         $default_setting = isset($args['settings']) ? $args['settings'] : array();
@@ -95,7 +96,11 @@ class Module
             if (is_admin()) {
 
                 if (Graphic::is_on_screen($this->slug)) {
-                    add_action( 'admin_enqueue_scripts', [$this, 'enqueue_scripts']);
+
+                   if(did_action('admin_enqueue_scripts'))
+                       $this->enqueue_scripts();
+                   else
+                        add_action('admin_enqueue_scripts', [$this, 'enqueue_scripts']);
                 }
 
                 add_action('admin_notices', array($this, 'admin_notices'));
@@ -332,10 +337,13 @@ class Module
                     $value = isset($input[$field['id']]);
                     break;
 
+
                 case 'time':
                 case 'text':
                 case 'hidden':
+                case 'dropdown':
                 case 'textarea':
+                case 'upload-input':
                     $value = UtilEnv::sanitize_text_field($input[$field['id']]);
                     break;
 
@@ -382,7 +390,8 @@ class Module
             'allow_empty'   => true,
             'parent'        => false,
             'depend'        => false,
-            'placeholder'   => ''
+            'placeholder'   => '',
+            'list'          => ''
         ], $args);
 
         if ($id) {
@@ -403,7 +412,8 @@ class Module
             'value'       => $value,
             'parent'      => $args['parent'],
             'depend'      => $args['depend'],
-            'placeholder' => $args['placeholder']
+            'placeholder' => $args['placeholder'],
+            'list'        => $args['list']
         ];
     }
 

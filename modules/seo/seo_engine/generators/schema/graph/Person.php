@@ -20,7 +20,7 @@ class Person extends Graph
      */
     public function get($type = '')
     {
-        if (shzn('wpfs')->settings->get('seo.schema.organization', false)) {
+        if (shzn('wpfs')->settings->get('seo.schema.organization.is', false)) {
             return [];
         }
 

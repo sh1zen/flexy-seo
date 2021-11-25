@@ -43,7 +43,7 @@ class Storage
 
     public static function generate_key(...$args)
     {
-        return hash('xxh128', serialize($args));
+        return hash('crc32', serialize($args));
     }
 
     public function disable_autosave()

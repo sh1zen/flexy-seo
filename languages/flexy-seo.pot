@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: wpfs-translation\n"
 "Report-Msgid-Bugs-To: https://github.com/sh1zen/flexy-seo/issues\n"
-"POT-Creation-Date: 2021-11-25 15:01+0100\n"
+"POT-Creation-Date: 2021-11-26 19:20+0100\n"
 "PO-Revision-Date: 2020-05-13 02:34+0200\n"
 "Last-Translator: sh1zen\n"
 "Language-Team: sh1zen\n"
@@ -406,7 +406,7 @@ msgstr ""
 msgid "Replacers"
 msgstr ""
 
-#: modules/seo.class.php:178 vendors/shzn-framework/Module.class.php:217
+#: modules/seo.class.php:178 vendors/shzn-framework/Module.class.php:222
 msgid "Save Changes"
 msgstr ""
 
@@ -662,7 +662,7 @@ msgid "Replacer"
 msgstr ""
 
 #: modules/seo.class.php:410
-#: modules/seo/seo_engine/extensions/XRE_MetaBox.php:98
+#: modules/seo/seo_engine/extensions/XRE_MetaBox.php:109
 msgid "Description"
 msgstr ""
 
@@ -708,16 +708,12 @@ msgstr ""
 msgid "The site description."
 msgstr ""
 
-#: modules/seo/seo_engine/extensions/XRE_MetaBox.php:91
+#: modules/seo/seo_engine/extensions/XRE_MetaBox.php:102
 msgid "Keyword phrase"
 msgstr ""
 
-#: modules/seo/seo_engine/extensions/XRE_MetaBox.php:105
+#: modules/seo/seo_engine/extensions/XRE_MetaBox.php:116
 msgid "Page type (Schema.org)"
-msgstr ""
-
-#: modules/seo/seo_engine/extensions/XRE_MetaBox.php:109
-msgid "Auto Detect"
 msgstr ""
 
 #: modules/seo/seo_engine/generators/schema/graph/NewsArticle.php:28
@@ -746,23 +742,23 @@ msgstr ""
 msgid "Ajax Error: wrong ajax request."
 msgstr ""
 
-#: vendors/shzn-framework/Graphic.class.php:295
+#: vendors/shzn-framework/Graphic.class.php:301
 msgid "Choose a type or enter one manually."
 msgstr ""
 
-#: vendors/shzn-framework/Module.class.php:138
+#: vendors/shzn-framework/Module.class.php:143
 msgid "Action was correctly executed"
 msgstr ""
 
-#: vendors/shzn-framework/Module.class.php:140
+#: vendors/shzn-framework/Module.class.php:145
 msgid "Action execution failed"
 msgstr ""
 
-#: vendors/shzn-framework/Module.class.php:172
+#: vendors/shzn-framework/Module.class.php:177
 msgid "WP Optimizer::ajax_handler -> empty ajax handler for "
 msgstr ""
 
-#: vendors/shzn-framework/Module.class.php:254
+#: vendors/shzn-framework/Module.class.php:259
 msgid "This Module is disabled for you or for your settings."
 msgstr ""
 
