@@ -26,11 +26,11 @@ function SHZNSemaphore() {
 
 let shzn_semaphore = new SHZNSemaphore();
 
-function shzn_is_json(str) {
+function maybe_parse_json(str, check = false) {
     try {
         return JSON.parse(str);
     } catch (e) {
-        return false;
+        return check ? false : str;
     }
 }
 
@@ -72,7 +72,7 @@ function shzn_ajaxHandler(options) {
 
             if (typeof options.callback === "function") {
 
-                let res = shzn_is_json(jqXHR.responseText);
+                let res = maybe_parse_json(jqXHR.responseText);
 
                 if (!res)
                     res = jqXHR.responseText;
@@ -89,6 +89,22 @@ function shzn_ajaxHandler(options) {
             shzn_semaphore.release(options.mod_action);
         }
     });
+}
+
+function shzn_popup(args) {
+
+    let defargs = {
+        header: '',
+        body: '',
+        footer: '',
+        element: body
+    }
+
+    args = {...defargs, ...args}
+
+    let $context = jQuery(args.element);
+
+    $context.append(response)
 }
 
 (function ($) {
@@ -407,7 +423,7 @@ function shzn_ajaxHandler(options) {
             $this.next().toggle(300);
         });
 
-        $(".shzn-dropdown").on("click", ".shzn-dropdown__opener", function (event) {
+        $(".shzn-dropdown__opener").on("click", function (event) {
 
             event.preventDefault();
 
@@ -461,11 +477,11 @@ function shzn_ajaxHandler(options) {
         });
     });
 
+
     $window.on('beforeunload', function (e) {
         if ($body.hasClass('shzn-doingAction')) {
-            (e || window.event).returnValue = SHZN.strings.text_close_warning;
-            return SHZN.strings.text_close_warning;
+            return SHZN.locale.text_close_warning || 'Are you sure you want to leave?';
         }
     });
 
-})(jQuery.noConflict());
+})(jQuery);

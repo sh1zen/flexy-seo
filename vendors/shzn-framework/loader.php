@@ -18,6 +18,8 @@ require_once SHZN_FRAMEWORK . 'shzn_wrapper.php';
 
 require_once SHZN_FRAMEWORK . 'Utility.class.php';
 
+require_once SHZN_FRAMEWORK . 'Rewriter.class.php';
+
 require_once SHZN_FRAMEWORK . 'UtilEnv.php';
 
 require_once SHZN_FRAMEWORK . 'Cache.class.php';
@@ -45,11 +47,25 @@ function shzn_admin_enqueue_scripts()
 
     wp_register_style('vendor-shzn-css', "{$shzn_assets_url}assets/css/style{$min}.css", [], SHZN_VERSION);
     wp_register_script('vendor-shzn-js', "{$shzn_assets_url}assets/js/core{$min}.js", ['jquery'], SHZN_VERSION);
+
+    wp_localize_script("vendor-shzn-js", "SHZN", [
+        'locale' => [
+            'text_close_warning' => __('Are you sure you want to leave?', 'shzn')
+        ]
+    ]);
 }
 
 function shzn($context = 'common', $args = false, $components = [])
 {
     static $cached = [];
+
+    /**
+     * check for the first run
+     */
+    if (empty($cached) and did_action('init')) {
+
+        Rewriter::getInstance();
+    }
 
     if (!is_string($context)) {
         $fn = shzn_get_calling_function(2);
@@ -76,6 +92,16 @@ function shzn($context = 'common', $args = false, $components = [])
     return $cached[$context];
 }
 
-shzn('common', false, [
-    'utility' => true
-]);
+if (!did_action('init')) {
+    add_action('init', function () {
+        shzn('common', false, [
+            'utility' => true
+        ]);
+    });
+}
+else {
+    shzn('common', false, [
+        'utility' => true
+    ]);
+}
+

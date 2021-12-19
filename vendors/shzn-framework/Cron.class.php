@@ -116,8 +116,9 @@ class Cron
             'args'      => $args,
         );
 
-        if ($clear)
+        if ($clear) {
             wp_clear_scheduled_hook($event->hook, $event->args);
+        }
 
         $crons = (array)_get_cron_array();
         $key = md5(serialize($event->args));

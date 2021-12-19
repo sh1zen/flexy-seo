@@ -5,7 +5,7 @@ Donate link: https://www.paypal.com/donate?business=dev.sh1zen%40outlook.it&item
 Requires at least: 4.6.0
 Tested up to: 5.9
 Requires PHP: 5.3 
-Stable tag: 1.3.2
+Stable tag: 1.3.3
 License: GNU v3.0 License
 URI: https://github.com/sh1zen/flexy-seo/blob/master/LICENSE
 
@@ -103,10 +103,14 @@ work! Otherwise, go to the new added module "Setting" and try a reset.
 
 == Upgrade Notice ==
 
-= 1.3.2 =
+= 1.3.3 =
  * Welcome to the new Flexy-SEO, now supporting @schema.org!
 
 == Changelog ==
+
+= 1.3.3 =
+
+* upgraded core dependencies
 
 = 1.3.2 =
 

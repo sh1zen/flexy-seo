@@ -12,6 +12,10 @@
     background-color: #F3F4F5;
 }
 
+#wpbody-content{
+    margin-top: 70px
+}
+
 .hidden {
     display: none
 }
@@ -377,7 +381,6 @@ section.shzn-wrap {
     max-width: 1200px;
     margin: auto;
     padding: 2em 0;
-    top: 64px;
     position: relative;
 }
 

@@ -7,10 +7,10 @@
  * Author URI: https://sh1zen.github.io/
  * Text Domain: wpfs
  * Domain Path: /languages
- * Version: 1.3.2
+ * Version: 1.3.3
  */
 
-const WPFS_VERSION = '1.3.2';
+const WPFS_VERSION = '1.3.3';
 
 const WPFS_FILE = __FILE__;
 define('WPFS_ABSPATH', dirname(__FILE__) . '/');
