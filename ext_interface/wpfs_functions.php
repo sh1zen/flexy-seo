@@ -1,20 +1,16 @@
 <?php
 /**
  * @author    sh1zen
- * @copyright Copyright (C)  2021
+ * @copyright Copyright (C)  2022
  * @license   http://www.gnu.org/licenses/gpl.html GNU/GPL
  */
 
 use FlexySEO\Engine\Txt_Replacer;
 
 /**
- * @param $before
- * @param $after
- * @param bool $display
- * @param array $args
- * @return string
- */
-function wpfs_breadcrumb($before, $after, $display = true, $args = array())
+ *
+*/
+function wpfs_breadcrumb(string $before, string $after, bool $display = true, array $args = array()): string
 {
     return WPFS_Breadcrumb::breadcrumb($before, $after, $display, $args);
 }
@@ -28,7 +24,7 @@ function wpfs_breadcrumb($before, $after, $display = true, $args = array())
  * @param string $type
  * @return string
  */
-function wpfs_replace_vars($string, $object_id = 0, $type = 'post')
+function wpfs_replace_vars(string $string, int $object_id = 0, string $type = 'post'): string
 {
     return FlexySEO\Engine\Txt_Replacer::replace($string, $object_id, $type);
 }
@@ -40,7 +36,7 @@ function wpfs_replace_vars($string, $object_id = 0, $type = 'post')
  * @param String|callable $replacement
  * @param string|string[] $type
  */
-function wpfs_add_replacement_rule($rule, $replacement, $type = [])
+function wpfs_add_replacement_rule(string $rule, $replacement, $type = [])
 {
     if(defined("WPFS_SEO_ENGINE_LOADED") and WPFS_SEO_ENGINE_LOADED) {
         Txt_Replacer::add_replacer($rule, $replacement, $type);

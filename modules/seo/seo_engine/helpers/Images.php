@@ -1,13 +1,14 @@
 <?php
 /**
  * @author    sh1zen
- * @copyright Copyright (C)  2021
+ * @copyright Copyright (C)  2022
  * @license   http://www.gnu.org/licenses/gpl.html GNU/GPL
  */
 
 namespace FlexySEO\Engine\Helpers;
 
 use FlexySEO\core\Options;
+use SHZN\core\UtilEnv;
 
 /**
  * Image_Utils.
@@ -29,10 +30,10 @@ class Images
          */
         $url = preg_replace('/(.*)-\d+x\d+\.(jpg|png|gif)$/i', '$1.$2', $url);
 
-        $uploads = shzn()->utility->wp_upload_dir;
+        $uploads_base_url = UtilEnv::wp_upload_dir('baseurl');
 
         // Don't try to do this for external URLs.
-        if (strpos($url, $uploads['baseurl']) !== 0) {
+        if (!str_starts_with($url, $uploads_base_url)) {
             return 0;
         }
 
@@ -48,8 +49,9 @@ class Images
      */
     public function attachmentUrlToPostId($url)
     {
-        if (is_numeric($url))
+        if (is_numeric($url)) {
             return $url;
+        }
 
         $id = Options::get($url, 'attachmentUrlToPostId', 'cache');
 
@@ -212,13 +214,13 @@ class Images
      *
      * @return string The full file path.
      */
-    public function get_absolute_path($path)
+    public function get_absolute_path(string $path)
     {
-        $uploads = shzn()->utility->wp_upload_dir;
+        $uploads_base_dir = UtilEnv::wp_upload_dir('basedir');
 
         // Add the uploads basedir if the path does not start with it.
-        if (empty($uploads['error']) && strpos($path, $uploads['basedir']) !== 0) {
-            return $uploads['basedir'] . DIRECTORY_SEPARATOR . ltrim($path, DIRECTORY_SEPARATOR);
+        if (empty($uploads_base_dir['error']) and !str_starts_with($path, $uploads_base_dir)) {
+            return $uploads_base_dir . DIRECTORY_SEPARATOR . ltrim($path, DIRECTORY_SEPARATOR);
         }
 
         return $path;
@@ -439,7 +441,7 @@ class Images
      */
     private function get_img_tags_from_content($content)
     {
-        if (strpos($content, '<img') === false) {
+        if (!str_contains($content, '<img')) {
             return [];
         }
 
@@ -475,8 +477,34 @@ class Images
      */
     public function isValidAttachment($url)
     {
-        $uploadDirUrl = wpfseo()->string->escapeRegex(shzn()->utility->wp_upload_dir['baseurl']);
+        $uploadDirUrl = wpfseo()->string->escapeRegex(UtilEnv::wp_upload_dir('baseurl'));
         return preg_match("/$uploadDirUrl.*/", $url);
+    }
+
+    public function get_snippet_data($url, $size = 'thumbnail', $post = null)
+    {
+        $width = 0;
+        $height = 0;
+
+        $image_path = UtilEnv::url_to_path($url);
+
+        if ($image_path) {
+            list($width, $height) = wp_getimagesize($image_path);
+        }
+
+        if ($post) {
+
+            if ($post_thumbnail_id = get_post_thumbnail_id($post)) {
+
+                if ($image_data = wp_get_attachment_image_src($post_thumbnail_id, $size)) {
+                    $url = $image_data[0];
+                    $width = $image_data[1];
+                    $height = $image_data[2];
+                }
+            }
+        }
+
+        return ['url' => $url, 'width' => $width, 'height' => $height];
     }
 
     /**
@@ -488,7 +516,7 @@ class Images
      */
     private function get_img_tag_source($image)
     {
-        preg_match('`src=(["\'])(.*?)\1`', $image, $matches);
+        preg_match('#src=(["\'])(.*?)\1#', $image, $matches);
         if (isset($matches[2])) {
             return $matches[2];
         }

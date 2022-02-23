@@ -1,12 +1,13 @@
 <?php
 /**
  * @author    sh1zen
- * @copyright Copyright (C)  2021
+ * @copyright Copyright (C)  2022
  * @license   http://www.gnu.org/licenses/gpl.html GNU/GPL
  */
 
 namespace FlexySEO\modules;
 
+use FlexySEO\Engine\Generators\Schema;
 use SHZN\core\Graphic;
 use SHZN\modules\Module;
 use FlexySEO\Engine\WPFS_SEO;
@@ -16,7 +17,7 @@ class Mod_seo extends Module
 {
     public $scopes = array('admin-page', 'settings', 'autoload');
 
-    private $performer_response = array();
+    private array $performer_response = array();
 
     public function __construct()
     {
@@ -193,8 +194,7 @@ class Mod_seo extends Module
 
     protected function setting_fields($filter = '')
     {
-        $fields = $res = array();
-
+        $fields = [];
 
         $fields['general'] = $this->group_setting_fields(
             $this->setting_field(__('Titles:', 'wpfs'), false, 'separator'),
@@ -353,6 +353,8 @@ class Mod_seo extends Module
 
             $post_type = $post_type_object->name;
 
+            $post_type_sanitized = str_replace(array('-', '_'), ' ', $post_type);
+
             if ($post_type_object->has_archive) {
 
                 $archive_name = ucwords($post_type_object->label) . ($post_type_object->_builtin ? "" : " ({$post_type_object->name})");
@@ -372,25 +374,18 @@ class Mod_seo extends Module
 
             $fields[$post_type] = $this->group_setting_fields(
                 $this->setting_field(ucwords($post_type_object->label) . ($post_type_object->_builtin ? "" : " ({$post_type_object->name})"), false, 'separator'),
-                $this->setting_field(sprintf(__("Show \"%s\" in search results", 'wpfs'), str_replace(array('-', '_'), ' ', $post_type)), "post_type.{$post_type}.show", 'checkbox', ['default_value' => true]),
+                $this->setting_field(sprintf(__("Show <i>\"%s\"</i> in search results", 'wpfs'), $post_type_sanitized), "post_type.{$post_type}.show", 'checkbox', ['default_value' => true]),
                 $this->setting_field(__("Follow link directive", 'wpfs'), "post_type.{$post_type}.follow", 'checkbox', ['default_value' => true]),
-                $this->setting_field(__('Title', 'wpfs'), "post_type.{$post_type}}.title", 'text', ['default_value' => '%%title%%']),
+                $this->setting_field(__('Title', 'wpfs'), "post_type.{$post_type}.title", 'text', ['default_value' => '%%title%%']),
                 $this->setting_field(__('Meta description', 'wpfs'), "post_type.{$post_type}.meta_desc", 'textarea'),
-                $this->setting_field(__('Keywords', 'wpfs'), "post_type.{$post_type}.keywords")
+                $this->setting_field(__('Keywords', 'wpfs'), "post_type.{$post_type}.keywords"),
+                $this->setting_field(sprintf(__('Predefined %s schema.org page type', 'wpfs'), $post_type_sanitized), "post_type.{$post_type}.schema.pageType", 'dropdown', ['list' => Schema::$webPageGraphs, 'default_value' => 'WebPage']),
+                $this->setting_field(sprintf(__('Predefined %s schema.org article type', 'wpfs'), $post_type_sanitized), "post_type.{$post_type}.schema.articleType", 'dropdown', ['list' => Schema::$webArticleGraphs, 'default_value' => 'Article']),
+
             );
         }
 
-        if (!empty($filter)) {
-            foreach ((array)$filter as $_filter) {
-                if (isset($fields[$_filter]))
-                    $res = array_merge($res, $fields[$_filter]);
-            }
-        }
-        else {
-            $res = call_user_func_array('array_merge', array_values($fields));
-        }
-
-        return $res;
+        return $this->group_setting_sections($fields, $filter);
     }
 
 

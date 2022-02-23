@@ -1,17 +1,17 @@
 <?php
 /**
  * @author    sh1zen
- * @copyright Copyright (C)  2021
+ * @copyright Copyright (C)  2022
  * @license   http://www.gnu.org/licenses/gpl.html GNU/GPL
  */
 
 namespace FlexySEO\Engine\Generators\Templates;
 
+use FlexySEO\Engine\Generator;
 use FlexySEO\Engine\Generators\OpenGraph;
-use FlexySEO\Engine\Generators\TwitterCard;
 use FlexySEO\Engine\Helpers\CurrentPage;
 
-class DateArchive_Generator extends \FlexySEO\Engine\Generator
+class DateArchive_Generator extends Generator
 {
     /**
      * @param CurrentPage $current_page
@@ -67,7 +67,7 @@ class DateArchive_Generator extends \FlexySEO\Engine\Generator
      * @param string $keywords
      * @return string The meta keywords.
      */
-    public function get_keywords($keywords = '')
+    public function get_keywords(string $keywords = '')
     {
         return parent::get_keywords(shzn('wpfs')->settings->get($this->settings_path . 'keywords', ''));
     }
@@ -96,20 +96,12 @@ class DateArchive_Generator extends \FlexySEO\Engine\Generator
     }
 
     /**
-     * @return TwitterCard
-     */
-    public function twitterCard()
-    {
-        return parent::twitterCard();
-    }
-
-    /**
      * Generates the title structure.
      *
      * @param string $description
      * @return string The meta description.
      */
-    public function get_description($description = '')
+    public function get_description(string $description = '')
     {
         return parent::get_description(shzn('wpfs')->settings->get($this->settings_path . 'meta_desc', ''));
     }

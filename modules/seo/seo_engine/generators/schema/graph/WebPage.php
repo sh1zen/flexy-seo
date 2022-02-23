@@ -1,8 +1,11 @@
 <?php
+/**
+ * @author    sh1zen
+ * @copyright Copyright (C)  2022
+ * @license   http://www.gnu.org/licenses/gpl.html GNU/GPL
+ */
 
 namespace FlexySEO\Engine\Generators\Schema\Graphs;
-
-use FlexySEO\Engine\Generator;
 
 /**
  * WebPage graph class.
@@ -20,25 +23,22 @@ class WebPage extends Graph
      *
      * @var string
      */
-    protected $type = 'WebPage';
+    protected string $type = 'WebPage';
 
     /**
      * Returns the graph data.
+     * @param \WP_Post $post
+     * @param string $type
      * @return array $data The graph data.
      * @since 1.2.0
-     *
      */
-    public function get($type = '')
+    public function get($post, string $type = '')
     {
         if (!empty($type)) {
             $this->type = $type;
         }
 
         $homeUrl = shzn()->utility->home_url;
-
-        if (!$this->generator) {
-            return [];
-        }
 
         $url = $this->generator->get_permalink();
 

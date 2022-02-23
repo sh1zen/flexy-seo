@@ -1,4 +1,9 @@
 <?php
+/**
+ * @author    sh1zen
+ * @copyright Copyright (C)  2022
+ * @license   http://www.gnu.org/licenses/gpl.html GNU/GPL
+ */
 
 namespace FlexySEO\Engine\Generators\Schema\Graphs;
 
@@ -11,16 +16,14 @@ class BreadcrumbList extends Graph
 {
     /**
      * Returns the graph data.
+     * @param \WP_Post $post
+     * @param string $type
      * @return array $data The graph data.
      *
      * @since 1.2.0
      */
-    public function get($type = '')
+    public function get($post, string $type = '')
     {
-        if (!$this->generator) {
-            return [];
-        }
-
         $breadcrumbs = \WPFS_Breadcrumb::export();
 
         if (empty($breadcrumbs)) {
@@ -43,12 +46,10 @@ class BreadcrumbList extends Graph
 
             $listItem = [
                 '@type'    => 'ListItem',
-                '@id'      => $breadcrumb['value']['url'] . '#listItem',
                 'position' => $position,
                 'item'     => [
-                    '@type'       => 'WebPage',
                     '@id'         => $breadcrumb['value']['url'],
-                    'name'        => !empty($breadcrumb['value']['text']) ? $breadcrumb['value']['text'] : '',
+                    'name'        => empty($breadcrumb['value']['text']) ? '' : $breadcrumb['value']['text'],
                     'description' => $position === $trailLength ? $this->generator->get_description() : (empty($breadcrumb['value']['description']) ? '' : $breadcrumb['value']['description']),
                     'url'         => $breadcrumb['value']['url'],
                 ]

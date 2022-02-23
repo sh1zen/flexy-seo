@@ -1,7 +1,13 @@
 <?php
+/**
+ * @author    sh1zen
+ * @copyright Copyright (C)  2022
+ * @license   http://www.gnu.org/licenses/gpl.html GNU/GPL
+ */
 
 namespace FlexySeo\core;
 
+use SHZN\core\Graphic;
 use SHZN\core\UtilEnv;
 
 /**
@@ -131,10 +137,10 @@ class PagesHandler
                                 <code>&lt;?php if(function_exists('wpfs_breadcrumb')) wpfs_breadcrumb($pre='', $after=''); ?&gt;</code><br>
                                 <p><?php echo __('You can use your own $pre and $after wrapper, default value is no wrapper.', 'wpfs'); ?></p>
                                 <strong><?php echo __('Options:', 'wpfs'); ?></strong>
-                                <ul class="shzn-ulli">
+                                <ul class="shzn-list">
                                     <li><?php echo __('In Breadcrumb page configure your options and set up your breadcrumb structure for each entity.', 'wpfs'); ?></li>
                                     <li><?php echo __('With flexed breadcrumb is possible to personalize the crumb structure with personalized url or text:', 'wpfs'); ?>
-                                        <ul class="shzn-ulli">
+                                        <ul class="shzn-list">
                                             <li>
                                                 <strong><?php echo __('>>', 'wpfs'); ?></strong> : <?php echo __('separate each crumb', 'wpfs'); ?>
                                             </li>
@@ -148,28 +154,30 @@ class PagesHandler
                                                 <strong><?php echo __('/custom/link/', 'wpfs'); ?></strong> : <?php echo __('Specify a custom link structure.', 'wpfs'); ?>
                                             </li>
                                             <li>
-                                                <strong><?php echo __('%%{query_var}%%', 'wpfs'); ?></strong> : <?php echo __('Replace the value of the corresponding query_var specified, if not available it will be discarded.', 'wpfs'); ?>
+                                                <strong>%%{query_var}%%</strong> : <?php echo __('Replace the value of the corresponding query_var specified, if not available it will be discarded.', 'wpfs'); ?>
                                             </li>
                                             <li>
-                                                <strong><?php echo __('%%meta_{var}%%', 'wpfs'); ?></strong> : <?php echo __('Replace the meta variable of the current queried object, if not available it will be discarded.', 'wpfs'); ?>
+                                                <strong>%%meta_{var}%%</strong> : <?php echo __('Replace the meta variable of the current queried object, if not available it will be discarded.', 'wpfs'); ?>
                                             </li>
                                             <li>
-                                                <strong><?php echo __('%%home%%', 'wpfs'); ?></strong> : <?php echo __('Replace the home text and home url.', 'wpfs'); ?>
+                                                <strong>%%home%%</strong> : <?php echo __('Replace the home text and home url.', 'wpfs'); ?>
                                             </li>
                                             <li>
-                                                <strong><?php echo __('%%taxonomy%%', 'wpfs'); ?></strong> : <?php echo __('Replace the taxonomy of the current queried object', 'wpfs'); ?>
+                                                <strong>%%taxonomy%%</strong>,
+                                                <strong>%%category%%</strong>: <?php echo __('Replace the taxonomy, or the category of the current queried object. If it\'s hierarchical will generate multiple crumbs.', 'wpfs'); ?>
                                             </li>
                                             <li>
-                                                <strong><?php echo __('%%category%%', 'wpfs'); ?></strong> : <?php echo __('Replace the category of the current queried object, if it\'s hierarchical will generate multiple breadcrumbs.', 'wpfs'); ?>
+                                                <strong>%%taxonomy-full%%</strong>,
+                                                <strong>%%category-full%%</strong>: <?php echo __('Same as previous but each term link contain also the the taxonomy prefix.', 'wpfs'); ?>
                                             </li>
                                             <li>
-                                                <strong><?php echo __('%%post_parent%%', 'wpfs'); ?></strong> : <?php echo __('Replace the parent post of the current queried object.', 'wpfs'); ?>
+                                                <strong>%%post_parent%%</strong> : <?php echo __('Replace the parent post of the current queried object.', 'wpfs'); ?>
                                             </li>
                                             <li>
-                                                <strong><?php echo __('%%post_type%%', 'wpfs'); ?></strong> : <?php echo __('Replace the post type of the current queried object.', 'wpfs'); ?>
+                                                <strong>%%post_type%%</strong> : <?php echo __('Replace the post type of the current queried object.', 'wpfs'); ?>
                                             </li>
                                             <li>
-                                                <strong><?php echo __('%%queried_object%%', 'wpfs'); ?></strong> : <?php echo __('Replace the title and link of the current queried object.', 'wpfs'); ?>
+                                                <strong>%%queried_object%%</strong> : <?php echo __('Replace the title and link of the current queried object.', 'wpfs'); ?>
                                             </li>
                                         </ul>
                                         <br>

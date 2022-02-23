@@ -1,6 +1,6 @@
 /**
  * @author    sh1zen
- * @copyright Copyright (C)  2021
+ * @copyright Copyright (C)  2022
  * @license   http://www.gnu.org/licenses/gpl.html GNU/GPL
  */
 
@@ -357,8 +357,9 @@ function shzn_popup(args) {
 
         $('.shzn *[data-parent*="' + parent + '"]').each(function () {
             let $this = $(this),
+                parents = $this.data('parent'),
                 cntx = $this,
-                visibleAction = $this.data('parent').charAt(0) === "!" ? !visible : visible;
+                visibleAction = parents.substr(parents.indexOf(parent) - 1, 1) === "!" ? !visible : visible;
 
             if (!$this.hasClass('shzn-separator')) {
                 cntx = $this.closest('tr');
@@ -372,7 +373,13 @@ function shzn_popup(args) {
                 handleDependent(this.id, visible, deep)
             }
 
-            visibleAction ? cntx.removeClass('shzn-disabled-blur') : cntx.addClass('shzn-disabled-blur');
+            if (visibleAction) {
+                cntx.removeClass('shzn-disabled-blur');
+                //cntx.slideToggle();
+            } else {
+                cntx.addClass('shzn-disabled-blur');
+                //cntx.slideToggle();
+            }
         });
     }
 

@@ -1,7 +1,7 @@
 <?php
 /**
  * @author    sh1zen
- * @copyright Copyright (C)  2021
+ * @copyright Copyright (C)  2022
  * @license   http://www.gnu.org/licenses/gpl.html GNU/GPL
  */
 
@@ -140,6 +140,6 @@ class Helpers
         $restUrl = wp_parse_url(get_rest_url());
         $restUrl = $restUrl['path'] . (!empty($restUrl['query']) ? '?' . $restUrl['query'] : '');
 
-        return (0 === strpos($_SERVER['REQUEST_URI'], $restUrl));
+        return (str_starts_with($_SERVER['REQUEST_URI'], $restUrl));
     }
 }

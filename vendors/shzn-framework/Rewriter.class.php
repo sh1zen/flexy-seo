@@ -1,7 +1,7 @@
 <?php
 /**
  * @author    sh1zen
- * @copyright Copyright (C)  2021
+ * @copyright Copyright (C)  2022
  * @license   http://www.gnu.org/licenses/gpl.html GNU/GPL
  */
 
@@ -57,8 +57,8 @@ class Rewriter
         $this->request_args = [];
 
         if (!empty($req_args)) {
-            foreach (explode("&", $req_args) as $arg) {
-                list($key, $value) = explode("=", $arg);
+            foreach (explode("&", $req_args, 2) as $arg) {
+                list($key, $value) = explode("=", $arg, 2);
                 $this->request_args[$key] = $value;
             }
         }
@@ -181,7 +181,7 @@ class Rewriter
 
     private function MatchesMapRegex_apply($subject, $_matches)
     {
-        return preg_replace_callback('(\$matches\[[1-9]+[0-9]*\])', function ($matches) use ($_matches) {
+        return preg_replace_callback('(\$matches\[[1-9]+[0-9]*])', function ($matches) use ($_matches) {
 
             $index = intval(substr($matches[0], 9, -1));
             return (isset($_matches[$index]) ? urlencode($_matches[$index]) : '');
@@ -224,7 +224,7 @@ class Rewriter
             return $url === '';
         }
 
-        return !!stripos(strtolower(urldecode($url)), $word);
+        return str_contains(strtolower(urldecode($url)), $word);
     }
 }
 

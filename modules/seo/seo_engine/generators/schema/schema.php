@@ -1,7 +1,7 @@
 <?php
 /**
  * @author    sh1zen
- * @copyright Copyright (C)  2021
+ * @copyright Copyright (C)  2022
  * @license   http://www.gnu.org/licenses/gpl.html GNU/GPL
  */
 
@@ -14,13 +14,13 @@ use SHZN\core\UtilEnv;
 class Schema
 {
     /**
-     * All existing graphs.
+     * All existing page graphs.
      *
      * @since 1.2.0
      *
      * @var array
      */
-    public static $webPageGraphs = [
+    public static array $webPageGraphs = [
         'WebPage',
         'AboutPage',
         'CheckoutPage',
@@ -35,29 +35,49 @@ class Schema
         'SearchResultsPage'
     ];
 
-    public $nullableFields = [
+    /**
+     * All existing article graphs.
+     *
+     * @since 1.2.0
+     *
+     * @var array
+     */
+    public static array $webArticleGraphs = [
+        'Article',
+        'BlogPosting',
+        'SocialMediaPosting',
+        'NewsArticle',
+        'AdvertiserContentArticle',
+        'SatiricalArticle',
+        'ScholarlyArticle',
+        'TechArticle',
+        'Report',
+        'None'
+    ];
+
+    public array $nullableFields = [
         'price' // Needs to be 0 if free for Software Application.
     ];
 
     /**
      * @type String[]
      */
-    private $schema;
+    private array $schema;
 
     /**
      * @var String[]
      */
-    private $graphTypes;
+    private array $graphTypes;
 
     /**
      * @var String[]
      */
-    private $graphs;
+    private array $graphs;
 
     /**
      * @var CurrentPage
      */
-    private $current_page;
+    private CurrentPage $current_page;
 
     /**
      * @var \FlexySEO\Engine\Generator
@@ -87,15 +107,15 @@ class Schema
 
     public function build()
     {
-        $this->load_graphs();
-
-        $this->graphs2schema();
-    }
-
-    private function load_graphs()
-    {
         $cPage = $this->current_page;
 
+        $this->load_graphs($cPage);
+
+        $this->graphs2schema($cPage);
+    }
+
+    private function load_graphs($cPage)
+    {
         $this->graphTypes = [
             'WebSite'
         ];
@@ -165,9 +185,11 @@ class Schema
      */
     public function getPostGraphs($post)
     {
-        $postGraphs = ['WebPage'];
+        $postGraphs = [];
 
         if ($post) {
+
+            $postGraphs[] = self::get_post_graphType($post, 'page');
 
             if ('page' !== $post->post_type) {
                 $this->graphTypes[] = 'PersonAuthor';
@@ -177,20 +199,40 @@ class Schema
                 $postGraphs[] = "ImageObject";
             }
 
-            $graphType = Options::get($post->ID, "graphType", "customMeta", "");
+            $articleGraphType = ucfirst(self::get_post_graphType($post, 'article'));
 
-            if (!empty($graphType)) {
-                $postGraphs[] = ucfirst($graphType);
+            if (!($post->post_type === 'page' and $articleGraphType === 'Article')) {
+                $postGraphs[] = $articleGraphType;
             }
-            elseif ($post->post_type !== 'page') {
-                $postGraphs[] = "Article";
-            }
+
+        }
+        else {
+            $postGraphs[] = 'WebPage';
         }
 
         return $postGraphs;
     }
 
-    private function graphs2schema()
+    /**
+     * requires for page / article
+     * return graphArticleType or graphPageType
+     */
+    public static function get_post_graphType($post, $for = 'page')
+    {
+        $selector = "graph" . ucfirst($for) . "Type";
+
+        //graphArticleType or graphPageType
+
+        return Options::get(
+            $post->ID,
+            $selector,
+            "customMeta",
+            shzn('wpfs')->settings->get("seo.post_type.{$post->post_type}.schema.{$for}Type", $for === 'page' ? "WebPage" : "Article")
+        );
+
+    }
+
+    private function graphs2schema($cPage)
     {
         require_once WPFS_SEO_ENGINE_GENERATORS . 'schema/graph/Graph.php';
         require_once WPFS_SEO_ENGINE_GENERATORS . 'schema/graph/Person.php';
@@ -202,7 +244,7 @@ class Schema
 
         foreach ($graphTypes as $graphType) {
 
-            $filter = "wpfs_schema_type_" . strtolower($graphType);
+            $namespace = false;
 
             if (file_exists(WPFS_SEO_ENGINE . 'generators/schema/graph/' . $graphType . '.php')) {
 
@@ -210,25 +252,28 @@ class Schema
 
                 if (class_exists("FlexySEO\Engine\Generators\Schema\Graphs\\$graphType")) {
                     $namespace = "FlexySEO\Engine\Generators\Schema\Graphs\\$graphType";
-
-                    //if graph is actually a fully qualified class name
-                    if (class_exists($graphType)) {
-                        $namespace = $graphType;
-                    }
-
-                    $this->add(apply_filters($filter, (new $namespace($this->generator))->get(), $graphType));
                 }
             }
             elseif (in_array($graphType, self::$webPageGraphs)) {
 
                 $namespace = "FlexySEO\Engine\Generators\Schema\Graphs\WebPage";
 
-                //if graph is actually a fully qualified class name
+            }
+            elseif (in_array($graphType, self::$webArticleGraphs)) {
+
+                $namespace = "FlexySEO\Engine\Generators\Schema\Graphs\Article";
+            }
+
+            if ($namespace) {
+
+                //if graph is actually a fully qualified class name lets use it
                 if (class_exists($graphType)) {
                     $namespace = $graphType;
                 }
 
-                $this->add(apply_filters($filter, (new $namespace($this->generator))->get($graphType), $graphType));
+                $graph = (new $namespace($this->generator))->get($cPage->get_post(), $graphType);
+
+                $this->add(apply_filters("wpfs_schema_type_" . strtolower($graphType), $graph, $graphType));
             }
         }
 

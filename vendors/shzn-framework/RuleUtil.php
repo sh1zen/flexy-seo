@@ -1,7 +1,7 @@
 <?php
 /**
  * @author    sh1zen
- * @copyright Copyright (C)  2021
+ * @copyright Copyright (C)  2022
  * @license   http://www.gnu.org/licenses/gpl.html GNU/GPL
  */
 
@@ -40,13 +40,13 @@ class RuleUtil
 
         if (empty($rules)) {
             // rules removal mode
-            if (strpos($data, $start) === false) {
+            if (!str_contains($data, $start)) {
                 return true;
             }
         }
         else {
             // rules creation mode
-            if (strstr(RuleUtil::clean_rules($data), RuleUtil::clean_rules($rules)) !== false) {
+            if (str_contains(RuleUtil::clean_rules($data), RuleUtil::clean_rules($rules))) {
                 return true;
             }
         }
@@ -66,7 +66,7 @@ class RuleUtil
 
                 if (($pos = strpos($data, $string)) !== false) {
 
-                    $length = strpos($string, 'END') !== false ? strlen($string) + 1 : 0;
+                    $length = str_contains($string, 'END') ? strlen($string) + 1 : 0;
 
                     $replace_start = $pos + $length;
                 }
@@ -173,7 +173,7 @@ class RuleUtil
      * @param string $end
      * @return int
      */
-    public static function has_rules($rules, $start, $end)
+    public static function has_rules(string $rules, string $start, string $end)
     {
         return preg_match('~' . UtilEnv::preg_quote($start) . "\n.*?" . UtilEnv::preg_quote($end) . "\n*~s", $rules);
     }
@@ -185,7 +185,7 @@ class RuleUtil
      * @param bool $data
      * @return bool
      */
-    public static function remove_rules($start, $end, $data = false)
+    public static function remove_rules($start, $end, bool $data = false)
     {
         if ($data) {
             $write_out = false;
@@ -195,7 +195,7 @@ class RuleUtil
             $data = self::get_rules();
         }
 
-        if (strstr($data, $start) === false) {
+        if (!str_contains($data, $start)) {
             return false;
         }
 
@@ -216,7 +216,7 @@ class RuleUtil
      * @param string $end
      * @return string
      */
-    private static function erase_rules($rules, $start, $end)
+    private static function erase_rules(string $rules, string $start, string $end)
     {
         $r = '~' . UtilEnv::preg_quote($start) . "\n.*?" . UtilEnv::preg_quote($end) . "\n*~s";
 

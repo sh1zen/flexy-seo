@@ -1,13 +1,14 @@
 <?php
 /**
  * @author    sh1zen
- * @copyright Copyright (C)  2021
+ * @copyright Copyright (C)  2022
  * @license   http://www.gnu.org/licenses/gpl.html GNU/GPL
  */
 
 namespace FlexySEO\Engine\Generators\Schema\Graphs;
 
 use FlexySEO\core\Options;
+use FlexySEO\Engine\Generator;
 
 /**
  * The base graph class.
@@ -16,12 +17,12 @@ use FlexySEO\core\Options;
  */
 abstract class Graph
 {
-    protected $type = '';
+    protected string $type = '';
 
     /**
      * @var \FlexySEO\Engine\Generator $generator
      */
-    protected $generator;
+    protected Generator $generator;
 
     public function __construct($generator)
     {
@@ -31,9 +32,11 @@ abstract class Graph
     /**
      * Returns the graph data.
      *
+     * @param \WP_Post $post
+     * @param string $type
      * @since 1.2.0
      */
-    abstract public function get($type = '');
+    abstract public function get($post, string $type = '');
 
     /**
      * Builds the graph data for a given image with a given schema ID.
@@ -150,7 +153,7 @@ abstract class Graph
         $sameUsername = false;
 
         if ($authorId) {
-
+            //todo get social data
         }
         else {
 
@@ -172,7 +175,7 @@ abstract class Graph
 
                 if (!empty($username)) {
 
-                    if (strpos($username, "/") === false) {
+                    if (!str_contains($username, "/")) {
                         $socialUrls[] = sprintf($value, $username);
                     }
                     else {

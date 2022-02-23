@@ -1,7 +1,7 @@
 <?php
 /**
  * @author    sh1zen
- * @copyright Copyright (C)  2021
+ * @copyright Copyright (C)  2022
  * @license   http://www.gnu.org/licenses/gpl.html GNU/GPL
  */
 
@@ -63,7 +63,7 @@ class Cron
      * @param string $hookname The hook name of the cron event to run.
      * @return bool Whether the execution was successful.
      */
-    public static function run_event($hookname)
+    public static function run_event(string $hookname)
     {
         $crons = _get_cron_array();
 
@@ -142,7 +142,7 @@ class Cron
      * @param int $timestamp
      * @return bool
      */
-    public static function schedule_function($function, $args = array(), $timestamp = 1)
+    public static function schedule_function($function, array $args = array(), int $timestamp = 1)
     {
         $events = get_option('cron.events', array());
 
@@ -174,7 +174,7 @@ class Cron
      * @param $function
      * @param array $args
      */
-    public static function unschedule_function($function, $args = array())
+    public static function unschedule_function($function, array $args = array())
     {
         $events = get_option('cron.events', array());
 

@@ -1,7 +1,7 @@
 <?php
 /**
  * @author    sh1zen
- * @copyright Copyright (C)  2021
+ * @copyright Copyright (C)  2022
  * @license   http://www.gnu.org/licenses/gpl.html GNU/GPL
  */
 
@@ -30,18 +30,25 @@ function shzn_var_dump(...$vars)
 /**
  * @return string
  */
-function shzn_get_calling_function($level = 2)
+function shzn_debug_backtrace($level = 2)
 {
-    $caller = debug_backtrace();
-    $caller = $caller[$level];
-    $r = $caller['function'] . '()';
-    if (isset($caller['class'])) {
-        $r .= ' in ' . $caller['class'];
+    $caller = debug_backtrace(DEBUG_BACKTRACE_PROVIDE_OBJECT, $level + 1);
+
+    if (isset($caller[$level])) {
+
+        $caller = $caller[$level];
+        $r = $caller['function'] . '()';
+        if (isset($caller['class'])) {
+            $r .= ' in ' . $caller['class'];
+        }
+        if (isset($caller['object'])) {
+            $r .= ' (' . get_class($caller['object']) . ')';
+        }
+
+        return $r;
     }
-    if (isset($caller['object'])) {
-        $r .= ' (' . get_class($caller['object']) . ')';
-    }
-    return $r;
+
+    return var_export($caller, true);
 }
 
 
@@ -57,8 +64,9 @@ function shzn_timestr2seconds($time = '')
 
 function shzn_add_timezone($timestamp = false)
 {
-    if (!$timestamp)
+    if (!$timestamp) {
         $timestamp = time();
+    }
 
     $timezone = get_option('gmt_offset') * HOUR_IN_SECONDS;
 

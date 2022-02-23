@@ -1,7 +1,7 @@
 <?php
 /**
  * @author    sh1zen
- * @copyright Copyright (C)  2021
+ * @copyright Copyright (C)  2022
  * @license   http://www.gnu.org/licenses/gpl.html GNU/GPL
  */
 
@@ -125,7 +125,7 @@ class shzn_wrapper
 
     public function __get($name)
     {
-        $fn = shzn_get_calling_function(2);
+        $fn = shzn_debug_backtrace(2);
         trigger_error("SHZN Framework >> object {$name} not defined in {$fn}.", E_USER_WARNING);
     }
 }

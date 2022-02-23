@@ -1,7 +1,7 @@
 <?php
 /**
  * @author    sh1zen
- * @copyright Copyright (C)  2021
+ * @copyright Copyright (C)  2022
  * @license   http://www.gnu.org/licenses/gpl.html GNU/GPL
  */
 
@@ -86,20 +86,23 @@ class Generator
      * @param string $keywords
      * @return string The meta keywords.
      */
-    public function get_keywords($keywords = '')
+    public function get_keywords(string $keywords = '')
     {
-        if ($keywords = $this->get_cache("keywords"))
-            return maybe_unserialize($keywords);
-
-        if ($this->current_page->is_simple_page()) {
-            $_keywords = Options::get($this->current_page->get_queried_object_id(), "keywords", "customMeta", false);
-
-            if (!empty($_keywords))
-                $keywords = $_keywords;
+        if (($keys = $this->get_cache("keywords")) !== false) {
+            return maybe_unserialize($keys);
         }
 
-        if (is_array($keywords))
-            $keywords = implode(',', $keywords);
+        if ($this->current_page->is_simple_page()) {
+            $_keywords = Options::get($this->current_page->get_queried_object_id(), "keywords", "customMeta", "");
+
+            if (!empty($_keywords)) {
+                $keywords = $_keywords;
+            }
+        }
+
+        if (is_array($keywords)) {
+            $keywords = implode(', ', $keywords);
+        }
 
         $keywords = Txt_Replacer::replace(
             $keywords,
@@ -259,6 +262,7 @@ class Generator
         $og->title($this->generate_title());
 
         foreach (['medium', 'thumbnail'] as $size) {
+
             $image_metadata = $this->get_snippet_image($size);
 
             if ($image_metadata and $image_metadata['url']) {
@@ -284,11 +288,13 @@ class Generator
 
     public function generate_title($title = '')
     {
-        if ($_title = $this->get_cache("title"))
+        if (($_title = $this->get_cache("title")) !== false) {
             return $_title;
+        }
 
-        if (empty($title))
+        if (empty($title)) {
             $title = "%%title%%";
+        }
 
         $title = Txt_Replacer::replace(
             $title,
@@ -296,12 +302,15 @@ class Generator
             $this->current_page->get_query_type()
         );
 
+        $title = apply_filters("wpfs_title", $title);
+
         $title = trim($title);
-        $title = convert_chars($title);
+
+        if (str_contains($title, '&')) {
+            $title = preg_replace('/&([^#])(?![a-z1-4]{1,8};)/Ui', '&#038;$1', $title);
+        }
 
         $title = esc_html($title);
-
-        $title = apply_filters("wpfs_title", $title);
 
         $this->set_cache("title", $title);
 
@@ -310,11 +319,9 @@ class Generator
 
     protected function get_snippet_image($size = 'thumbnail')
     {
-        if ($_image = $this->get_cache("snippet_image"))
+        if (($_image = $this->get_cache("snippet_image")) !== false) {
             return $_image;
-
-        $width = 0;
-        $height = 0;
+        }
 
         if ($size === 'thumbnail') {
             $url = shzn('wpfs')->settings->get('seo.org.logo_url.small', '');
@@ -323,30 +330,18 @@ class Generator
             $url = shzn('wpfs')->settings->get('seo.org.logo_url.wide', '');
         }
 
-        if (empty($url))
+        if (empty($url)) {
             return false;
-
-        $path = parse_url($url, PHP_URL_PATH);
-
-        $image_path = realpath(ABSPATH . $path);
-
-        if ($image_path) {
-            list($width, $height) = wp_getimagesize($image_path);
         }
 
-        if ($this->current_page->is_simple_page()) {
+        $snippet_data = Options::get($url, "snippet_data", "cache", false);
 
-            if ($post_thumbnail_id = get_post_thumbnail_id($this->current_page->get_queried_object())) {
+        if (!$snippet_data) {
 
-                if ($image_data = wp_get_attachment_image_src($post_thumbnail_id, $size)) {
-                    $url = $image_data[0];
-                    $width = $image_data[1];
-                    $height = $image_data[2];
-                }
-            }
+            $snippet_data = wpfseo()->images->get_snippet_data($url, $size, $this->current_page->get_queried_object());
+
+            Options::add($url, "snippet_data", $snippet_data, "cache", WEEK_IN_SECONDS);
         }
-
-        $snippet_data = array('url' => $url, 'width' => $width, 'height' => $height);
 
         $this->set_cache("snippet_image", $snippet_data);
 
@@ -359,16 +354,18 @@ class Generator
      * @param string $description
      * @return string The meta description.
      */
-    public function get_description($description = '')
+    public function get_description(string $description = '')
     {
-        if ($dsc = $this->get_cache("description"))
+        if (($dsc = $this->get_cache("description")) !== false) {
             return $dsc;
+        }
 
         if ($this->current_page->is_simple_page()) {
             $_description = Options::get($this->current_page->get_queried_object_id(), "description", "customMeta", "");
 
-            if (!empty($_description))
+            if (!empty($_description)) {
                 $description = $_description;
+            }
         }
 
         $description = Txt_Replacer::replace(
@@ -389,10 +386,11 @@ class Generator
         if (shzn('wpfs')->settings->get("seo.social.twitter.card", false)) {
             $tc->add_card(shzn('wpfs')->settings->get("seo.social.twitter.large_images", true) ? 'summary_large_image' : 'summary');
 
-            preg_match('/(https?:\/\/twitter\.com\/)?(?<name>[^\?]+)(\??.*)?/i', shzn('wpfs')->settings->get("seo.social.twitter.url", ''), $m);
+            preg_match('#(https?://twitter\.com/)?(?<name>[^?]+)(\??.*)#i', shzn('wpfs')->settings->get("seo.social.twitter.url", ''), $m);
 
-            if(!isset($m['name']))
+            if (!isset($m['name'])) {
                 return $tc;
+            }
 
             $twitterName = '@' . trim($m['name'], ' @');
 

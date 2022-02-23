@@ -1,7 +1,7 @@
 <?php
 /**
  * @author    sh1zen
- * @copyright Copyright (C)  2021
+ * @copyright Copyright (C)  2022
  * @license   http://www.gnu.org/licenses/gpl.html GNU/GPL
  */
 
@@ -41,8 +41,9 @@ class UtilEnv
 
     public static function rise_time_limit($time = 30)
     {
-        if (absint(ini_get('max_execution_time')) === 0)
+        if (absint(ini_get('max_execution_time')) === 0) {
             return true;
+        }
 
         return function_exists('set_time_limit') and set_time_limit($time);
     }
@@ -106,7 +107,7 @@ class UtilEnv
      *
      * @return string
      */
-    public static function standardize_whitespace($string)
+    public static function sanitize_whitespace($string)
     {
         return \trim(\str_replace('  ', ' ', \str_replace(["\t", "\n", "\r", "\f"], ' ', $string)));
     }
@@ -115,7 +116,7 @@ class UtilEnv
     {
         // using wp-content instead of document_root as known dir since dirbased
         // multisite wp adds blogname to the path inside site_url
-        if (substr($filename, 0, strlen(WP_CONTENT_DIR)) != WP_CONTENT_DIR) {
+        if (!str_starts_with($filename, WP_CONTENT_DIR)) {
             return '';
         }
 
@@ -139,7 +140,7 @@ class UtilEnv
         if (empty($_SERVER['SERVER_SOFTWARE']))
             return true;
 
-        return isset($_SERVER['SERVER_SOFTWARE']) and stristr($_SERVER['SERVER_SOFTWARE'], 'Apache') !== false;
+        return stristr($_SERVER['SERVER_SOFTWARE'], 'Apache') !== false;
     }
 
     /**
@@ -188,17 +189,21 @@ class UtilEnv
     }
 
     /**
-     * Memoized version of wp_upload_dir. That function is quite slow
-     * for a number of times CDN calls it
+     * Memoized version of wp_upload_dir.
      */
-    public static function wp_upload_dir()
+    public static function wp_upload_dir($part = '')
     {
         static $values_by_blog = array();
 
         $blog_id = get_current_blog_id();
 
-        if (!isset($values_by_blog[$blog_id]))
+        if (!isset($values_by_blog[$blog_id])) {
             $values_by_blog[$blog_id] = wp_upload_dir();
+        }
+
+        if ($part) {
+            return $values_by_blog[$blog_id][$part];
+        }
 
         return $values_by_blog[$blog_id];
     }
@@ -365,8 +370,9 @@ class UtilEnv
         $host_port = self::host_port();
 
         $pos = strpos($host_port, ':');
-        if ($pos === false)
+        if ($pos === false) {
             return $host_port;
+        }
 
         return substr($host_port, 0, $pos);
     }
@@ -418,11 +424,13 @@ class UtilEnv
         /* There is a bug in WP where network_home_url can return
          * a non-relative URI even though scheme is set to relative.
          */
-        if (self::is_url($uri))
+        if (self::is_url($uri)) {
             $uri = parse_url($uri, PHP_URL_PATH);
+        }
 
-        if (empty($uri))
+        if (empty($uri)) {
             return '/';
+        }
 
         return $uri;
     }
@@ -471,7 +479,7 @@ class UtilEnv
     public static function normalize_file($file)
     {
         if (self::is_url($file)) {
-            if (strstr($file, '?') === false) {
+            if (!str_contains($file, '?')) {
                 $home_url_regexp = '~' . self::home_url_regexp() . '~i';
                 $file = preg_replace($home_url_regexp, '', $file);
             }
@@ -535,19 +543,32 @@ class UtilEnv
      */
     public static function normalize_path($path, $trailing_slash = false)
     {
-        // Assume empty dir is root
-        if (!$path)
-            return '/';
-
-        $path = preg_replace('~[/\\\]+~', '/', $path);
+        $wrapper = '';
 
         // Remove the trailing slash
-        if (!$trailing_slash)
+        if (!$trailing_slash) {
             $path = rtrim($path, '/');
-        else
-            $path = trailingslashit($path);
+        }
+        else {
+            $path .= '/';
+        }
 
-        return $path;
+        if (wp_is_stream($path)) {
+            list($wrapper, $path) = explode('://', $path, 2);
+
+            $wrapper .= '://';
+        }
+        else {
+            // Windows paths should uppercase the drive letter.
+            if (':' === substr($path, 1, 1)) {
+                $path = ucfirst($path);
+            }
+        }
+
+        // Standardise all paths to use '/' and replace multiple slashes down to a singular.
+        $path = preg_replace('#(?<=.)[/\\\]+#', '/', $path);
+
+        return $wrapper . $path;
     }
 
     /**
@@ -604,6 +625,55 @@ class UtilEnv
         return $absolutes;
     }
 
+    public static function path_to_url($path, $file = false)
+    {
+        $base_dir = self::normalize_path(ABSPATH, false);
+
+        if ($file) {
+            $path = pathinfo($path, PATHINFO_DIRNAME);
+        }
+
+        return site_url(str_replace($base_dir, '', self::normalize_path($path, false))) . '/';
+    }
+
+    /**
+     * Get the attachment absolute path from its url
+     *
+     * @param string $url the attachment url to get its absolute path
+     *
+     * @return bool|string It returns the absolute path of an attachment
+     */
+    public static function url_to_path(string $url)
+    {
+        $parsed_url_path = parse_url($url, PHP_URL_PATH);
+
+        if (empty($parsed_url_path)) {
+            return false;
+        }
+
+        $base_dir = self::normalize_path(ABSPATH, false);
+
+        $basename = basename($base_dir);
+
+        $file = ltrim($base_dir . substr($parsed_url_path, strpos($parsed_url_path, $basename) + strlen($basename)), '/');
+
+        if (file_exists($file)) {
+            return $file;
+        }
+
+        return false;
+    }
+
+    public static function plugin_basename($file)
+    {
+        $plugin_dir = self::normalize_path(WP_PLUGIN_DIR);
+        $mu_plugin_dir = self::normalize_path(WPMU_PLUGIN_DIR);
+
+        // Get relative path from plugins directory.
+        $file = preg_replace('#^' . preg_quote($plugin_dir, '#') . '/|^' . preg_quote($mu_plugin_dir, '#') . '/#', '', self::normalize_path($file));
+        return trim($file, '/');
+    }
+
     /**
      * Get domain URL
      *
@@ -647,7 +717,7 @@ class UtilEnv
         $normalized_url = preg_replace('~^http(s)?://~', '//', $normalized_url);
         $home_url = preg_replace('~^http(s)?://~', '//', $home_url);
 
-        if (substr($normalized_url, 0, strlen($home_url)) != $home_url) {
+        if (!str_starts_with($normalized_url, $home_url)) {
             // not a home url, return unchanged since cant be
             // converted to filename
             return null;
@@ -663,8 +733,7 @@ class UtilEnv
         if (!empty($home) and 0 !== strcasecmp($home, $siteurl)) {
             // $siteurl - $home
             $wp_path_rel_to_home = rtrim(str_ireplace($home, '', $siteurl), '/');
-            if (substr($home_path, -strlen($wp_path_rel_to_home)) ==
-                $wp_path_rel_to_home) {
+            if (str_ends_with($home_path, $wp_path_rel_to_home)) {
                 $home_path = substr($home_path, 0, -strlen($wp_path_rel_to_home));
             }
         }
@@ -676,7 +745,7 @@ class UtilEnv
             trim($path_relative_to_home, DIRECTORY_SEPARATOR);
 
         $docroot = self::document_root();
-        if (substr($full_filename, 0, strlen($docroot)) == $docroot) {
+        if (str_starts_with($full_filename, $docroot)) {
             $docroot_filename = substr($full_filename, strlen($docroot));
         }
         else {
@@ -763,7 +832,7 @@ class UtilEnv
                 $_SERVER['SCRIPT_FILENAME']);
             $php_self = self::normalize_path(
                 $_SERVER['PHP_SELF']);
-            if (substr($script_filename, -strlen($php_self)) == $php_self) {
+            if (str_ends_with($script_filename, $php_self)) {
                 $document_root = substr($script_filename, 0, -strlen($php_self));
                 return realpath($document_root);
             }
@@ -798,7 +867,7 @@ class UtilEnv
      */
     public static function remove_query($url)
     {
-        return preg_replace('~(\?|&amp;|&#038;|&)+ver=[a-z0-9-_\.]+~i', '', $url);
+        return preg_replace('~(\?|&amp;|&#038;|&)+ver=[a-z0-9-_.]+~i', '', $url);
     }
 
     /**
@@ -810,12 +879,8 @@ class UtilEnv
     {
         $relative_url = self::path_remove_dots($relative_url);
 
-        if (version_compare(PHP_VERSION, '5.4.7') < 0) {
-            if (substr($relative_url, 0, 2) == '//') {
-                $relative_url =
-                    (self::is_https() ? 'https' : 'http') .
-                    ':' . $relative_url;
-            }
+        if (str_starts_with($relative_url, '//')) {
+            $relative_url = (self::is_https() ? 'https' : 'http') . ':' . $relative_url;
         }
 
         $rel = parse_url($relative_url);
@@ -825,20 +890,17 @@ class UtilEnv
             return $relative_url;
         }
 
-        if (!isset($rel['host'])) {
-            $home_parsed = parse_url(get_home_url());
-            $rel['host'] = $home_parsed['host'];
-            if (isset($home_parsed['port'])) {
-                $rel['port'] = $home_parsed['port'];
-            }
+        $home_parsed = parse_url(get_home_url());
+        $rel['host'] = $home_parsed['host'];
+        if (isset($home_parsed['port'])) {
+            $rel['port'] = $home_parsed['port'];
         }
 
-        $scheme = isset($rel['scheme']) ? $rel['scheme'] . '://' : '//';
         $host = isset($rel['host']) ? $rel['host'] : '';
         $port = isset($rel['port']) ? ':' . $rel['port'] : '';
         $path = isset($rel['path']) ? $rel['path'] : '';
         $query = isset($rel['query']) ? '?' . $rel['query'] : '';
-        return "$scheme$host$port$path$query";
+        return (self::is_https() ? 'https' : 'http') . "://$host$port$path$query";
     }
 
     /**
@@ -849,10 +911,9 @@ class UtilEnv
      */
     public static function path_remove_dots($path)
     {
-        $parts = explode('/', $path);
         $absolutes = array();
 
-        foreach ($parts as $part) {
+        foreach (explode('/', $path) as $part) {
             if ('.' == $part) {
                 continue;
             }
@@ -890,8 +951,7 @@ class UtilEnv
      * @param string $separator
      * @return string
      */
-    public static function url_format($url = '', $params = array(),
-                                      $skip_empty = false, $separator = '&')
+    public static function url_format(string $url = '', array $params = array(), bool $skip_empty = false, string $separator = '&')
     {
         if ($url != '') {
             $parse_url = @parse_url($url);
@@ -957,8 +1017,7 @@ class UtilEnv
      * @param string $separator
      * @return string
      */
-    public static function url_query($params = array(), $skip_empty = false,
-                                     $separator = '&')
+    public static function url_query($params = array(), $skip_empty = false, $separator = '&')
     {
         $str = '';
         static $stack = array();
@@ -968,7 +1027,7 @@ class UtilEnv
                 continue;
             }
 
-            array_push($stack, $key);
+            $stack[] = $key;
 
             if (is_array($value)) {
                 if (count($value)) {
@@ -1063,7 +1122,7 @@ class UtilEnv
     /**
      * Checks if current request is REST REQUEST
      * @param $url
-     * @return bool|int
+     * @return bool
      */
     public static function is_rest_request($url)
     {
@@ -1072,7 +1131,7 @@ class UtilEnv
 
         // in case when called before constant is set
         // wp filters are not available in that case
-        return preg_match('~/wp-json/~', $url);
+        return str_contains($url, '/wp-json/');
     }
 
     public static function is_function_disabled($function_name)
@@ -1221,7 +1280,7 @@ class UtilEnv
 
         $filtered = wp_check_invalid_utf8($str);
 
-        if (strpos($filtered, '<') !== false) {
+        if (str_contains($filtered, '<')) {
             $filtered = wp_pre_kses_less_than($filtered);
             // This will strip extra whitespace for us.
             $filtered = wp_strip_all_tags($filtered, false);
@@ -1262,8 +1321,9 @@ class UtilEnv
 
     public static function verify_nonce($name, $nonce = false)
     {
-        if (!$nonce)
+        if (!$nonce) {
             $nonce = trim($_REQUEST['_wpnonce']);
+        }
 
         return wp_verify_nonce($nonce, $name);
     }

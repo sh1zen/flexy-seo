@@ -1,6 +1,14 @@
 <?php
+/**
+ * @author    sh1zen
+ * @copyright Copyright (C)  2022
+ * @license   http://www.gnu.org/licenses/gpl.html GNU/GPL
+ */
 
 namespace FlexySEO\Engine\Generators\Schema\Graphs;
+
+use FlexySEO\core\Options;
+use FlexySEO\Engine\Generators\Schema;
 
 /**
  * Article graph class.
@@ -11,16 +19,18 @@ class Article extends Graph
 {
     /**
      * Returns the graph data.
+     * @param \WP_Post $post
+     * @param string $type
      * @return array The graph data.
      *
      * @since 1.2.0
      */
-    public function get($type = '')
+    public function get($post, string $type = 'Article')
     {
         // Get all terms that the post is assigned to.
-        $post = wpfseo()->currentPage->get_post();
         $postTaxonomies = get_post_taxonomies($post);
         $postTerms = [];
+
         foreach ($postTaxonomies as $taxonomy) {
             $terms = get_the_terms($post, $taxonomy);
             if ($terms) {
@@ -30,9 +40,11 @@ class Article extends Graph
 
         $url = $this->generator->get_permalink();
 
+        $contextType = strtolower(Schema::get_post_graphType($post, 'page'));
+
         $data = [
-            '@type'            => 'Article',
-            '@id'              => $url . '#article',
+            '@type'            => $type,
+            '@id'              => "$url#" . strtolower($type),
             'name'             => $this->generator->generate_title(),
             'description'      => $this->generator->get_description(),
             'inLanguage'       => wpfseo()->language->currentLanguageCodeBCP47(),
@@ -43,11 +55,12 @@ class Article extends Graph
             'dateModified'     => mysql2date(DATE_W3C, $post->post_modified_gmt, false),
             'commentCount'     => get_comment_count($post->ID)['approved'],
             'articleSection'   => implode(', ', $postTerms),
-            'mainEntityOfPage' => ['@id' => $url . '#webpage'],
-            'isPartOf'         => ['@id' => $url . '#webpage'],
+            'mainEntityOfPage' => ['@id' => "{$url}#{$contextType}"],
+            'isPartOf'         => ['@id' => "{$url}#{$contextType}"],
         ];
 
         $pageNumber = $this->generator->get_page_number();
+
         if (1 < $pageNumber) {
             $data['pagination'] = $pageNumber;
         }
@@ -56,6 +69,7 @@ class Article extends Graph
         if (!empty($image)) {
             $data['image'] = $image;
         }
+
         return $data;
     }
 

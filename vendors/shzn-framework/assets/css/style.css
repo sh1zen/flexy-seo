@@ -1,3 +1,9 @@
+/**
+ * @author    sh1zen
+ * @copyright Copyright (C)  2022
+ * @license   http://www.gnu.org/licenses/gpl.html GNU/GPL
+ */
+
 :root {
     --border-color: #717171;
     --tabs-bg-selected-color: #c5c5c5;
@@ -682,9 +688,13 @@ table.shzn tr.blank-row {
 }
 
 .shzn-dropdown__opener {
-    width: 20px;
+    width: 30px;
     height: 100%;
-    margin: 0 20px;
+    line-height: 30px;
+    margin: 0 10px;
+    display: block;
+    cursor: pointer;
+    text-align: center;
 }
 
 .shzn-uploader__init {
@@ -704,7 +714,7 @@ table.shzn tr.blank-row {
 }
 
 .shzn-multiselect__wrapper {
-    position: absolute;
+    position: relative;
     background: #fff;
     border: 1px solid #8c8f94;
     border-top: none;
@@ -868,11 +878,6 @@ ul.shzn-autocomplete li {
     border-bottom: 1px solid #dadada;
 }
 
-.shzn-list {
-    padding-left: 30px;
-    list-style: disc;
-}
-
 .shzn-progressbarCircle__stroke {
     animation: mck_progress 2s ease-in-out;
 }
@@ -912,6 +917,11 @@ ul.shzn-autocomplete li {
 
 .is-open .shzn-icon__arrow {
     transform: rotate(270deg);
+}
+
+.shzn-list {
+    list-style: disc;
+    padding: 0 20px;
 }
 
 @media only screen and (max-width: 1192px) {

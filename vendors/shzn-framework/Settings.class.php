@@ -1,7 +1,7 @@
 <?php
 /**
  * @author    sh1zen
- * @copyright Copyright (C)  2021
+ * @copyright Copyright (C)  2022
  * @license   http://www.gnu.org/licenses/gpl.html GNU/GPL
  */
 
@@ -26,8 +26,9 @@ class Settings
 
         $this->settings = get_option($option_name);
 
-        if (!$this->settings)
+        if (!$this->settings) {
             $this->settings = array();
+        }
 
         if (is_admin()) {
             add_action('admin_init', array($this, 'register_hooks'));
@@ -43,8 +44,9 @@ class Settings
 
             $pos = strpos($setting_path, '.');
 
-            if ($pos === false)
+            if ($pos === false) {
                 $pos = strlen($setting_path);
+            }
 
             $slug = substr($setting_path, 0, $pos);
 
@@ -67,42 +69,34 @@ class Settings
 
     public static function check($settings, $key, $default = false)
     {
-        if (isset($settings[$key]))
+        if (isset($settings[$key])) {
             return $settings[$key];
+        }
 
         return $default;
     }
 
-
-
     /**
      * Access to settings by path -> delimiter: "."
-     * @param string $setting_path
-     * @param array $default
+     * @param string $context
+     * @param mixed $default
      * @param bool $update -> if no option were found, update theme, with defaults values
      * @return array|mixed|object|string
      */
-    public function get($setting_path = '', $default = [], $update = false)
+    public function get(string $context = '', $default = [], bool $update = false)
     {
         $settings = $this->settings;
 
-        if (empty($setting_path))
-            return $settings;
+        // remove consecutive dots and add a last one for while loop
+        $setting_path = preg_replace('#\.+#', '.', $context . '.');
 
-        // remove last separator
-        $setting_path = rtrim($setting_path, '.');
-
-        // keep in memory
-        $context = $setting_path;
-
-        while (strlen($setting_path) > 0) {
-
-            $pos = strpos($setting_path, '.');
-
-            if ($pos === false)
-                $pos = strlen($setting_path);
+        while (($pos = strpos($setting_path, '.')) !== false) {
 
             $slug = substr($setting_path, 0, $pos);
+
+            if (empty($slug)) {
+                break;
+            }
 
             if (!isset($settings[$slug])) {
 
@@ -115,8 +109,7 @@ class Settings
 
             $settings = $settings[$slug];
 
-            // update search key
-            $setting_path = substr_replace($setting_path, '', 0, $pos + 1);
+            $setting_path = substr($setting_path, $pos + 1);
         }
 
         if (is_array($settings) or is_object($settings)) {
@@ -126,15 +119,22 @@ class Settings
         return $settings;
     }
 
-    public function update($option_data, $context)
+    public function update($option_data, $context, $force = false)
     {
-        if (empty($context))
+        if (empty($context)) {
             return false;
+        }
 
-        if (!isset($this->settings[$context]))
+        if (!isset($this->settings[$context])) {
             $this->settings[$context] = array();
+        }
 
-        $this->settings[$context] = wp_parse_args($option_data, $this->settings[$context]);
+        if ($force) {
+            $this->settings[$context] = $option_data;
+        }
+        else {
+            $this->settings[$context] = wp_parse_args($option_data, $this->settings[$context]);
+        }
 
         return $this->reset($this->settings);
     }
@@ -269,8 +269,9 @@ class Settings
     {
         $settings = unserialize(base64_decode($import_settings));
 
-        if (!$settings or !is_array($settings))
+        if (!$settings or !is_array($settings)) {
             return false;
+        }
 
         return $this->reset($settings);
     }

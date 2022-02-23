@@ -1,7 +1,7 @@
 <?php
 /**
  * @author    sh1zen
- * @copyright Copyright (C)  2021
+ * @copyright Copyright (C)  2022
  * @license   http://www.gnu.org/licenses/gpl.html GNU/GPL
  */
 
@@ -59,7 +59,7 @@ class Options
             return false;
         }
 
-        shzn('wpfs')->cache->set_cache($option, $value, 'options', true);
+        shzn('wpfs')->cache->set_cache($option, $value, 'db_cache', true);
 
         return true;
     }
@@ -71,18 +71,19 @@ class Options
         $option = trim($option);
 
         if (empty($option)) {
-            return false;
+            return $default;
         }
 
-        if ($value = shzn('wpfs')->cache->get_cache($option, 'options', false))
+        if (!is_null($value = shzn('wpfs')->cache->get_cache($option, 'db_cache', null))) {
             return $value;
+        }
 
         $value = $default;
 
         $row = $wpdb->get_row($wpdb->prepare("SELECT * FROM " . self::table_name() . " WHERE obj_id = %s AND item = %s AND context = %s LIMIT 1", $obj_id, $option, $context));
 
-        // Has to be get_row() instead of get_var() because of funkiness with 0, false, null values.
         if (is_object($row)) {
+
             $expiration = $row->expiration ? intval($row->expiration) : false;
 
             if (!$expiration or $expiration >= time()) {
@@ -91,14 +92,14 @@ class Options
             else {
                 self::remove($obj_id, $option, $context);
             }
-
-            shzn('wpfs')->cache->set_cache($option, $value, 'options');
         }
+
+        shzn('wpfs')->cache->set_cache($option, $value, 'db_cache');
 
         return $value;
     }
 
-    private static function table_name()
+    public static function table_name()
     {
         global $wpdb;
 
@@ -121,7 +122,7 @@ class Options
             return false;
         }
 
-        shzn('wpfs')->cache->delete_cache($option, 'options');
+        shzn('wpfs')->cache->delete_cache($option, 'db_cache');
 
         return true;
     }
@@ -134,7 +135,7 @@ class Options
      * @param int $expiration could be 0, specific time, DAY_IN_SECONDS, or negative -> not persistent cache
      * @return bool
      */
-    public static function add($obj_id, $option, $value = false, $context = 'core', $expiration = 0)
+    public static function add($obj_id, $option, $value = false, string $context = 'core', int $expiration = 0)
     {
         global $wpdb;
 
@@ -164,7 +165,7 @@ class Options
             return false;
         }
 
-        shzn('wpfs')->cache->set_cache($option, $value, 'options', true);
+        shzn('wpfs')->cache->set_cache($option, $value, 'db_cache', true);
 
         return true;
     }

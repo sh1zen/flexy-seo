@@ -1,4 +1,9 @@
 <?php
+/**
+ * @author    sh1zen
+ * @copyright Copyright (C)  2022
+ * @license   http://www.gnu.org/licenses/gpl.html GNU/GPL
+ */
 
 namespace FlexySEO\Engine\Generators\Schema\Graphs;
 
@@ -13,20 +18,17 @@ class PersonAuthor extends Person
 {
     /**
      * Returns the graph data.
+     * @param \WP_Post $post
+     * @param string $type
      * @return array $data The graph data.
      * @since 1.2.0
      */
-    public function get($type = '')
+    public function get($post, string $type = '')
     {
-        $post = wpfseo()->currentPage->get_post();
-
-        if (!$post) {
-            return [];
-        }
-
         $userId = $post->post_author;
+
         if (function_exists('bp_is_user') && bp_is_user()) {
-            $userId = intval(wp_get_current_user()->ID);
+            $userId = wp_get_current_user()->ID;
         }
 
         if (!$userId) {

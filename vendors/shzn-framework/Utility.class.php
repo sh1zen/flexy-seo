@@ -1,7 +1,7 @@
 <?php
 /**
  * @author    sh1zen
- * @copyright Copyright (C)  2021
+ * @copyright Copyright (C)  2022
  * @license   http://www.gnu.org/licenses/gpl.html GNU/GPL
  */
 
@@ -9,13 +9,11 @@ namespace SHZN\core;
 
 class Utility
 {
-    public $online;
+    public bool $online;
 
-    public $home_url;
+    public string $home_url;
 
-    public $cu_id;
-
-    public $wp_upload_dir;
+    public int $cu_id;
 
     public function __construct()
     {
@@ -24,7 +22,5 @@ class Utility
         $this->cu_id = \get_current_user_id();
 
         $this->online = $_SERVER["SERVER_ADDR"] !== '127.0.0.1';
-
-        $this->wp_upload_dir = wp_upload_dir(null, false);
     }
 }

@@ -1,7 +1,7 @@
 <?php
 /**
  * @author    sh1zen
- * @copyright Copyright (C)  2021
+ * @copyright Copyright (C)  2022
  * @license   http://www.gnu.org/licenses/gpl.html GNU/GPL
  */
 
@@ -91,10 +91,13 @@ class XRE_MetaBox
             $description = Options::get($post_id, "description", "customMeta", "");
         }
 
-        $supportedGraphs = array_map(function ($graph) {
-
+        $supportedPageGraphs = array_map(function ($graph) {
             return ['text' => $graph, 'value' => $graph];
         }, Schema::$webPageGraphs);
+
+        $supportedArticleGraphs = array_map(function ($graph) {
+            return ['text' => $graph, 'value' => $graph];
+        }, Schema::$webArticleGraphs);
 
         return [
             [
@@ -112,12 +115,20 @@ class XRE_MetaBox
                 'values'            => [['value' => $description]]
             ],
             [
-                'name'              => 'graphType',
-                'label'             => __('Page type (Schema.org)', 'wpfs'),
+                'name'              => 'graphPageType',
+                'label'             => __('Page type for Schema.org', 'wpfs'),
                 'type'              => 'select',
                 'sanitize_callback' => 'sanitize_text_field',
-                'values'            => $supportedGraphs,
-                'value'             => Options::get($post_id, "graphType", "customMeta")
+                'values'            => $supportedPageGraphs,
+                'value'             => Options::get($post_id, "graphPageType", "customMeta")
+            ],
+            [
+                'name'              => 'graphArticleType',
+                'label'             => __('Article type for Schema.org', 'wpfs'),
+                'type'              => 'select',
+                'sanitize_callback' => 'sanitize_text_field',
+                'values'            => $supportedArticleGraphs,
+                'value'             => Options::get($post_id, "graphArticleType", "customMeta")
             ],
         ];
     }

@@ -1,17 +1,21 @@
 <?php
 /**
  * @author    sh1zen
- * @copyright Copyright (C)  2021
+ * @copyright Copyright (C)  2022
  * @license   http://www.gnu.org/licenses/gpl.html GNU/GPL
  */
 
 use SHZN\core\shzn_wrapper;
+use SHZN\core\UtilEnv;
 
 define('SHZN_FRAMEWORK', dirname(__FILE__) . '/');
+define('SHZN_DEBUG', $_SERVER["SERVER_ADDR"] === '127.0.0.1');
 
-const SHZN_VERSION = "1.1.0";
+const SHZN_VERSION = "1.1.2";
 
-require_once SHZN_FRAMEWORK . 'back-compat.php';
+require_once SHZN_FRAMEWORK . 'environment/php_polyfill/loader.php';
+require_once SHZN_FRAMEWORK . 'environment/wp_polyfill.php';
+
 require_once SHZN_FRAMEWORK . 'functions.php';
 
 require_once SHZN_FRAMEWORK . 'shzn_wrapper.php';
@@ -41,12 +45,12 @@ add_action('admin_enqueue_scripts', 'shzn_admin_enqueue_scripts', 10, 0);
 
 function shzn_admin_enqueue_scripts()
 {
-    $shzn_assets_url = plugin_dir_url(__FILE__);
+    $shzn_assets_url = UtilEnv::path_to_url(__DIR__);
 
     $min = shzn()->utility->online ? '.min' : '';
 
-    wp_register_style('vendor-shzn-css', "{$shzn_assets_url}assets/css/style{$min}.css", [], SHZN_VERSION);
-    wp_register_script('vendor-shzn-js', "{$shzn_assets_url}assets/js/core{$min}.js", ['jquery'], SHZN_VERSION);
+    wp_register_style('vendor-shzn-css', "{$shzn_assets_url}/assets/css/style{$min}.css", [], SHZN_VERSION);
+    wp_register_script('vendor-shzn-js', "{$shzn_assets_url}/assets/js/core{$min}.js", ['jquery'], SHZN_VERSION);
 
     wp_localize_script("vendor-shzn-js", "SHZN", [
         'locale' => [
@@ -68,7 +72,7 @@ function shzn($context = 'common', $args = false, $components = [])
     }
 
     if (!is_string($context)) {
-        $fn = shzn_get_calling_function(2);
+        $fn = shzn_debug_backtrace(2);
         trigger_error("SHZN Framework >> not valid context type in {$fn}.", E_USER_ERROR);
     }
 
@@ -84,7 +88,7 @@ function shzn($context = 'common', $args = false, $components = [])
         }
     }
     elseif (!isset($cached[$context])) {
-        $fn = shzn_get_calling_function(2);
+        $fn = shzn_debug_backtrace(2);
         trigger_error("SHZN Framework >> context '{$context}' not defined yet in {$fn}.", E_USER_WARNING);
         return false;
     }
@@ -94,14 +98,10 @@ function shzn($context = 'common', $args = false, $components = [])
 
 if (!did_action('init')) {
     add_action('init', function () {
-        shzn('common', false, [
-            'utility' => true
-        ]);
+        shzn('common', false, ['utility' => true]);
     });
 }
 else {
-    shzn('common', false, [
-        'utility' => true
-    ]);
+    shzn('common', false, ['utility' => true]);
 }
 

@@ -1,4 +1,9 @@
 <?php
+/**
+ * @author    sh1zen
+ * @copyright Copyright (C)  2022
+ * @license   http://www.gnu.org/licenses/gpl.html GNU/GPL
+ */
 
 namespace FlexySEO\Engine\Generators\Schema\Graphs;
 
@@ -12,11 +17,12 @@ class WebSite extends Graph
     /**
      * Returns the graph data.
      *
+     * @param \WP_Post $post
+     * @param string $type
      * @return array $data The graph data.
      * @since 1.2.0
-     *
      */
-    public function get($type = '')
+    public function get($post, string $type = '')
     {
         $homeUrl = shzn()->utility->home_url;
         $data = [

@@ -1,7 +1,7 @@
 <?php
 /**
  * @author    sh1zen
- * @copyright Copyright (C)  2021
+ * @copyright Copyright (C)  2022
  * @license   http://www.gnu.org/licenses/gpl.html GNU/GPL
  */
 
@@ -78,8 +78,8 @@ class Presenter
 
         // canonical, rel_prev, rel_next
         $this->link_presenter();
-
         $this->robots_presenter();
+
         $this->keywords_presenter();
         $this->description_presenter();
 
@@ -192,6 +192,7 @@ class Presenter
         $this->add_tags($og->get_tags());
 
         $tc = $this->generator->twitterCard();
+
         foreach ($tc->get_tags() as $tag_name => $tag_value) {
             $this->add_tag($tag_name, $tag_value, 'meta_name');
         }
@@ -211,20 +212,6 @@ class Presenter
         foreach ($codes as $code_name => $code_value) {
             $this->add_tag($code_name, $code_value, 'meta_name');
         }
-    }
-
-    private function schema_presenter()
-    {
-        $schema = $this->generator->schema();
-
-        $schema = apply_filters('wpfs_schema', $schema, $this->indexable);
-
-        $this->add_script(new SEOScriptTag($schema, "application/ld+json"));
-    }
-
-    private function add_script($script)
-    {
-        $this->scripts[] = $script;
     }
 
     public function wp_head()
@@ -269,5 +256,19 @@ class Presenter
         $title = apply_filters("wpfs_title", $_title, $title);
 
         return wptexturize($title);
+    }
+
+    private function schema_presenter()
+    {
+        $schema = $this->generator->schema();
+
+        $schema = apply_filters('wpfs_schema', $schema, $this->indexable);
+
+        $this->add_script(new SEOScriptTag($schema, "application/ld+json"));
+    }
+
+    private function add_script($script)
+    {
+        $this->scripts[] = $script;
     }
 }

@@ -1,4 +1,9 @@
 <?php
+/**
+ * @author    sh1zen
+ * @copyright Copyright (C)  2022
+ * @license   http://www.gnu.org/licenses/gpl.html GNU/GPL
+ */
 
 namespace SHZN\core;
 
@@ -15,8 +20,9 @@ class Cache
 
     public function get_cache($key, $group = 'core', $default = false)
     {
-        if ($this->use_wp_cache)
+        if ($this->use_wp_cache) {
             return wp_cache_get($key, $group);
+        }
 
         if ($this->cache_exists($key, $group)) {
             if (is_object($this->cache[$group][$key])) {
@@ -48,8 +54,9 @@ class Cache
 
     public function force_cache($key, $data, $group)
     {
-        if ($this->use_wp_cache)
+        if ($this->use_wp_cache) {
             return wp_cache_set($key, $data, $group);
+        }
 
         if (is_object($data)) {
             $data = clone $data;
@@ -62,11 +69,13 @@ class Cache
 
     public function dump_cache($group = 'core')
     {
-        if ($this->use_wp_cache)
+        if ($this->use_wp_cache) {
             return null;
+        }
 
-        if (empty($group))
+        if (empty($group)) {
             return $this->cache;
+        }
 
         if (is_object($this->cache[$group])) {
             return clone $this->cache[$group];
@@ -78,8 +87,9 @@ class Cache
 
     public function delete_cache($key, $group)
     {
-        if ($this->use_wp_cache)
+        if ($this->use_wp_cache) {
             wp_cache_delete($key, $group);
+        }
 
         if (!$this->cache_exists($key, $group)) {
             return false;

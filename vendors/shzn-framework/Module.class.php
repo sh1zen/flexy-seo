@@ -1,7 +1,7 @@
 <?php
 /**
  * @author    sh1zen
- * @copyright Copyright (C)  2021
+ * @copyright Copyright (C)  2022
  * @license   http://www.gnu.org/licenses/gpl.html GNU/GPL
  */
 
@@ -133,9 +133,8 @@ class Module
             $action_allowed = wp_verify_nonce($_POST["{$this->context}-{$this->slug}-custom-action"], "{$this->context}-{$this->slug}-custom-action");
             $response = false;
 
-            $action = sanitize_text_field($_POST["action"]);
-
             if ($action_allowed) {
+                $action = sanitize_text_field($_POST["action"]);
                 $response = $this->process_custom_actions($action, $_POST);
             }
 
@@ -337,7 +336,6 @@ class Module
                     $value = isset($input[$field['id']]);
                     break;
 
-
                 case 'time':
                 case 'text':
                 case 'hidden':
@@ -378,7 +376,24 @@ class Module
 
     protected function group_setting_fields(...$args)
     {
-        return array_merge($args);
+        return array_merge(array_filter($args));
+    }
+
+    protected function group_setting_sections($fields, $filter = '')
+    {
+        $res = array();
+
+        if (!empty($filter)) {
+            foreach ((array)$filter as $_filter) {
+                if (isset($fields[$_filter]))
+                    $res = array_merge($res, $fields[$_filter]);
+            }
+        }
+        else {
+            $res = call_user_func_array('array_merge', array_values($fields));
+        }
+
+        return $res;
     }
 
     protected function setting_field($name, $id = false, $type = 'text', $args = [])

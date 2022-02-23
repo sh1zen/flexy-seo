@@ -1,18 +1,17 @@
 <?php
 /**
  * @author    sh1zen
- * @copyright Copyright (C)  2021
+ * @copyright Copyright (C)  2022
  * @license   http://www.gnu.org/licenses/gpl.html GNU/GPL
  */
 
 namespace FlexySEO\Engine\Generators\Templates;
 
-use FlexySEO\core\Options;
+use FlexySEO\Engine\Generator;
 use FlexySEO\Engine\Generators\OpenGraph;
-use FlexySEO\Engine\Generators\TwitterCard;
 use FlexySEO\Engine\Helpers\CurrentPage;
 
-class PostType_Generator extends \FlexySEO\Engine\Generator
+class PostType_Generator extends Generator
 {
     /**
      * @param CurrentPage $current_page
@@ -23,8 +22,9 @@ class PostType_Generator extends \FlexySEO\Engine\Generator
 
         $type = get_post_type();
 
-        if (!$type)
-            $this->settings_path = 'none';
+        if (!$type) {
+            $type = 'none';
+        }
 
         $this->settings_path = "seo.post_type.{$type}.";
     }
@@ -93,7 +93,7 @@ class PostType_Generator extends \FlexySEO\Engine\Generator
      * @param string $keywords
      * @return string The meta keywords.
      */
-    public function get_keywords($keywords = '')
+    public function get_keywords(string $keywords = '')
     {
         return parent::get_keywords(shzn('wpfs')->settings->get($this->settings_path . 'keywords', ''));
     }
@@ -129,24 +129,13 @@ class PostType_Generator extends \FlexySEO\Engine\Generator
     }
 
     /**
-     * @return TwitterCard
-     */
-    public function twitterCard()
-    {
-        return parent::twitterCard();
-    }
-
-    /**
      * Generates the title structure.
      *
      * @param string $description
      * @return string The meta description.
      */
-    public function get_description($description = '')
+    public function get_description(string $description = '')
     {
-        $object = $this->current_page->get_queried_object();
-
-        Options::get($object->ID, 'description', $object->post_type);
         return parent::get_description(shzn('wpfs')->settings->get($this->settings_path . 'meta_desc', ''));
     }
 

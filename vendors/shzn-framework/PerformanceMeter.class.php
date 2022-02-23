@@ -1,7 +1,7 @@
 <?php
 /**
  * @author    sh1zen
- * @copyright Copyright (C)  2021
+ * @copyright Copyright (C)  2022
  * @license   http://www.gnu.org/licenses/gpl.html GNU/GPL
  */
 
@@ -30,8 +30,9 @@ class PerformanceMeter
 
     private function collect($data = null)
     {
-        if (is_null($data))
-            $data = shzn_get_calling_function(3);
+        if (is_null($data)) {
+            $data = shzn_debug_backtrace(3);
+        }
 
         $this->lap_n++;
         return array(

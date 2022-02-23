@@ -1,15 +1,15 @@
 <?php
 /**
  * @author    sh1zen
- * @copyright Copyright (C)  2021
+ * @copyright Copyright (C)  2022
  * @license   http://www.gnu.org/licenses/gpl.html GNU/GPL
  */
 
 namespace FlexySEO\Engine\Generators\Templates;
 
+use FlexySEO\core\Options;
 use FlexySEO\Engine\Generator;
 use FlexySEO\Engine\Generators\OpenGraph;
-use FlexySEO\Engine\Generators\TwitterCard;
 use FlexySEO\Engine\Helpers\CurrentPage;
 use FlexySEO\Engine\Rewriter;
 
@@ -68,7 +68,7 @@ class AuthorArchive_Generator extends Generator
      * @param string $keywords
      * @return string The meta keywords.
      */
-    public function get_keywords($keywords = '')
+    public function get_keywords(string $keywords = '')
     {
         return parent::get_keywords(shzn('wpfs')->settings->get($this->settings_path . 'keywords', ''));
     }
@@ -126,55 +126,34 @@ class AuthorArchive_Generator extends Generator
         return $og;
     }
 
-    protected function get_snippet_image($size = 'thumbnail')
-    {
-        $width = 0;
-        $height = 0;
-
-        $url = get_avatar_url($this->current_page->get_queried_object_id());
-
-        if (empty($url))
-            $url = "https://secure.gravatar.com/avatar/cb5febbf69fa9e85698bac992b2a4433?s=500&d=mm&r=g";
-
-        $path = parse_url($url, PHP_URL_PATH);
-
-        $image_path = realpath(ABSPATH . $path);
-
-        if ($image_path) {
-            list($width, $height) = wp_getimagesize($image_path);
-        }
-
-        if ($this->current_page->is_simple_page()) {
-
-            if ($post_thumbnail_id = get_post_thumbnail_id($this->current_page->get_queried_object())) {
-
-                if ($image_data = wp_get_attachment_image_src($post_thumbnail_id, $size)) {
-                    $url = $image_data[0];
-                    $width = $image_data[1];
-                    $height = $image_data[2];
-                }
-            }
-        }
-
-        return array('url' => $url, 'width' => $width, 'height' => $height);
-    }
-
-    /**
-     * @return TwitterCard
-     */
-    public function twitterCard()
-    {
-        return parent::twitterCard();
-    }
-
     /**
      * Generates the title structure.
      *
      * @param string $description
      * @return string The meta description.
      */
-    public function get_description($description = '')
+    public function get_description(string $description = '')
     {
         return parent::get_description(shzn('wpfs')->settings->get($this->settings_path . 'meta_desc', ''));
+    }
+
+    protected function get_snippet_image($size = 'thumbnail')
+    {
+        $url = get_avatar_url($this->current_page->get_queried_object_id());
+
+        if (empty($url)) {
+            $url = "https://secure.gravatar.com/avatar/cb5febbf69fa9e85698bac992b2a4433?s=500&d=mm&r=g";
+        }
+
+        $snippet_data = Options::get($url, "snippet_data", "cache", false);
+
+        if (!$snippet_data) {
+
+            $snippet_data = wpfseo()->images->get_snippet_data($url, $size, $this->current_page->get_queried_object());
+
+            Options::add($url, "snippet_data", $snippet_data, "cache", WEEK_IN_SECONDS);
+        }
+
+        return $snippet_data;
     }
 }
