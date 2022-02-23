@@ -1,69 +1,50 @@
 <?php
+/**
+ * @author    sh1zen
+ * @copyright Copyright (C)  2022
+ * @license   http://www.gnu.org/licenses/gpl.html GNU/GPL
+ */
 
 namespace FlexySEO\Engine\Generators\Schema\Graphs;
 
+use FlexySEO\Engine\Generators\GraphBuilder;
+use FlexySEO\Engine\Helpers\CurrentPage;
+
 /**
  * BreadcrumbList graph class.
- *
- * @since 1.2.0
  */
 class BreadcrumbList extends Graph
 {
     /**
      * Returns the graph data.
-     * @return array $data The graph data.
-     *
-     * @since 1.2.0
+     * @param \FlexySEO\Engine\Helpers\CurrentPage $currentPage
+     * @param string $type
+     * @param ...$args
+     * @return GraphBuilder $data The graph data.
      */
-    public function get($type = '')
+    public function get(CurrentPage $currentPage, string $type = '', ...$args)
     {
-        if (!$this->generator) {
-            return [];
-        }
-
         $breadcrumbs = \WPFS_Breadcrumb::export();
 
         if (empty($breadcrumbs)) {
-            return [];
+            return new GraphBuilder([]);
         }
 
-        $url = $this->generator->get_permalink();
-
-        $data = [
-            '@type'           => 'BreadcrumbList',
-            '@id'             => $url . '#breadcrumblist',
-            'itemListElement' => []
-        ];
-
-        $trailLength = count($breadcrumbs);
+        $graph = new GraphBuilder(
+            'BreadcrumbList',
+            $this->generator->get_permalink() . '#breadcrumb'
+        );
 
         foreach ($breadcrumbs as $key => $breadcrumb) {
 
-            $position = $key + 1;
-
-            $listItem = [
+            $graph->add('itemListElement', [
                 '@type'    => 'ListItem',
-                '@id'      => $breadcrumb['value']['url'] . '#listItem',
-                'position' => $position,
-                'item'     => [
-                    '@type'       => 'WebPage',
-                    '@id'         => $breadcrumb['value']['url'],
-                    'name'        => !empty($breadcrumb['value']['text']) ? $breadcrumb['value']['text'] : '',
-                    'description' => $position === $trailLength ? $this->generator->get_description() : (empty($breadcrumb['value']['description']) ? '' : $breadcrumb['value']['description']),
-                    'url'         => $breadcrumb['value']['url'],
-                ]
-            ];
-
-            if ($trailLength > $position) {
-                $listItem['nextItem'] = $breadcrumbs[$position]['value']['url'] . '#listItem';
-            }
-
-            if (1 < $position) {
-                $listItem['previousItem'] = $breadcrumbs[$position - 2]['value']['url'] . '#listItem';
-            }
-
-            $data['itemListElement'][] = $listItem;
+                'position' => $key + 1,
+                'name'     => $breadcrumb['value']['text'],
+                'item'     => $breadcrumb['value']['url']
+            ]);
         }
-        return $data;
+
+        return $graph;
     }
 }

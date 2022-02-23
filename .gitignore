@@ -1,3 +1,7 @@
 .idea
-.ps1
-.rar
+
+*.ps1
+
+*.rar
+
+*.zip

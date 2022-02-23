@@ -1,4 +1,9 @@
 <?php
+/**
+ * @author    sh1zen
+ * @copyright Copyright (C)  2022
+ * @license   http://www.gnu.org/licenses/gpl.html GNU/GPL
+ */
 
 namespace SHZN\core;
 
@@ -6,7 +11,7 @@ class Disk
 {
     private static $wp_filesystem;
 
-    private static $suspended = false;
+    private static bool $suspended = false;
 
     public static function read($path)
     {
@@ -166,13 +171,10 @@ class Disk
             $_search_path = substr($_search_path, 0, strrpos($_search_path, '/'));
         }
 
-        if (!$search_path)
-            return $response;
-
         $search_path = UtilEnv::normalize_path($search_path, true);
 
         // to prevent go upper than ABSPATH
-        if (strpos($search_path, $abspath) === false) {
+        if (!str_contains($search_path, $abspath)) {
             $search_path = $abspath;
         }
 
@@ -185,7 +187,7 @@ class Disk
 
             if (is_dir($search_path . $value)) {
 
-                if ($search_sub_path and strpos($value, $search_sub_path) === false)
+                if ($search_sub_path and !str_contains($value, $search_sub_path))
                     continue;
 
                 $response[] = str_replace($abspath, '', $search_path . $value . '/');

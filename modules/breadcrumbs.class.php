@@ -1,14 +1,13 @@
 <?php
 /**
  * @author    sh1zen
- * @copyright Copyright (C)  2021
+ * @copyright Copyright (C)  2022
  * @license   http://www.gnu.org/licenses/gpl.html GNU/GPL
  */
 
 namespace FlexySEO\modules;
 
 use SHZN\modules\Module;
-
 
 class Mod_breadcrumbs extends Module
 {
@@ -66,7 +65,7 @@ class Mod_breadcrumbs extends Module
             <section class='shzn-header'><h1>SEO / Breadcrumbs</h1></section>
             <block class="shzn">
                 <?php
-                echo $this->render_settings('');
+                echo $this->render_settings();
                 ?>
             </block>
         </section>
@@ -75,61 +74,75 @@ class Mod_breadcrumbs extends Module
 
     protected function setting_fields($filter = '')
     {
-        $fields = array(
-            array('type' => 'separator', 'name' => __('Status:', 'wpfs')),
-            array('type' => 'checkbox', 'name' => __('Active', 'wpfs'), 'id' => 'active', 'value' => $this->option('active', false)),
-            array('type' => 'checkbox', 'name' => __('Flexed Breadcrumb', 'wpfs'), 'id' => 'flexed', 'value' => $this->option('flexed', false)),
+        $fields['general'] = $this->group_setting_fields(
+            $this->setting_field(__('Status:', 'wpfs'), false, 'separator'),
+            $this->setting_field(__('Active', 'wpfs'), "active", 'checkbox', ['default_value' => true]),
+            $this->setting_field(__('Flexed Breadcrumbs', 'wpfs'), "flexed", 'checkbox', ['depend' => 'active', 'default_value' => false]),
+            $this->setting_field(__('Highlight last page', 'wpfs'), "last_page", 'checkbox', ['depend' => 'active']),
+            $this->setting_field(__('Separator', 'wpfs'), "separator", 'text', ['depend' => 'active', 'default_value' => '>']),
+        //$this->setting_field(__('Dropdown last', 'wpfs'), "dropdown_last", 'checkbox'),
+        );
 
-            array('type' => 'separator', 'name' => __('Options:', 'wpfs')),
-            array('type' => 'checkbox', 'name' => __('Highlight last page', 'wpfs'), 'id' => 'last_page', 'value' => $this->option('last_page', false)),
-            //array('type' => 'checkbox', 'name' => __('Dropdown last', 'wpfs'), 'id' => 'dropdown_last', 'value' => $this->option('dropdown_last', false)),
-            array('type' => 'text', 'name' => __('Separator', 'wpfs'), 'id' => 'separator', 'value' => $this->option('separator', '>')),
-            array('type' => 'text', 'name' => __('Home text', 'wpfs'), 'id' => 'home_txt', 'value' => $this->option('home_txt', 'Home')),
-            array('type' => 'text', 'name' => __('Author prefix', 'wpfs'), 'id' => 'prefix.author', 'value' => $this->option('prefix.author', '')),
-            array('type' => 'text', 'name' => __('Search prefix', 'wpfs'), 'id' => 'prefix.search', 'value' => $this->option('prefix.search', 'You have searched for:')),
-            array('type' => 'text', 'name' => __('Archive prefix', 'wpfs'), 'id' => 'prefix.archive', 'value' => $this->option('prefix.archive', 'Archive for:')),
-            array('type' => 'text', 'name' => __('404 prefix', 'wpfs'), 'id' => 'prefix.404', 'value' => $this->option('prefix.404', '')),
+        $fields['home'] = $this->group_setting_fields(
+            $this->setting_field(__('Home:', 'wpfs'), false, 'separator', ['depend' => 'active']),
+            $this->setting_field(__('Prefix', 'wpfs'), "home.prefix", 'text', ['default_value' => 'Home:', 'depend' => 'active']),
+            $this->setting_field(__('Format', 'wpfs'), "home.format", 'text', ['depend' => ['flexed', 'active']])
+        );
 
-            array('parent' => 'flexed', 'type' => 'separator', 'name' => __('Special pages format:', 'wpfs')),
-            array('parent' => 'flexed', 'type' => 'text', 'name' => __('Author', 'wpfs'), 'id' => 'format.author', 'value' => $this->option('format.author', '')),
-            array('parent' => 'flexed', 'type' => 'text', 'name' => __('Search', 'wpfs'), 'id' => 'format.search', 'value' => $this->option('format.search', '')),
-            array('parent' => 'flexed', 'type' => 'text', 'name' => __('404', 'wpfs'), 'id' => 'format.404', 'value' => $this->option('format.404', '')),
+        $fields['author'] = $this->group_setting_fields(
+            $this->setting_field(__('Author:', 'wpfs'), false, 'separator', ['depend' => ['active']]),
+            $this->setting_field(__('Prefix', 'wpfs'), "author.prefix", 'text', ['default_value' => 'Author for:', 'depend' => 'active']),
+            $this->setting_field(__('Format', 'wpfs'), "author.format", 'text', ['depend' => ['flexed', 'active']])
+        );
+
+        $fields['search'] = $this->group_setting_fields(
+            $this->setting_field(__('Search:', 'wpfs'), false, 'separator', ['depend' => 'active']),
+            $this->setting_field(__('Prefix', 'wpfs'), "search.prefix", 'text', ['default_value' => 'You have searched for:', 'depend' => 'active']),
+            $this->setting_field(__('Format', 'wpfs'), "search.format", 'text', ['depend' => ['flexed', 'active']])
+        );
+
+        $fields['archive'] = $this->group_setting_fields(
+            $this->setting_field(__('Archive:', 'wpfs'), false, 'separator', ['depend' => 'active']),
+            $this->setting_field(__('Prefix', 'wpfs'), "archive.prefix", 'text', ['default_value' => 'Archive for:', 'depend' => 'active']),
+        );
+
+        $fields['404'] = $this->group_setting_fields(
+            $this->setting_field(__('404:', 'wpfs'), false, 'separator', ['depend' => 'active']),
+            $this->setting_field(__('Prefix', 'wpfs'), "404.prefix", 'text', ['default_value' => 'Page not found', 'depend' => 'active']),
+            $this->setting_field(__('Format', 'wpfs'), "404.format", 'text', ['depend' => ['flexed', 'active']])
         );
 
         $post_types = get_post_types(array('public' => true), 'objects');
 
         if (!empty($post_types)) {
 
-            $fields[] = array('parent' => 'flexed', 'type' => 'separator', 'name' => __('Breadcrumb Post Type format:', 'wpfs'));
+            $taxonomies = get_taxonomies(array('public' => true), 'names');
 
             foreach ($post_types as $post_type) {
-                $fields[] = array('parent' => 'flexed', 'type' => 'text', 'name' => ucwords($post_type->name), 'id' => 'format.post_type.' . $post_type->name, 'value' => $this->option('format.post_type.' . $post_type->name, ''));
 
-                if ($post_type->has_archive)
-                    $fields_post_type_archive[] = array('parent' => 'flexed', 'type' => 'text', 'name' => ucwords($post_type->name), 'id' => 'format.post_type_archive.' . $post_type->name, 'value' => $this->option('format.post_type_archive.' . $post_type->name, ''));
-
+                $fields[$post_type->name] = $this->group_setting_fields(
+                    $this->setting_field(ucwords($post_type->name), false, 'separator', ['depend' => 'active']),
+                    $this->setting_field("Show breadcrumbs", "post_type.{$post_type->name}.active", 'checkbox', ['default_value' => true, 'depend' => 'active']),
+                    $this->setting_field("Main Taxonomy", "post_type.{$post_type->name}.maintax", 'dropdown', ['depend' => 'active', 'list' => $taxonomies, 'default_value' => 'category', 'allow_empty' => false]),
+                    $this->setting_field("Format", "post_type.{$post_type->name}.format", 'text', ['depend' => ['active', 'flexed']]),
+                    $post_type->has_archive ? $this->setting_field(sprintf(__("%s archive format", 'wpfs'), ucwords($post_type->name)), "post_type_archive.{$post_type->name}.format", 'text', ['depend' => ['active', 'flexed']]) : [],
+                    $post_type->has_archive ? $this->setting_field(sprintf(__("Show post type for %s", 'wpfs'), ucwords($post_type->name)), "post_type_archive.{$post_type->name}.show", 'checkbox', ['depend' => ['active', '!flexed']]) : [],
+                );
             }
         }
 
-        if (!empty($fields_post_type_archive)) {
-
-            $fields[] = array('parent' => 'flexed', 'type' => 'separator', 'name' => __('Breadcrumb Post Type Archive format:', 'wpfs'));
-
-            foreach ($fields_post_type_archive as $field_post_type_archive) {
-                $fields[] = $field_post_type_archive;
-            }
-        }
-
-        $fields[] = array('parent' => 'flexed', 'type' => 'separator', 'name' => __('Breadcrumb Taxonomies Archive format:', 'wpfs'));
+        $fields['taxonomy'] = $this->group_setting_fields(
+            $this->setting_field(__('Breadcrumb Taxonomies Archive format:', 'wpfs'), false, 'separator', ['depend' => 'flexed'])
+        );
 
         //settings for each taxonomy
         foreach (get_taxonomies(array('public' => true), 'objects') as $tax_type_object) {
 
             $tax_type = $tax_type_object->name;
-            $fields[] = array('parent' => 'flexed', 'type' => 'text', 'name' => ucwords($tax_type_object->label), 'id' => 'format.tax.' . $tax_type, 'value' => $this->option('format.tax.' . $tax_type, ''));
+            $fields['taxonomy'][] = $this->setting_field(ucwords($tax_type_object->label), "tax.{$tax_type}.format", 'text', ['depend' => ['active', 'flexed']]);
         }
 
-        return $fields;
+        return $this->group_setting_sections($fields, $filter);
     }
 }
 

@@ -1,7 +1,7 @@
 <?php
 /**
  * @author    sh1zen
- * @copyright Copyright (C)  2021
+ * @copyright Copyright (C)  2022
  * @license   http://www.gnu.org/licenses/gpl.html GNU/GPL
  */
 
@@ -9,8 +9,7 @@ namespace FlexySEO\Engine\Helpers;
 
 /**
  * Contains i18n and language (code) helper methods.
- *
- * @since 1.2.0
+
  */
 class Language
 {
@@ -18,7 +17,7 @@ class Language
      * Returns the language of the current response in BCP 47 format.
      *
      * @return string The language code in BCP 47 format.
-     * @since 1.2.0
+
      *
      */
     public function currentLanguageCodeBCP47()
@@ -30,7 +29,7 @@ class Language
      * Returns the language of the current response.
      *
      * @return string The language code.
-     * @since 1.2.0
+
      *
      */
     public function currentLanguageCode()

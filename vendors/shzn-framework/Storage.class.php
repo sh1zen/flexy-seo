@@ -1,8 +1,7 @@
 <?php
 /**
- * @package   wp-optimizer
  * @author    sh1zen
- * @copyright Copyright (C) 2020
+ * @copyright Copyright (C)  2022
  * @license   http://www.gnu.org/licenses/gpl.html GNU/GPL
  */
 
@@ -10,11 +9,15 @@ namespace SHZN\core;
 
 class Storage
 {
-    private $cache;
+    private array $cache;
 
     private $storage_name;
 
-    private $t_storage_name;
+    private $custom_storage_name;
+
+    private bool $auto_save;
+
+    private bool $autosave_action_set = false;
 
     public function __construct($autosave, $storage_name)
     {
@@ -22,17 +25,10 @@ class Storage
 
         $this->storage_name = $storage_name;
 
-        if ($autosave) {
-            $this->enable_autosave();
-        }
+        $this->auto_save = $autosave;
     }
 
-    public function enable_autosave()
-    {
-        add_action('shutdown', array($this, 'autosave'));
-    }
-
-    public static function generate_identifier($identifier, ...$args)
+    public static function generate_id($identifier, ...$args)
     {
         if (is_array($identifier) or is_object($identifier)) {
             return self::generate_key($identifier, ...$args);
@@ -48,15 +44,19 @@ class Storage
 
     public function disable_autosave()
     {
-        remove_action('shutdown', array($this, 'autosave'));
+        $this->auto_save = false;
+        if ($this->autosave_action_set) {
+            remove_action('shutdown', array($this, 'autosave'));
+        }
     }
 
     public function get($key = '', $context = 'default', $blog_id = 0)
     {
         $_context = $this->filter_context($context, $blog_id);
 
-        if (isset($this->cache[$_context][$key]))
+        if (isset($this->cache[$_context][$key])) {
             return $this->cache[$_context][$key]['data'];
+        }
 
         return $this->load($key, $context, true, $blog_id);
     }
@@ -67,10 +67,12 @@ class Storage
 
         if (is_multisite()) {
 
-            if ($_blog_id)
+            if ($_blog_id) {
                 $blog_id = "blog_{$_blog_id}/";
-            else
+            }
+            else {
                 $blog_id = "blog_" . get_current_blog_id() . "/";
+            }
         }
 
         return $blog_id . $context;
@@ -82,16 +84,19 @@ class Storage
 
         $path = $this->generate_path($context, $key);
 
-        if (!file_exists($path))
+        if (!file_exists($path)) {
             return false;
+        }
 
         $data = file_get_contents($path);
 
-        if (!$data)
+        if (!$data) {
             return false;
+        }
 
-        if (!($data = unserialize($data)))
+        if (!($data = unserialize($data))) {
             return false;
+        }
 
         if (boolval($data['expire']) and $data['expire'] < time()) {
             return false;
@@ -108,14 +113,14 @@ class Storage
     {
         $context = str_replace('default', '', $context);
 
-        $sub_folder = $this->t_storage_name ? $this->t_storage_name : $this->storage_name;
+        $sub_folder = $this->custom_storage_name ? $this->custom_storage_name : $this->storage_name;
 
         return WP_CONTENT_DIR . "/{$sub_folder}/{$context}/{$key}";
     }
 
     public function use_custom_storage_name($name)
     {
-        $this->t_storage_name = $name;
+        $this->custom_storage_name = $name;
     }
 
     public function delete($context = 'default', $key = '', $blog_id = 0)
@@ -125,14 +130,15 @@ class Storage
         $context = $this->filter_context($context, $blog_id);
 
         $identifier = $key;
-        if ($key and (strpos($key, 'ID:') !== false)) {
+        if ($key and (str_contains($key, 'ID:'))) {
             $key = '';
         }
 
         $path = $this->generate_path($context, $key);
 
-        if (!file_exists($path))
+        if (!file_exists($path)) {
             return false;
+        }
 
         Disk::delete_files($path, $identifier);
 
@@ -143,10 +149,21 @@ class Storage
     {
         $context = $this->filter_context($context, $blog_id);
 
-        if (!empty($key))
+        if (!empty($key)) {
             unset($this->cache[$context][$key]);
-        else
+        }
+        else {
             unset($this->cache[$context]);
+        }
+
+        $this->handle_autosave();
+    }
+
+    private function handle_autosave()
+    {
+        if ($this->auto_save and !$this->autosave_action_set) {
+            $this->autosave_action_set = add_action('shutdown', array($this, 'autosave'));
+        }
     }
 
     public function set($data, $context = 'default', $key = 'main', $expire = false, $force = false, $blog_id = 0)
@@ -156,8 +173,9 @@ class Storage
         if (!$force and isset($this->cache[$context][$key])) {
             $force = self::generate_key($data) !== self::generate_key($this->cache[$context][$key]['data']);
 
-            if (!$force)
+            if (!$force) {
                 return;
+            }
         }
 
         // auto add time() to expire if passed just lifespan
@@ -174,6 +192,8 @@ class Storage
         );
 
         $this->cache[$context][$key] = $args;
+
+        $this->handle_autosave();
     }
 
     public function get_size($contexts = '', $blog_id = 0)
@@ -185,8 +205,9 @@ class Storage
 
             $path = $this->generate_path($context);
 
-            if (!file_exists($path))
+            if (!file_exists($path)) {
                 continue;
+            }
 
             $size += Disk::calc_size($path);
         }
@@ -223,6 +244,12 @@ class Storage
         }
     }
 
+    public function get_path($context = 'default', $blog_id = 0)
+    {
+        $context = $this->filter_context($context, $blog_id);
+        return $this->generate_path($context);
+    }
+
     public function save($args = array(), $blog_id = 0)
     {
         $args = array_merge(array(
@@ -253,6 +280,11 @@ class Storage
         Disk::make_path($path);
 
         return file_put_contents($path . $args['file_name'], $cached);
+    }
+
+    public function enable_autosave()
+    {
+        $this->auto_save = true;
     }
 }
 

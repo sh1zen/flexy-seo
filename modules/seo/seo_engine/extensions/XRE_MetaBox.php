@@ -1,13 +1,12 @@
 <?php
 /**
  * @author    sh1zen
- * @copyright Copyright (C)  2021
+ * @copyright Copyright (C)  2022
  * @license   http://www.gnu.org/licenses/gpl.html GNU/GPL
  */
 
 namespace FlexySEO\Engine\Helpers;
 
-use FlexySEO\core\Options;
 use FlexySEO\Engine\Generators\Schema;
 
 class XRE_MetaBox
@@ -22,7 +21,7 @@ class XRE_MetaBox
 
     public static function get_value($id, $item, $context, $default = false)
     {
-        return Options::get($id, $item, $context, $default);
+        return shzn('wpfs')->options->get($id, $item, $context, $default);
     }
 
     public function enqueue_scripts()
@@ -61,7 +60,7 @@ class XRE_MetaBox
             $meta_name = $field_meta['name'];
 
             if (empty($metas[$meta_name])) {
-                Options::remove($post_id, $meta_name, "customMeta");
+                shzn('wpfs')->options->remove($post_id, $meta_name, "customMeta");
                 continue;
             }
 
@@ -72,10 +71,10 @@ class XRE_MetaBox
             }
 
             if (empty($value)) {
-                Options::remove($post_id, $meta_name, "customMeta");
+                shzn('wpfs')->options->remove($post_id, $meta_name, "customMeta");
             }
             else {
-                Options::update($post_id, $meta_name, $value, "customMeta");
+                shzn('wpfs')->options->update($post_id, $meta_name, $value, "customMeta");
             }
         }
     }
@@ -87,14 +86,17 @@ class XRE_MetaBox
 
         if (isset($post->ID) and $post->ID) {
             $post_id = $post->ID;
-            $keyword = Options::get($post_id, "keywords", "customMeta", "");
-            $description = Options::get($post_id, "description", "customMeta", "");
+            $keyword = shzn('wpfs')->options->get($post_id, "keywords", "customMeta", "");
+            $description = shzn('wpfs')->options->get($post_id, "description", "customMeta", "");
         }
 
-        $supportedGraphs = array_map(function ($graph) {
-
+        $supportedPageGraphs = array_map(function ($graph) {
             return ['text' => $graph, 'value' => $graph];
         }, Schema::$webPageGraphs);
+
+        $supportedArticleGraphs = array_map(function ($graph) {
+            return ['text' => $graph, 'value' => $graph];
+        }, Schema::$webArticleGraphs);
 
         return [
             [
@@ -112,12 +114,20 @@ class XRE_MetaBox
                 'values'            => [['value' => $description]]
             ],
             [
-                'name'              => 'graphType',
-                'label'             => __('Page type (Schema.org)', 'wpfs'),
+                'name'              => 'graphPageType',
+                'label'             => __('Page type for Schema.org', 'wpfs'),
                 'type'              => 'select',
                 'sanitize_callback' => 'sanitize_text_field',
-                'values'            => $supportedGraphs,
-                'value'             => Options::get($post_id, "graphType", "customMeta")
+                'values'            => $supportedPageGraphs,
+                'value'             => shzn('wpfs')->options->get($post_id, "graphPageType", "customMeta")
+            ],
+            [
+                'name'              => 'graphArticleType',
+                'label'             => __('Article type for Schema.org', 'wpfs'),
+                'type'              => 'select',
+                'sanitize_callback' => 'sanitize_text_field',
+                'values'            => $supportedArticleGraphs,
+                'value'             => shzn('wpfs')->options->get($post_id, "graphArticleType", "customMeta")
             ],
         ];
     }

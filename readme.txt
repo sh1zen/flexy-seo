@@ -1,11 +1,11 @@
 === Flexy SEO === 
 Contributors: sh1zen 
-Tags: SEO, Breadcrumbs, Content analysis, Readability, Schema 
+Tags: SEO, Breadcrumbs, Content analysis, Readability, Schema, Ranking
 Donate link: https://www.paypal.com/donate?business=dev.sh1zen%40outlook.it&item_name=Thank+you+in+advanced+for+the+kind+donations.+You+will+sustain+me+building+better+software.&currency_code=EUR
 Requires at least: 4.6.0
-Tested up to: 5.9
-Requires PHP: 5.3 
-Stable tag: 1.3.3
+Tested up to: 6.0
+Requires PHP: 7.4
+Stable tag: 1.4.9
 License: GNU v3.0 License
 URI: https://github.com/sh1zen/flexy-seo/blob/master/LICENSE
 
@@ -101,12 +101,46 @@ WordPress plugin.
 Deactivate the plugin and reactivate it, if this doesn't work try to uninstall and reinstall it. That should
 work! Otherwise, go to the new added module "Setting" and try a reset.
 
-== Upgrade Notice ==
-
-= 1.3.3 =
- * Welcome to the new Flexy-SEO, now supporting @schema.org!
-
 == Changelog ==
+
+= 1.4.9 =
+
+* improved schema.org Graph generation
+* fixed some bugs
+* improved performances
+
+= 1.4.8 = 
+
+* tested up to WordPress 6.0
+* fixed some core bugs
+
+= 1.4.7 =
+
+* added wpfs_document_title()
+* improved title generation for breadcrumbs
+
+= 1.4.6 =
+
+* fixed reported bugs in wpfs_title filter
+
+= 1.4.5 =
+
+* improved core performances
+* improved database and caching performances
+* fixed a bug in snippet_image generator
+
+= 1.4.0 =
+
+* added options for classic breadcrumbs
+* extended schema.org support
+* fixed some security flaws
+* improved core performances
+* improved SEO
+* improved breadcrumbs
+
+= 1.3.4 =
+
+* added support for PHP 8.1 and WordPress 5.9
 
 = 1.3.3 =
 

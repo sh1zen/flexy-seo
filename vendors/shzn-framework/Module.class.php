@@ -1,12 +1,13 @@
 <?php
 /**
  * @author    sh1zen
- * @copyright Copyright (C)  2021
+ * @copyright Copyright (C)  2022
  * @license   http://www.gnu.org/licenses/gpl.html GNU/GPL
  */
 
 namespace SHZN\modules;
 
+use SHZN\core\Ajax;
 use SHZN\core\UtilEnv;
 use SHZN\core\Graphic;
 use SHZN\core\Settings;
@@ -78,7 +79,7 @@ class Module
         // check if this module loads on cron and do a cronjob
         if (is_admin() or wp_doing_cron()) {
 
-            if (in_array('cron', $this->scopes) and method_exists($this, 'cron_handler')) {
+            if (in_array('cron', $this->scopes)) {
 
                 $cron_defaults = isset($args['cron_settings']) ? $args['cron_settings'] : array();
 
@@ -97,10 +98,12 @@ class Module
 
                 if (Graphic::is_on_screen($this->slug)) {
 
-                   if(did_action('admin_enqueue_scripts'))
-                       $this->enqueue_scripts();
-                   else
+                    if (did_action('admin_enqueue_scripts')) {
+                        $this->enqueue_scripts();
+                    }
+                    else {
                         add_action('admin_enqueue_scripts', [$this, 'enqueue_scripts']);
+                    }
                 }
 
                 add_action('admin_notices', array($this, 'admin_notices'));
@@ -112,6 +115,8 @@ class Module
 
     public function enqueue_scripts()
     {
+        wp_enqueue_style('vendor-shzn-css');
+        wp_enqueue_script('vendor-shzn-js');
     }
 
     public function admin_notices()
@@ -133,9 +138,8 @@ class Module
             $action_allowed = wp_verify_nonce($_POST["{$this->context}-{$this->slug}-custom-action"], "{$this->context}-{$this->slug}-custom-action");
             $response = false;
 
-            $action = sanitize_text_field($_POST["action"]);
-
             if ($action_allowed) {
+                $action = sanitize_text_field($_POST["action"]);
                 $response = $this->process_custom_actions($action, $_POST);
             }
 
@@ -162,24 +166,75 @@ class Module
 
     public function cron_validate_settings($valid, $input)
     {
-        return $valid;
+        return $this->internal_validate_settings($this->cron_setting_fields(), $input, $valid);
     }
 
-    public function cron_setting_fields($cron_settings)
+    private function internal_validate_settings($settings, $input, $valid)
+    {
+        foreach ($settings as $field) {
+
+            switch ($field['type']) {
+                case 'checkbox':
+                    $value = isset($input[$field['id']]);
+                    break;
+
+                case 'time':
+                case 'text':
+                case 'hidden':
+                case 'dropdown':
+                case 'textarea':
+                case 'upload-input':
+                    $value = UtilEnv::sanitize_text_field($input[$field['id']]);
+                    break;
+
+                case 'number':
+                case 'numeric':
+                    $value = intval($input[$field['id']]);
+                    break;
+
+                default:
+                    continue 2;
+            }
+
+            $_valid = &$valid;
+            foreach (explode('.', $field['id']) as $field_id) {
+
+                if (!is_array($_valid)) {
+                    $_valid = array($field_id => $_valid);
+                }
+
+                if (!isset($_valid[$field_id])) {
+                    $_valid[$field_id] = array();
+                }
+
+                $_valid = &$_valid[$field_id];
+            }
+
+            $_valid = $value;
+        }
+
+        return (array)$valid;
+    }
+
+    public function cron_setting_fields($cron_settings = [])
     {
         return $cron_settings;
     }
 
-    public function ajax_handler($args = array())
+    public function cron_handler($args = array())
     {
-        wp_send_json_error(
-            array(
-                'error' => __('WP Optimizer::ajax_handler -> empty ajax handler for ' . $this->slug, $this->context),
-            )
-        );
+        return true;
     }
 
-    public function render_settings()
+    public function ajax_handler($args = array())
+    {
+        Ajax::response([
+            'body'  => sprintf(__('Wrong ajax request for %s', $this->context), $this->slug),
+            'title' => __('Request error', $this->context)
+        ], 'error');
+    }
+
+    public function render_settings($filter = '')
     {
         if ($this->restricted_access('settings')) {
             ob_start();
@@ -192,7 +247,7 @@ class Module
 
         $_divider = false;
 
-        $_setting_fields = $this->setting_fields();
+        $_setting_fields = $this->setting_fields($filter);
 
         $option_name = shzn($this->context)->settings->option_name;
 
@@ -227,8 +282,9 @@ class Module
 
         if (!empty($_footer)) {
 
-            if ($_divider)
+            if ($_divider) {
                 echo "<hr class='shzn-hr'>";
+            }
 
             $_divider = true;
 
@@ -239,8 +295,9 @@ class Module
 
         if (!empty($custom_action_form)) {
 
-            if ($_divider)
+            if ($_divider) {
                 echo "<hr class='shzn-hr'>";
+            }
 
             echo $custom_action_form;
         }
@@ -272,7 +329,7 @@ class Module
         return '';
     }
 
-    protected function setting_fields()
+    protected function setting_fields($filter = '')
     {
         return array();
     }
@@ -316,8 +373,9 @@ class Module
 
     public function render_admin_page()
     {
-        if ($this->restricted_access('render-admin'))
+        if ($this->restricted_access('render-admin')) {
             $this->render_disabled();
+        }
     }
 
     /**
@@ -330,55 +388,29 @@ class Module
      */
     public function validate_settings($input, $valid)
     {
-        foreach ($this->setting_fields() as $field) {
-
-            switch ($field['type']) {
-                case 'checkbox':
-                    $value = isset($input[$field['id']]);
-                    break;
-
-
-                case 'time':
-                case 'text':
-                case 'hidden':
-                case 'dropdown':
-                case 'textarea':
-                case 'upload-input':
-                    $value = UtilEnv::sanitize_text_field($input[$field['id']]);
-                    break;
-
-                case 'number':
-                case 'numeric':
-                    $value = intval($input[$field['id']]);
-                    break;
-
-                default:
-                    continue 2;
-            }
-
-            $_valid = &$valid;
-            foreach (explode('.', $field['id']) as $field_id) {
-
-                if (!is_array($_valid)) {
-                    $_valid = array($field_id => $_valid);
-                }
-
-                if (!isset($_valid[$field_id])) {
-                    $_valid[$field_id] = array();
-                }
-
-                $_valid = &$_valid[$field_id];
-            }
-
-            $_valid = $value;
-        }
-
-        return (array)$valid;
+        return $this->internal_validate_settings($this->setting_fields(), $input, $valid);
     }
 
     protected function group_setting_fields(...$args)
     {
-        return array_merge($args);
+        return array_merge(array_filter($args));
+    }
+
+    protected function group_setting_sections($fields, $filter = '')
+    {
+        $res = array();
+
+        if (!empty($filter)) {
+            foreach ((array)$filter as $_filter) {
+                if (isset($fields[$_filter]))
+                    $res = array_merge($res, $fields[$_filter]);
+            }
+        }
+        else {
+            $res = call_user_func_array('array_merge', array_values($fields));
+        }
+
+        return $res;
     }
 
     protected function setting_field($name, $id = false, $type = 'text', $args = [])
@@ -394,7 +426,7 @@ class Module
             'list'          => ''
         ], $args);
 
-        if ($id) {
+        if ($id or $type === 'link') {
             $value = ($args['value'] === false) ? $this->option($id, $args['default_value']) : $args['value'];
         }
         else {
@@ -438,7 +470,7 @@ class Module
             $group = "module_{$this->slug}";
         }
 
-        return shzn($this->context)->cache->get_cache($key, $group, $default);
+        return shzn($this->context)->cache->get($key, $group, $default);
     }
 
     protected function cache_set($key, $data, $group = '', $force = false)
@@ -447,6 +479,6 @@ class Module
             $group = "module_{$this->slug}";
         }
 
-        return shzn($this->context)->cache->set_cache($key, $data, $group, $force);
+        return shzn($this->context)->cache->set($key, $data, $group, $force);
     }
 }

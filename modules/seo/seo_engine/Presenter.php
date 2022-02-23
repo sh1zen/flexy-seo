@@ -1,13 +1,13 @@
 <?php
 /**
  * @author    sh1zen
- * @copyright Copyright (C)  2021
+ * @copyright Copyright (C)  2022
  * @license   http://www.gnu.org/licenses/gpl.html GNU/GPL
  */
 
 namespace FlexySEO\Engine;
 
-use FlexySEO\core\Settings;
+use FlexySEO\Engine\Generators\Schema;
 use FlexySEO\Engine\Helpers\SEOScriptTag;
 use FlexySEO\Engine\Helpers\SEOTag;
 
@@ -73,20 +73,23 @@ class Presenter
 
         // Filter the title for compatibility with other plugins and themes.
         if (shzn('wpfs')->settings->get('seo.title.rewrite', true)) {
-            add_filter('wp_title', array($this, 'filter_title'), 15);
+            add_filter('wp_title', array($this, 'filter_title'), 10, 1);
+            add_filter('the_title', array($this, 'filter_title'), 10, 1);
         }
 
         // canonical, rel_prev, rel_next
         $this->link_presenter();
-
         $this->robots_presenter();
+
         $this->keywords_presenter();
         $this->description_presenter();
 
         $this->social_presenter();
         $this->verification_codes_presenter();
 
-        $this->schema_presenter();
+        if (shzn('wpfs')->settings->get('seo.schema.enabled', false)) {
+            $this->schema_presenter();
+        }
 
         add_action('wp_head', array($this, 'wp_head'), 1);
     }
@@ -192,6 +195,7 @@ class Presenter
         $this->add_tags($og->get_tags());
 
         $tc = $this->generator->twitterCard();
+
         foreach ($tc->get_tags() as $tag_name => $tag_value) {
             $this->add_tag($tag_name, $tag_value, 'meta_name');
         }
@@ -215,11 +219,15 @@ class Presenter
 
     private function schema_presenter()
     {
-        $schema = $this->generator->schema();
+        $schema = new Schema($this->generator);
 
-        $schema = apply_filters('wpfs_schema', $schema, $this->indexable);
+        $schema->build();
 
-        $this->add_script(new SEOScriptTag($schema, "application/ld+json"));
+        $schemaGraph = $schema->export();
+
+        $schemaGraph = apply_filters('wpfs_schema', $schemaGraph, $this->indexable);
+
+        $this->add_script(new SEOScriptTag($schemaGraph, "application/ld+json"));
     }
 
     private function add_script($script)

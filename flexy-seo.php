@@ -1,5 +1,11 @@
 <?php
 /**
+ * @author    sh1zen
+ * @copyright Copyright (C)  2022
+ * @license   http://www.gnu.org/licenses/gpl.html GNU/GPL
+ */
+
+/**
  * Plugin Name: Flexy SEO
  * Plugin URI: https://github.com/sh1zen/flexy-seo
  * Description: Search Engine Optimization (SEO) plugin, support flex breadcrumbs, schema.org and more.
@@ -7,10 +13,10 @@
  * Author URI: https://sh1zen.github.io/
  * Text Domain: wpfs
  * Domain Path: /languages
- * Version: 1.3.3
+ * Version: 1.4.9
  */
 
-const WPFS_VERSION = '1.3.3';
+const WPFS_VERSION = '1.4.9';
 
 const WPFS_FILE = __FILE__;
 define('WPFS_ABSPATH', dirname(__FILE__) . '/');
@@ -24,19 +30,17 @@ if (!defined('SHZN_FRAMEWORK')) {
     require_once WPFS_VENDORS . 'shzn-framework/loader.php';
 }
 
-shzn('wpfs', ['path' => WPFS_MODULES], [
+shzn('wpfs', ['path' => WPFS_MODULES, 'table_name' => "flexy_seo"], [
     'meter'         => false,
     'cron'          => false,
     'cache'         => true,
     'storage'       => true,
     'settings'      => true,
     'moduleHandler' => true,
+    'options'       => true
 ]);
 
 const WPFS_DEBUG = SHZN_DEBUG;
-
-// essential
-require_once WPFS_ADMIN . 'Options.class.php';
 
 // main class
 require_once WPFS_ADMIN . 'PluginInit.class.php';

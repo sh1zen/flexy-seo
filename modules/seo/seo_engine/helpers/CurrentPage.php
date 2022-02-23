@@ -1,13 +1,11 @@
 <?php
 /**
  * @author    sh1zen
- * @copyright Copyright (C)  2021
+ * @copyright Copyright (C)  2022
  * @license   http://www.gnu.org/licenses/gpl.html GNU/GPL
  */
 
 namespace FlexySEO\Engine\Helpers;
-
-use FlexySEO\core\Cache;
 
 /**
  * A helper object for WordPress posts.
@@ -56,9 +54,9 @@ class CurrentPage
     {
         if ($this->is_search()):
             $page_type = 'search';
-        elseif ($this->is_post_type_archive() or $this->is_static_posts_page() or $this->is_posts_page()):
+        elseif ($this->is_post_type_archive() or $this->is_posts_page()):
             $page_type = 'post_archive';
-        elseif ($this->is_home()):
+        elseif ($this->is_homepage()):
             $page_type = 'home';
         elseif ($this->is_simple_page()):
             $page_type = 'post';
@@ -77,21 +75,6 @@ class CurrentPage
         return $page_type;
     }
 
-
-    public function get_term()
-    {
-        return $this->is_term_archive() ? $this->get_queried_object() : null;
-    }
-
-    /**
-     * @return \WP_Post
-     */
-    public function get_post()
-    {
-        return $this->is_simple_page() ? $this->get_queried_object() : null;
-    }
-
-
     /**
      * Determine whether this is a search result.
      *
@@ -107,8 +90,9 @@ class CurrentPage
      */
     public function get_main_query()
     {
-        if (is_a($this->main_query, "WP_Query"))
+        if ($this->main_query instanceof \WP_Query) {
             return $this->main_query;
+        }
 
         return $GLOBALS['wp_the_query'];
     }
@@ -126,22 +110,44 @@ class CurrentPage
     }
 
     /**
-     * Determine whether this is the static posts page.
+     * Determine whether this is the statically set posts page, when it's not the frontpage.
      *
-     * @return bool Whether or not the current page is a static posts page.
+     * @return bool Whether or not it's a non-frontpage, statically set posts page.
      */
-    public function is_static_posts_page()
+    public function is_posts_page()
     {
-        $page_for_posts = (int)\get_option('page_for_posts');
+        $wp_query = $this->get_main_query();
 
-        return ($page_for_posts > 0) and ($page_for_posts === $this->get_main_query()->get_queried_object_id());
+        if (!$wp_query->is_home()) {
+            return false;
+        }
+
+        return get_option('show_on_front') === 'page';
     }
 
     public function is_home()
     {
-        $wp_query = $this->get_main_query();
+        return $this->get_main_query()->is_home();
+    }
 
-        return $wp_query->is_front_page() or $wp_query->is_home();
+    /**
+     * Checks if the current page is the front page.
+     *
+     * @return bool Whether or not the current page is the front page.
+     */
+    public function is_homepage()
+    {
+        return $this->get_main_query()->is_front_page();
+    }
+
+    /**
+     * Checks if the current page is the front page.
+     *
+     * @return bool Whether or not the current page is the front page.
+     */
+    public function is_front_page()
+    {
+        return $this->is_homepage();
     }
 
     /**
@@ -161,36 +167,15 @@ class CurrentPage
      */
     public function get_simple_page_id()
     {
-        if (\is_singular()) {
-            return \get_the_ID();
+        if (is_singular()) {
+            return get_the_ID();
         }
 
         if ($this->is_posts_page()) {
-            return \get_option('page_for_posts');
+            return get_option('page_for_posts');
         }
 
-        /**
-         * Filter: Allow changing the default page id.
-         *
-         * @api int $page_id The default page id.
-         */
         return 0;
-    }
-
-    /**
-     * Determine whether this is the statically set posts page, when it's not the frontpage.
-     *
-     * @return bool Whether or not it's a non-frontpage, statically set posts page.
-     */
-    public function is_posts_page()
-    {
-        $wp_query = $this->get_main_query();
-
-        if (!$wp_query->is_home()) {
-            return false;
-        }
-
-        return \get_option('show_on_front') === 'page';
     }
 
     /**
@@ -239,6 +224,48 @@ class CurrentPage
         return $wp_query->is_404();
     }
 
+    public function get_queried_object_id()
+    {
+        return $this->get_main_query()->get_queried_object_id();
+    }
+
+    public function get_term()
+    {
+        return $this->is_term_archive() ? $this->get_queried_object() : null;
+    }
+
+    /**
+     * Returns the post type of the main query.
+     *
+     * @return \WP_Term|\WP_Post_Type|\WP_Post|\WP_User|null The queried object.
+     */
+    public function get_queried_object()
+    {
+        return $this->get_main_query()->get_queried_object();
+    }
+
+    /**
+     * Retrieves an array of posts based on query variables.
+     *
+     * There are a few filters and actions that can be used to modify the post
+     * database query.
+     *
+     * @return int[]|\WP_Post[] The queried object.
+     */
+    public function get_queried_posts()
+    {
+        return $this->get_main_query()->get_posts();
+    }
+
+
+    /**
+     * @return \WP_Post
+     */
+    public function get_post()
+    {
+        return $this->is_simple_page() ? $this->get_queried_object() : null;
+    }
+
     /**
      * Returns the page type for the current request.
      *
@@ -248,14 +275,14 @@ class CurrentPage
     {
         if ($this->is_search()):
             $page_type = 'search_page';
-        elseif ($this->is_static_posts_page()):
+        elseif ($this->is_posts_page()):
             $page_type = 'static_posts_page';
         elseif ($this->is_home_static_page()):
-            $page_type = 'static_home_page';
+            $page_type = 'static_homepage';
         elseif ($this->is_home_posts_page()):
-            $page_type = 'home_page';
+            $page_type = 'homepage';
         elseif ($this->is_simple_page()):
-            $page_type = 'post_type';
+            $page_type = 'post_page';
         elseif ($this->is_post_type_archive()):
             $page_type = 'post_type_archive';
         elseif ($this->is_term_archive()):
@@ -267,7 +294,7 @@ class CurrentPage
         elseif ($this->is_404()):
             $page_type = 'E404_page';
         else:
-            $page_type = 'fallback';
+            $page_type = 'none';
         endif;
 
         return $page_type;
@@ -286,11 +313,11 @@ class CurrentPage
             return false;
         }
 
-        if (\get_option('show_on_front') !== 'page') {
+        if (get_option('show_on_front') !== 'page') {
             return false;
         }
 
-        return $wp_query->is_page(\get_option('page_on_front'));
+        return $wp_query->is_page(get_option('page_on_front'));
     }
 
     /**
@@ -310,11 +337,11 @@ class CurrentPage
          * Whether the static page's `Homepage` option is actually not set to a page.
          * Otherwise WordPress proceeds to handle the homepage as a `Your latest posts` page.
          */
-        if ((int)\get_option('page_on_front') === 0) {
+        if ((int)get_option('page_on_front') === 0) {
             return true;
         }
 
-        return \get_option('show_on_front') === 'posts';
+        return get_option('show_on_front') === 'posts';
     }
 
     /**
@@ -327,16 +354,9 @@ class CurrentPage
         return $this->get_main_query()->get('author');
     }
 
-
     public function get($query_var, $default = '')
     {
         return $this->get_main_query()->get($query_var, $default);
-    }
-
-
-    public function get_queried_object_id()
-    {
-        return $this->get_main_query()->get_queried_object_id();
     }
 
     /**
@@ -346,11 +366,11 @@ class CurrentPage
      */
     public function get_front_page_id()
     {
-        if (\get_option('show_on_front') !== 'page') {
+        if (get_option('show_on_front') !== 'page') {
             return 0;
         }
 
-        return (int)\get_option('page_on_front');
+        return (int)get_option('page_on_front');
     }
 
     /**
@@ -365,12 +385,14 @@ class CurrentPage
         if ($wp_query->is_category()) {
             return $wp_query->get('cat');
         }
+
         if ($wp_query->is_tag()) {
             return $wp_query->get('tag_id');
         }
+
         if ($wp_query->is_tax()) {
             $queried_object = $wp_query->get_queried_object();
-            if ($queried_object && !\is_wp_error($queried_object)) {
+            if ($queried_object and !is_wp_error($queried_object)) {
                 return $queried_object->term_id;
             }
         }
@@ -385,24 +407,13 @@ class CurrentPage
      */
     public function get_queried_post_type()
     {
-        $wp_query = $this->get_main_query();
-        $post_type = $wp_query->get('post_type');
-        if (\is_array($post_type)) {
-            $post_type = \reset($post_type);
+        $post_type = $this->get_main_query()->get('post_type');
+
+        if (is_array($post_type)) {
+            $post_type = reset($post_type);
         }
 
         return $post_type;
-    }
-
-
-    /**
-     * Returns the post type of the main query.
-     *
-     * @return \WP_Term|\WP_Post_Type|\WP_Post|\WP_User|null The queried object.
-     */
-    public function get_queried_object()
-    {
-        return $this->get_main_query()->get_queried_object();
     }
 
     /**
@@ -414,23 +425,23 @@ class CurrentPage
      */
     public function get_date_archive_permalink()
     {
-        if ($permalink = $this->cache->get_cache('date_archive_permalink')) {
+        if ($permalink = $this->cache->get('date_archive_permalink')) {
             return $permalink;
         }
 
         $wp_query = $this->get_main_query();
 
         if ($wp_query->is_day()) {
-            $permalink = \get_day_link($wp_query->get('year'), $wp_query->get('monthnum'), $wp_query->get('day'));
+            $permalink = get_day_link($wp_query->get('year'), $wp_query->get('monthnum'), $wp_query->get('day'));
         }
         if ($wp_query->is_month()) {
-            $permalink = \get_month_link($wp_query->get('year'), $wp_query->get('monthnum'));
+            $permalink = get_month_link($wp_query->get('year'), $wp_query->get('monthnum'));
         }
         if ($wp_query->is_year()) {
-            $permalink = \get_year_link($wp_query->get('year'));
+            $permalink = get_year_link($wp_query->get('year'));
         }
 
-        $this->cache->set_cache('date_archive_permalink', $permalink, 'cph');
+        $this->cache->set('date_archive_permalink', $permalink, 'cph');
 
         return $permalink;
     }
@@ -497,16 +508,6 @@ class CurrentPage
     }
 
     /**
-     * Checks if the current page is the front page.
-     *
-     * @return bool Whether or not the current page is the front page.
-     */
-    public function is_front_page()
-    {
-        return $this->get_main_query()->is_front_page();
-    }
-
-    /**
      * Retrieves the current admin page.
      *
      * @return string The current page.
@@ -515,5 +516,12 @@ class CurrentPage
     {
         global $pagenow;
         return $pagenow;
+    }
+
+    public function get_page_number()
+    {
+        $page = get_query_var('page');
+        $paged = get_query_var('paged');
+        return !empty($page) ? $page : (!empty($paged) ? $paged : 1);
     }
 }

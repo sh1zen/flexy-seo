@@ -1,7 +1,7 @@
 <?php
 /**
  * @author    sh1zen
- * @copyright Copyright (C)  2021
+ * @copyright Copyright (C)  2022
  * @license   http://www.gnu.org/licenses/gpl.html GNU/GPL
  */
 
@@ -14,7 +14,7 @@ class StringHelper
      *
      * @param \string $string The string to convert.
      * @return \string         The converted string.
-     * @since 1.2.0
+
      *
      */
     public function toSnakeCase($string)
@@ -31,7 +31,7 @@ class StringHelper
      * @param \string $string The string to convert.
      * @param bool $capitalize Whether or not to capitalize the first letter.
      * @return \string             The converted string.
-     * @since 1.2.0
+
      *
      */
     public function toCamelCase($string, $capitalize = false)
@@ -51,7 +51,7 @@ class StringHelper
      * @param \string $string The string to convert.
      * @param bool $capitalizeFirstCharacter
      * @return \string             The converted string.
-     * @since 1.2.0
+
      */
     public function dashesToCamelCase($string, $capitalizeFirstCharacter = false)
     {
@@ -69,7 +69,7 @@ class StringHelper
      * @param int $maxCharacters The max. amount of characters.
      * @param boolean $shouldHaveEllipsis Whether the string should have a trailing ellipsis (defaults to true).
      * @return \string  $string             The string.
-     * @since 1.2.0
+
      *
      */
     public function truncate($string, $maxCharacters, $shouldHaveEllipsis = true)
@@ -94,7 +94,7 @@ class StringHelper
      *
      * @param \string $string The string.
      * @return \string         The escaped string.
-     * @since 1.2.0
+
      *
      */
     public function escapeRegex($string)
@@ -109,7 +109,7 @@ class StringHelper
      * @param \string $replacement The replacement string.
      * @param \string $subject The subject to search in.
      * @return \string              The subject with matches replaced.
-     * @since 1.2.0
+
      *
      */
     public function pregReplace($pattern, $replacement, $subject)
@@ -123,7 +123,7 @@ class StringHelper
      *
      * @param \string $string The string.
      * @return \string         The escaped string.
-     * @since 1.2.0
+
      *
      */
     public function escapeRegexReplacement($string)
@@ -136,7 +136,7 @@ class StringHelper
      *
      * @param \string $string The original string.
      * @return \string         The string converted to lowercase.
-     * @since 1.2.0
+
      *
      */
     public function toLowercase($string)
@@ -151,7 +151,7 @@ class StringHelper
      * @param \string $needle The needle.
      * @param int $offset The offset.
      * @return int|bool         The index of the first occurence or false.
-     * @since 1.2.0.2
+    .2
      *
      */
     public function stringContains($stack, $needle, $offset = 0)
@@ -164,7 +164,7 @@ class StringHelper
      *
      * @param \string $string The string to check.
      * @return bool           True if it is JSON or false if not.
-     * @since 1.2.0
+
      *
      */
     public function isJson($string)
@@ -184,7 +184,7 @@ class StringHelper
      *
      * @param \string $string The string.
      * @return \string         The string without punctuation.
-     * @since 1.2.0
+
      *
      */
     public function stripPunctuation($string)
@@ -199,7 +199,7 @@ class StringHelper
      *
      * @param \string $string The \string to encode.
      * @return \string         The encoded string.
-     * @since 1.2.0
+
      *
      */
     public function encodeOutputHtml($string)
@@ -212,7 +212,7 @@ class StringHelper
      *
      * @param \string $string The string to decode.
      * @return \string         The decoded string.
-     * @since 1.2.0
+
      *
      */
     public function decodeHtmlEntities($string)

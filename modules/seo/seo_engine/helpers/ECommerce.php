@@ -1,7 +1,7 @@
 <?php
 /**
  * @author    sh1zen
- * @copyright Copyright (C)  2021
+ * @copyright Copyright (C)  2022
  * @license   http://www.gnu.org/licenses/gpl.html GNU/GPL
  */
 
@@ -9,8 +9,7 @@ namespace FlexySEO\Engine\Helpers;
 
 /**
  * Contains helper functions for eCommerce plugins.
- *
- * @since 1.2.0
+
  */
 class ECommerce
 {
@@ -19,7 +18,7 @@ class ECommerce
      *
      * @param int $id The post ID to check against (optional).
      * @return bool     Whether the current page is the WooCommerce shop page.
-     * @since 1.2.0
+
      *
      */
     public function isWooCommerceShopPage($id = 0)
@@ -40,7 +39,7 @@ class ECommerce
      * Checks whether WooCommerce is active.
      *
      * @return boolean Whether WooCommerce is active.
-     * @since 1.2.0
+
      *
      */
     public function isWooCommerceActive()
@@ -53,7 +52,7 @@ class ECommerce
      *
      * @param int $id The post ID to check against (optional).
      * @return bool     Whether the current page is the WooCommerce cart page.
-     * @since 1.2.0
+
      *
      */
     public function isWooCommerceCartPage($id = 0)
@@ -75,7 +74,7 @@ class ECommerce
      *
      * @param int $id The post ID to check against (optional).
      * @return bool     Whether the current page is the WooCommerce checkout page.
-     * @since 1.2.0
+
      *
      */
     public function isWooCommerceCheckoutPage($id = 0)
@@ -97,7 +96,7 @@ class ECommerce
      *
      * @param int $id The post ID to check against (optional).
      * @return bool     Whether the current page is the WooCommerce account page.
-     * @since 1.2.0
+
      *
      */
     public function isWooCommerceAccountPage($id = 0)

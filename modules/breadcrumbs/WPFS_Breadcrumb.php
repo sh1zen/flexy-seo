@@ -1,7 +1,7 @@
 <?php
 /**
  * @author    sh1zen
- * @copyright Copyright (C)  2021
+ * @copyright Copyright (C)  2022
  * @license   http://www.gnu.org/licenses/gpl.html GNU/GPL
  */
 
@@ -11,12 +11,12 @@ class WPFS_Breadcrumb
     /**
      * @var string    Last used 'before' string
      */
-    public static $before = '';
+    public static string $before = '';
 
     /**
      * @var string    Last used 'after' string
      */
-    public static $after = '';
+    public static string $after = '';
 
     /**
      * @var    object    Instance of this class
@@ -26,7 +26,7 @@ class WPFS_Breadcrumb
     /**
      * @var    string    Blog's show on front setting, 'page' or 'posts'
      */
-    private $show_on_front;
+    private string $show_on_front;
 
     /**
      * @var    mixed    Blog's page for posts setting, page id or false
@@ -41,17 +41,17 @@ class WPFS_Breadcrumb
     /**
      * @var    array    Flex options array from get_all()
      */
-    private $options;
+    private array $options;
 
     /**
      * @var string    HTML wrapper element for a single breadcrumb element
      */
-    private $element;
+    private string $element;
 
     /**
      * @var string    HTML wrapper element for the WP SEO breadcrumbs output
      */
-    private $wrapper;
+    private string $wrapper;
 
     /**
      * @var    array    Array of crumbs
@@ -62,29 +62,28 @@ class WPFS_Breadcrumb
      *    "term"       for a taxonomy term.
      * OR it consists of a predefined set of 'text', 'url' and 'allow_html'
      */
-    private $crumbs = array();
+    private array $crumbs = array();
 
     /**
      * @var array    Array of individual (linked) html strings created from crumbs
      */
-    private $links = array();
+    private array $links = array();
 
     /**
      * @var    string    Breadcrumb html string
      */
-    private $output;
+    private string $output;
 
     /**
      * @var    string    Home
      */
-    private $home_url;
+    private string $home_url;
 
     /**
      * Init the breadcrumb class
      */
     private function __construct()
     {
-
     }
 
     /**
@@ -96,10 +95,11 @@ class WPFS_Breadcrumb
      * @param array $args
      * @return string
      */
-    public static function breadcrumb($before = '', $after = '', $display = true, $args = array())
+    public static function breadcrumb(string $before = '', string $after = '', bool $display = true, array $args = array())
     {
-        if (!shzn('wpfs')->settings->get('breadcrumbs.active', false))
+        if (!shzn('wpfs')->settings->get('breadcrumbs.active', false)) {
             return '';
+        }
 
         if (!isset(self::$_instance)) {
             self::$_instance = new self();
@@ -124,38 +124,30 @@ class WPFS_Breadcrumb
      * Create the breadcrumb
      * @param array $args
      */
-    private function generate($args = array())
+    private function generate(array $args = array())
     {
+        if (!empty($this->output)) {
+            return;
+        }
+
         if (!$this->get_wp_query()) {
             _doing_it_wrong(__FUNCTION__, __('Conditional query tags do not work before the query is run. Before then, they always return false.', 'wpfs'), '1.0.0');
         }
 
-        if (empty($this->output)) {
+        $this->queried_object = $this->get_wp_query()->get_queried_object();
 
-            $this->options = array_merge(array(
-                'prefix.archive'          => __('Archive for:', 'wpfs'),
-                'prefix.search'           => __('Searched:', 'wpfs'),
-                'prefix.author'           => '',
-                'post_types-post-maintax' => 'category',
-            ), $args);
+        $this->options = array_merge($this->get_option('.'), $args);
 
-            $this->home_url = shzn()->utility->home_url;
+        $this->home_url = shzn()->utility->home_url;
 
-            $this->queried_object = $this->get_wp_query()->get_queried_object();
+        $this->show_on_front = get_option('show_on_front');
+        $this->page_for_posts = get_option('page_for_posts');
 
-            $this->show_on_front = get_option('show_on_front');
-            $this->page_for_posts = get_option('page_for_posts');
-
-            $this->wrapper = 'ol';
-            $this->element = 'li';
-
-            $format = $this->get_option('flexed') ? $this->get_breadcrumb_format() : '';
-
-            $this->set_crumbs($format);
-            $this->prepare_links();
-            $this->links_to_string();
-            $this->wrap_breadcrumb();
-        }
+        $this->reset();
+        $this->set_crumbs_types();
+        $this->transform_crumbs();
+        $this->prepare_links();
+        $this->wrap_breadcrumb();
     }
 
     /**
@@ -168,63 +160,29 @@ class WPFS_Breadcrumb
 
     private function get_option($option, $default = false)
     {
-        if (isset($this->options[$option]))
-            return $this->options[$option];
+        $res = isset($this->options[$option]) ? $this->options[$option] : shzn('wpfs')->settings->get("breadcrumbs." . $option, '');
 
-        $settings = shzn('wpfs')->settings->get("breadcrumbs." . $option, '');
+        if (empty($res)) {
+            $res = $default;
+        }
 
-        if (empty($settings))
-            $settings = $default;
+        return $res;
+    }
 
-        return $settings;
+    private function reset()
+    {
+        $this->wrapper = 'ol';
+        $this->element = 'li';
+        $this->crumbs = [];
+        $this->links = [];
+        $this->output = '';
     }
 
     /**
      * Determine the crumbs which should form the breadcrumb.
      */
-    private function get_breadcrumb_format()
+    private function set_crumbs_types()
     {
-        if (!$this->queried_object)
-            return '';
-
-        $wp_query = $this->get_wp_query();
-
-        $format = '';
-
-        if ($wp_query->is_home()) {
-            $format = $this->get_option("format.post_type.{$this->queried_object->post_type}", "%%home%%");
-        }
-        elseif ($wp_query->is_singular()) {
-
-            $format = $this->get_option("format.post_type.{$this->queried_object->post_type}", "%%home%% >> %%category%% >> %%title%%");
-        }
-        elseif ($wp_query->is_author()) {
-            $format = $this->get_option("format.author", "%%home%% >> %%queried_object%%");
-        }
-        elseif ($wp_query->is_search()) {
-            $format = $this->get_option("format.search", "%%home%% >> %%queried_object%%");
-        }
-        elseif ($wp_query->is_404()) {
-
-            $format = $this->get_option("format.404", "%%home%% >> %%queried_object%%");
-        }
-        elseif ($wp_query->is_archive()) {
-            if ($wp_query->is_post_type_archive())
-                $format = $this->get_option("format.post_type_archive.{$this->queried_object->post_type}", "%%home%% >> %%queried_object%%");
-            elseif (is_object($this->queried_object))
-                $format = $this->get_option("format.tax.{$this->queried_object->taxonomy}", "%%home%% >> %%queried_object%%");
-        }
-
-        return $format;
-    }
-
-    /**
-     * Determine the crumbs which should form the breadcrumb.
-     */
-    private function set_crumbs($format = '')
-    {
-        $wp_query = $this->get_wp_query();
-
         $queried_object = $this->queried_object;
 
         if (!is_object($queried_object)) {
@@ -232,18 +190,21 @@ class WPFS_Breadcrumb
             return;
         }
 
-        if (!empty($format)) {
+        $wp_query = $this->get_wp_query();
 
-            //$format = preg_replace('/\s+/', ' ', $format);
+        if ($wp_query->is_singular() and !$this->get_option("post_type.{$queried_object->post_type}.active")) {
+            return;
+        }
 
-            $crumbs_structure = array_map('trim', explode('>>', $format));
+        if ($this->get_option('flexed')) {
+
+            $crumbs_structure = explode('>>', $this->get_breadcrumb_format());
 
             foreach ($crumbs_structure as $crumb_structure) {
                 $this->format_to_crumbs($crumb_structure);
             }
 
-            if (!empty($this->crumbs))
-                return;
+            return;
         }
 
         $this->add_home_crumb();
@@ -257,12 +218,9 @@ class WPFS_Breadcrumb
         }
         elseif ($wp_query->is_singular()) {
 
-            if (shzn('wpfs')->settings->get('breadcrumbs.post_type', true)) {
-
-                // get_post_type_archive_link($post->post_type)
-                if (get_post_type_object($queried_object->post_type)->has_archive) {
-                    $this->add_crumb($queried_object->post_type, 'ptarchive');
-                }
+            // get_post_type_archive_link($post->post_type)
+            if ($this->get_option("post_type_archive.{$queried_object->post_type}.show", false) and get_post_type_object($queried_object->post_type)->has_archive) {
+                $this->add_crumb($queried_object->post_type, 'ptarchive');
             }
 
             if ($queried_object->post_parent) {
@@ -299,14 +257,14 @@ class WPFS_Breadcrumb
             }
             elseif ($wp_query->is_author()) {
                 $this->add_crumb(
-                    $this->generate_crumb($this->get_option('prefix.author', '') . ' ' . $queried_object->display_name, null),
+                    $this->generate_crumb_value($this->get_option('author.prefix', '') . ' ' . $queried_object->display_name, null),
                     'crumb',
                     true
                 );
             }
             elseif ($wp_query->is_search()) {
                 $this->add_crumb(
-                    $this->generate_crumb($this->get_option('prefix.search', '') . ' "' . esc_html(get_search_query()) . '"', null),
+                    $this->generate_crumb_value($this->get_option('search.prefix', '') . ' "' . esc_html(get_search_query()) . '"', null),
                     'crumb',
                     true
                 );
@@ -315,7 +273,7 @@ class WPFS_Breadcrumb
 
                 if (0 !== $wp_query->get('year') || (0 !== $wp_query->get('monthnum') || 0 !== get_query_var('day'))) {
                     if ('page' == $this->show_on_front and !$wp_query->is_home()) {
-                        if ($this->page_for_posts and !$this->get_option('breadcrumbs-blog-remove')) {
+                        if ($this->page_for_posts and !$this->get_option('remove_blog')) {
                             $this->add_blog_crumb();
                         }
                     }
@@ -335,7 +293,7 @@ class WPFS_Breadcrumb
                 }
                 else {
                     $this->add_crumb(
-                        $this->generate_crumb($this->get_option('prefix.404', ''), null),
+                        $this->generate_crumb_value($this->get_option('404.prefix', ''), null),
                         'crumb',
                         true
                     );
@@ -350,7 +308,7 @@ class WPFS_Breadcrumb
     private function add_home_crumb()
     {
         $this->add_crumb(
-            $this->generate_crumb(shzn('wpfs')->settings->get('breadcrumbs.home_txt', 'Home'), $this->home_url),
+            $this->generate_crumb_value($this->get_option('home.prefix', 'Home'), $this->home_url),
             'crumb',
             true
         );
@@ -359,11 +317,11 @@ class WPFS_Breadcrumb
     /**
      * Add a predefined crumb to the crumbs property
      *
-     * @param $type
+     * @param string $type
      * @param null $value
      * @param bool $allow_html
      */
-    private function add_crumb($value = null, $type = 'crumb', $allow_html = false)
+    private function add_crumb($value = null, string $type = 'crumb', bool $allow_html = false)
     {
         $this->crumbs[] = array(
             'type'       => $type,
@@ -372,7 +330,7 @@ class WPFS_Breadcrumb
         );
     }
 
-    private function generate_crumb($text, $url)
+    private function generate_crumb_value($text, $url)
     {
         return array(
             'text' => $text,
@@ -380,9 +338,57 @@ class WPFS_Breadcrumb
         );
     }
 
+    /**
+     * Determine the crumbs which should form the breadcrumb.
+     */
+    private function get_breadcrumb_format()
+    {
+        if (!$this->queried_object) {
+            return '';
+        }
+
+        $wp_query = $this->get_wp_query();
+
+        $format = '';
+
+        if ($wp_query->is_home()) {
+            $format = $this->get_option("post_type.{$this->queried_object->post_type}.format", "%%home%%");
+        }
+        elseif ($wp_query->is_singular()) {
+
+            $format = $this->get_option("post_type.{$this->queried_object->post_type}.format", "%%home%% >> %%category%% >> %%title%%");
+        }
+        elseif ($wp_query->is_author()) {
+            $format = $this->get_option("author.format", "%%home%% >> %%queried_object%%");
+        }
+        elseif ($wp_query->is_search()) {
+            $format = $this->get_option("search.format", "%%home%% >> %%queried_object%%");
+        }
+        elseif ($wp_query->is_404()) {
+
+            $format = $this->get_option("404.format", "%%home%% >> %%queried_object%%");
+        }
+        elseif ($wp_query->is_archive()) {
+            if ($wp_query->is_post_type_archive()) {
+                $format = $this->get_option("post_type_archive.{$this->queried_object->post_type}.format", "%%home%% >> %%queried_object%%");
+            }
+            elseif (is_object($this->queried_object)) {
+                $format = $this->get_option("tax.{$this->queried_object->taxonomy}.format", "%%home%% >> %%queried_object%%");
+            }
+        }
+
+        return $format;
+    }
+
     private function format_to_crumbs($format)
     {
-        preg_match_all("/%%[^%]*%%/", $format, $rules);
+        $format = trim($format);
+
+        if (empty($format)) {
+            return;
+        }
+
+        preg_match_all("/%%[^%]*%%/U", $format, $rules);
 
         $format_crumb = array(
             array(
@@ -399,23 +405,22 @@ class WPFS_Breadcrumb
         foreach ($format_crumb as $obj) {
 
             // remove only text format
-            $url = preg_replace("/\[[^]]+\]/", '', str_replace(array('(', ')'), '', $obj['url']));
+            $url = preg_replace("#\[[^]]+]#U", '', str_replace(array('(', ')'), '', $obj['url']));
 
-            if (!empty($url) and strpos($url, $this->home_url) === false) {
+            if (!empty($url) and !str_contains($url, $this->home_url)) {
                 $url = $this->home_url . $url;
             }
 
             // fix multiple slashes
-            $url = preg_replace('/([^:])(\/{2,})/i', '$1/', $url);
+            $url = preg_replace('#([^:])(/{2,})#U', '$1/', $url);
 
-            $this->add_crumb($this->generate_crumb(
+            $this->add_crumb($this->generate_crumb_value(
 
             // remove only link format
-                preg_replace("/\([^)]+\)/", '', str_replace(array('[', ']'), '', $obj['text'])),
+                preg_replace("#\([^)]+\)#U", '', str_replace(array('[', ']'), '', $obj['text'])),
                 $url
             ));
         }
-
     }
 
     private function perform_replace($rule, $format_crumb)
@@ -439,6 +444,8 @@ class WPFS_Breadcrumb
 
     private function generate_replacements($rule)
     {
+        global $wp_rewrite;
+
         $wp_query = $this->get_wp_query();
 
         $replaces = array();
@@ -446,16 +453,22 @@ class WPFS_Breadcrumb
         switch ($rule) {
 
             case 'home':
+                $replaces[] = array(
+                    'text' => $this->get_option('home.prefix', 'Home'),
+                    'url'  => $this->home_url
+                );
+                break;
+
             case 'sitename':
                 $replaces[] = array(
-                    'text' => shzn('wpfs')->settings->get('breadcrumbs.home_txt', get_bloginfo('name')),
+                    'text' => get_bloginfo('name'),
                     'url'  => $this->home_url
                 );
                 break;
 
             case 'title':
                 $replaces[] = array(
-                    'text' => wp_get_document_title(),
+                    'text' => wpfs_document_title(),
                     'url'  => get_permalink($this->queried_object->ID)
                 );
                 break;
@@ -470,7 +483,7 @@ class WPFS_Breadcrumb
             case 'post_parent':
                 if (isset($this->queried_object->post_parent) and $this->queried_object->post_parent) {
                     $replaces[] = array(
-                        'text' => get_the_title($this->queried_object->post_parent),
+                        'text' => get_post($this->queried_object->post_parent)->post_title,
                         'url'  => get_permalink($this->queried_object->post_parent)
                     );
                 }
@@ -488,7 +501,7 @@ class WPFS_Breadcrumb
             case 'queried_object':
                 if ($wp_query->is_singular()) {
                     $replaces[] = array(
-                        'text' => get_the_title($this->queried_object->ID),
+                        'text' => get_post($this->queried_object->ID)->post_title,
                         'url'  => get_permalink($this->queried_object->ID)
                     );
                 }
@@ -531,52 +544,63 @@ class WPFS_Breadcrumb
             case 'taxonomy':
             case 'category-compact':
             case 'taxonomy-compact':
+            case 'category-full':
+            case 'taxonomy-full':
 
-                $compact_url_request = strpos($rule, "compact") !== false;
+                if ($this->queried_object instanceof \WP_Term) {
 
-                if (strpos($rule, "category") !== false) {
-                    $terms = wp_get_object_terms($this->queried_object->ID, 'category');
-
-                    if (!is_array($terms))
-                        break;
-
-                    $deepest_term = $this->find_deepest_term($terms);
+                    $deepest_term = $this->find_deepest_term(array($this->queried_object));
                 }
                 else {
-                    $deepest_term = $this->find_deepest_term(array($this->queried_object));
+
+                    $main_tax = $this->get_option("post_type.{$this->queried_object->post_type}.maintax", 'category');
+
+                    $terms = wp_get_object_terms($this->queried_object->ID, $main_tax);
+
+                    if (!is_array($terms) or empty($terms)) {
+                        break;
+                    }
+
+                    $deepest_term = $this->find_deepest_term($terms);
                 }
 
                 $parent_terms = $this->get_term_parents($deepest_term);
 
-                $url = '';
-                $compact_url = '';
+                $compact_url = $url = '';
                 $depth = 1;
+                $compact_url_request = str_contains($rule, "compact");
+
+                if (str_contains($rule, "full")) {
+                    $url = str_replace("%$deepest_term->taxonomy%", '', $wp_rewrite->get_extra_permastruct($deepest_term->taxonomy));
+                }
 
                 foreach ($parent_terms as $parent_term) {
 
-                    $url .= $parent_term->slug;
+                    $url .= "{$parent_term->slug}/";
 
                     $replaces[] = array(
                         'text' => $parent_term->name,
-                        'url'  => ($compact_url_request ? ($compact_url . "{$parent_term->slug}") : $url) . '/'
+                        'url'  => $compact_url_request ? "{$compact_url}{$parent_term->slug}/" : $url
                     );
 
                     /**
                      * set as subcategory like normal url after the 3th element guarantee better seo performances
                      */
-                    if (++$depth > 3)
+                    if (++$depth > 3) {
                         $compact_url .= $parent_term->slug . "/";
+                    }
                 }
 
                 $replaces[] = array(
                     'text' => $deepest_term->name,
-                    'url'  => ($compact_url_request ? $compact_url : $url) . $deepest_term->slug . '/'
+                    'url'  => ($compact_url_request ? $compact_url : $url) . "{$deepest_term->slug}/"
                 );
 
                 break;
         }
 
-        if (empty($replaces) and substr($rule, 0, 4) === "meta") {
+        if (empty($replaces) and str_starts_with($rule, "meta")) {
+
             $meta = str_replace("meta_", "", $rule);
 
             $_meta = get_metadata_raw(
@@ -632,8 +656,7 @@ class WPFS_Breadcrumb
         /* As we could still have two subcategories, from different parent categories,
            let's pick the one with the lowest ordered ancestor. */
         $parents_count = 0;
-        reset($terms_by_id);
-        $deepest_term = current($terms_by_id);
+        $deepest_term = reset($terms_by_id);
 
         foreach ($terms_by_id as $term) {
             $parents = $this->get_term_parents($term);
@@ -719,12 +742,13 @@ class WPFS_Breadcrumb
      */
     private function maybe_add_taxonomy_crumbs_for_post()
     {
-        $main_tax = $this->get_option('post_types-' . $this->queried_object->post_type . '-maintax', 'category');
+        $main_tax = $this->get_option("post_type.{$this->queried_object->post_type}.maintax", 'category');
 
-        if ($main_tax and isset($this->queried_object->ID)) {
+        if ($this->queried_object->ID) {
+
             $terms = wp_get_object_terms($this->queried_object->ID, $main_tax);
 
-            if (is_array($terms)) {
+            if (is_array($terms) and !empty($terms)) {
 
                 $deepest_term = $this->find_deepest_term($terms);
 
@@ -808,12 +832,12 @@ class WPFS_Breadcrumb
      * Add year crumb to crumbs property
      * @param bool $link
      */
-    private function add_year_crumb($link = true)
+    private function add_year_crumb(bool $link = true)
     {
         $wp_query = $this->get_wp_query();
 
         $this->add_crumb(
-            $this->generate_crumb((string)$wp_query->get('year'), $link ? get_year_link($wp_query->get('year')) : null),
+            $this->generate_crumb_value((string)$wp_query->get('year'), $link ? get_year_link($wp_query->get('year')) : null),
             'crumb',
             true
         );
@@ -823,14 +847,14 @@ class WPFS_Breadcrumb
      * Add month crumb to crumbs property
      * @param bool $link
      */
-    private function add_month_crumb($link = true)
+    private function add_month_crumb(bool $link = true)
     {
         global $wp_locale;
 
         $wp_query = $this->get_wp_query();
 
         $this->add_crumb(
-            $this->generate_crumb($wp_locale->get_month($wp_query->get('monthnum')), $link ? get_month_link($wp_query->get('year'), $wp_query->get('monthnum')) : null),
+            $this->generate_crumb_value($wp_locale->get_month($wp_query->get('monthnum')), $link ? get_month_link($wp_query->get('year'), $wp_query->get('monthnum')) : null),
             'crumb',
             true
         );
@@ -840,12 +864,12 @@ class WPFS_Breadcrumb
      * Add month crumb to crumbs property
      * @param bool $link
      */
-    private function add_day_crumb($link = true)
+    private function add_day_crumb(bool $link = true)
     {
         $wp_query = $this->get_wp_query();
 
         $this->add_crumb(
-            $this->generate_crumb((string)$wp_query->get('day'), $link ? get_day_link($wp_query->get('year'), $wp_query->get('monthnum'), $wp_query->get('day')) : null),
+            $this->generate_crumb_value((string)$wp_query->get('day'), $link ? get_day_link($wp_query->get('year'), $wp_query->get('monthnum'), $wp_query->get('day')) : null),
             'crumb',
             true
         );
@@ -861,7 +885,7 @@ class WPFS_Breadcrumb
         $wp_query = $this->get_wp_query();
 
         $this->add_crumb(
-            $this->generate_crumb($wp_locale->get_month($wp_query->get('monthnum')) . ' ' . $wp_query->get('year'),
+            $this->generate_crumb_value($wp_locale->get_month($wp_query->get('monthnum')) . ' ' . $wp_query->get('year'),
                 get_month_link($wp_query->get('year'), $wp_query->get('monthnum')))
         );
     }
@@ -871,9 +895,9 @@ class WPFS_Breadcrumb
      *
      * @param string $date
      */
-    private function add_date_crumb($date = null)
+    private function add_date_crumb(string $date = '')
     {
-        if (is_null($date)) {
+        if (empty($date)) {
             $date = get_the_date();
         }
         else {
@@ -882,72 +906,66 @@ class WPFS_Breadcrumb
         }
 
         $this->add_crumb(
-            $this->generate_crumb($this->get_option('prefix.archive', '') . ' ' . esc_html($date), null),
+            $this->generate_crumb_value($this->get_option('archive.prefix', '') . ' ' . esc_html($date), null),
             'crumb',
             true
         );
     }
 
     /**
-     * Take the crumbs array and convert each crumb to a single breadcrumb string.
+     * Take the crumbs array and convert each crumb to ['type' => 'crumb', 'value' => ...]
      */
-    private function prepare_links()
+    private function transform_crumbs()
     {
-        if (empty($this->crumbs)) {
-            return;
-        }
-
-        $crumb_count = count($this->crumbs) - 1;
-
         foreach ($this->crumbs as $i => $crumb) {
 
             switch ($crumb['type']) {
 
                 case 'postId':
-                    $link_info = array(
-                        'url'  => get_permalink($crumb['value']),
-                        'text' => strip_tags(get_the_title($crumb['value']))
-                    );
+                    $crumb_spec = $this->generate_crumb_value(strip_tags(get_the_title($crumb['value'])), get_permalink($crumb['value']));
                     break;
 
                 case 'term':
                 case 'term_list':
-                    $link_info = $this->get_link_info_for_terms($crumb['value']);
+                    $crumb_spec = $this->get_link_info_for_terms($crumb['value']);
                     break;
 
                 case 'ptarchive':
-                    $link_info = $this->get_link_info_for_ptarchive($crumb['value']);
+                    $crumb_spec = $this->get_link_info_for_ptarchive($crumb['value']);
+
                     break;
 
                 default:
-                    $link_info = $crumb['value'];
-                    break;
+                    continue 2;
             }
 
-            $this->links[] = $this->crumb_to_link($link_info, $i + 1, $i === $crumb_count);
+            $this->crumbs[$i] = [
+                'value'      => $crumb_spec,
+                'type'       => 'crumb',
+                'allow_html' => $crumb['allow_html']
+
+            ];
         }
     }
 
     private function get_link_info_for_terms($terms)
     {
+        if (empty($terms)) {
+            return $this->generate_crumb_value('', '');
+        }
+
         if (is_array($terms)) {
             $link_info = array(
                 'list' => true
             );
 
             foreach ($terms as $term) {
-                $link_info[] = array(
-                    'url'  => get_term_link($term),
-                    'text' => $term->name
-                );
+
+                $link_info[] = $this->generate_crumb_value($term->name, get_term_link($term));
             }
         }
         else {
-
-            $link_info = array(
-                'url'  => get_term_link($terms),
-                'text' => $terms->name
-            );
+            $link_info = $this->generate_crumb_value($terms->name, get_term_link($terms));
         }
 
         return $link_info;
@@ -985,6 +1003,24 @@ class WPFS_Breadcrumb
     }
 
     /**
+     * Take the crumbs array and convert each crumb to a single breadcrumb string.
+     */
+    private function prepare_links()
+    {
+        if (empty($this->crumbs)) {
+            return;
+        }
+
+        $crumb_count = count($this->crumbs) - 1;
+        $this->links = [];
+
+        foreach ($this->crumbs as $i => $crumb) {
+
+            $this->links[] = trim($this->crumb_to_link($crumb['value'], $i + 1, $i === $crumb_count));
+        }
+    }
+
+    /**
      * Create a breadcrumb element string
      *
      * @param array $link Link info array containing the keys:
@@ -998,7 +1034,7 @@ class WPFS_Breadcrumb
      * @return string
      * for paged article at this moment
      */
-    private function crumb_to_link($link, $position, $current = false)
+    private function crumb_to_link(array $link, $position, bool $current = false)
     {
         $link_output = '';
 
@@ -1021,7 +1057,7 @@ class WPFS_Breadcrumb
             $link_output .= "</{$this->element}>";
 
         }
-        elseif (isset($link['text']) and (is_string($link['text']) and !empty($link['text']))) {
+        elseif (!empty($link['text']) and is_string($link['text'])) {
 
             $link['text'] = trim($link['text']);
 
@@ -1047,8 +1083,9 @@ class WPFS_Breadcrumb
 
             $link_output .= "<a itemprop='item' {$alternative} itemtype='https://schema.org/WebPage'><span itemprop='name'>{$link['text']}</span></a>";
 
-            if ($position !== false)
+            if ($position !== false) {
                 $link_output .= "<meta itemprop='position' content='{$position}'>";
+            }
 
             $link_output .= "</{$this->element}>";
         }
@@ -1057,27 +1094,20 @@ class WPFS_Breadcrumb
     }
 
     /**
-     * Create a complete breadcrumb string from an array of breadcrumb element strings
-     */
-    private function links_to_string()
-    {
-        if (!empty($this->links)) {
-
-            // Remove any effectively empty links
-            $links = array_map('trim', $this->links);
-            $links = array_filter($links);
-
-            $this->output = implode(' ' . $this->get_option('separator', '>') . ' ', $links);
-        }
-    }
-
-    /**
      * Wrap a complete breadcrumb string in a Breadcrumb RDFA wrapper
      */
     private function wrap_breadcrumb()
     {
-        if (!empty($this->output)) {
-            $this->output = "<{$this->wrapper} class='wpfs-breadcrumb' itemscope='' itemtype='http://schema.org/BreadcrumbList'>{$this->output}</{$this->wrapper}>";
+        // Remove any effectively empty links
+        $links = array_filter($this->links);
+
+        if (!empty($links)) {
+
+            $output = implode(' ' . $this->get_option('separator', '>') . ' ', $links);
+
+            if (!empty($output)) {
+                $this->output = "<{$this->wrapper} class='wpfs-breadcrumb' itemscope='' itemtype='http://schema.org/BreadcrumbList'>{$output}</{$this->wrapper}>";
+            }
         }
     }
 

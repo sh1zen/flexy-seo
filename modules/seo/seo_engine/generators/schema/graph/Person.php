@@ -1,81 +1,76 @@
 <?php
+/**
+ * @author    sh1zen
+ * @copyright Copyright (C)  2022
+ * @license   http://www.gnu.org/licenses/gpl.html GNU/GPL
+ */
 
 namespace FlexySEO\Engine\Generators\Schema\Graphs;
 
+use FlexySEO\Engine\Generators\GraphBuilder;
+use FlexySEO\Engine\Generators\GraphUtility;
+use FlexySEO\Engine\Helpers\CurrentPage;
 
 /**
  * Person graph class.
  *
  * This is the main Person graph that can be set to represent the site.
- *
- * @since 1.2.0
  */
 class Person extends Graph
 {
     /**
      * Returns the graph data.
-     *
-     * @return array $data The graph data.
-     * @since 1.2.0
+     * @param \FlexySEO\Engine\Helpers\CurrentPage $currentPage
+     * @param string $type
+     * @param ...$args
+     * @return GraphBuilder The graph data.
      */
-    public function get($type = '')
+    public function get(CurrentPage $currentPage, string $type = '', ...$args)
     {
-        if (shzn('wpfs')->settings->get('seo.schema.organization.is', false)) {
-            return [];
-        }
-
-        $person = shzn('wpfs')->settings->get('seo.schema.person', false);
-        if ('manual' === $person) {
-            return $this->manual();
-        }
-
-        $person = intval($person);
-        if (empty($person)) {
-            return [];
-        }
-
-        $data = [
-            '@type' => 'Person',
-            '@id'   => shzn()->utility->home_url . '#person',
-            'name'  => get_the_author_meta('display_name', $person)
-        ];
-
-        $avatar = $this->avatar($person, 'personImage');
-        if ($avatar) {
-            $data['image'] = $avatar;
-        }
-
-        $socialUrls = $this->socialUrls($person);
-        if ($socialUrls) {
-            $data['sameAs'] = $socialUrls;
-        }
-        return $data;
+        return self::build($currentPage->get_queried_object());
     }
 
-    /**
-     * Returns the data for the person if it is set manually.
-     *
-     * @return array $data The graph data.
-     * @since 1.2.0
-     */
-    private function manual()
+    public static function build($user)
     {
-        $data = [
-            '@type' => 'Person',
-            '@id'   => shzn()->utility->home_url . '#person',
-            'name'  => shzn('wpfs')->settings->get('seo.schema.person.name', '')
-        ];
+        $user = shzn_get_user($user);
 
-        $logo = shzn('wpfs')->settings->get('seo.schema.person.logoURL', '');
-        if ($logo) {
-            $data['image'] = $logo;
+        if (!$user) {
+            return [];
         }
 
-        $socialUrls = $this->socialUrls();
-        if ($socialUrls) {
-            $data['sameAs'] = $socialUrls;
+        $schema = new GraphBuilder([
+            '@type'  => 'Person',
+            '@id'    => self::getSchemaID($user),
+            'name'   => $user->display_name,
+            'sameAs' => GraphUtility::socialUrls($user->ID)
+        ]);
+
+        $snippet_data = wpfseo('helpers')->get_user_snippet_image($user->ID, 'full');
+
+        if ($snippet_data) {
+            $schema->set('image',
+                [
+                    '@type'      => 'ImageObject',
+                    'url'        => $snippet_data['url'],
+                    'contentUrl' => $snippet_data['url'],
+                    'width'      => $snippet_data['width'],
+                    'height'     => $snippet_data['height'],
+                    'caption'    => $user->display_name,
+                ]
+            );
         }
 
-        return $data;
+        return $schema;
+    }
+
+    public static function getSchemaID($user)
+    {
+        $user = shzn_get_user($user);
+
+        if ($user) {
+            return shzn()->utility->home_url . '#/schema/person/' . hash('md5', $user->ID . wpfseo('salt'));
+        }
+
+        return '';
     }
 }

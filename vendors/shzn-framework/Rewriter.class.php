@@ -1,13 +1,15 @@
 <?php
 /**
  * @author    sh1zen
- * @copyright Copyright (C)  2021
+ * @copyright Copyright (C)  2022
  * @license   http://www.gnu.org/licenses/gpl.html GNU/GPL
  */
 
+namespace SHZN\core;
+
 class Rewriter
 {
-    private static $_instance;
+    private static Rewriter $_instance;
 
     public $request_path;
     public $request_args;
@@ -44,7 +46,7 @@ class Rewriter
     {
         $request = explode('?', $_SERVER['REQUEST_URI']);
         $req_uri = $request[0];
-        $req_args = isset($request[1]) ? $request[1] : '';
+        $req_args = $request[1] ?? '';
 
         $home_path = trim(parse_url($this->home_url, PHP_URL_PATH), '/');
         $home_path_regex = sprintf('|^%s|i', preg_quote($home_path, '|'));
@@ -57,10 +59,7 @@ class Rewriter
         $this->request_args = [];
 
         if (!empty($req_args)) {
-            foreach (explode("&", $req_args) as $arg) {
-                list($key, $value) = explode("=", $arg);
-                $this->request_args[$key] = $value;
-            }
+            parse_str($_SERVER['QUERY_STRING'], $this->request_args);
         }
     }
 
@@ -71,6 +70,11 @@ class Rewriter
         }
 
         return self::$_instance;
+    }
+
+    public function get_base($extension = '')
+    {
+        return basename($this->request_path, $extension);
     }
 
     /**
@@ -107,7 +111,7 @@ class Rewriter
         return $default;
     }
 
-    public function query_matcher($bool, $wp)
+    public function query_matcher($do_parse, $wp)
     {
         global $paged;
 
@@ -135,7 +139,7 @@ class Rewriter
             }
         }
 
-        return $bool;
+        return $do_parse;
     }
 
     /**
@@ -181,7 +185,7 @@ class Rewriter
 
     private function MatchesMapRegex_apply($subject, $_matches)
     {
-        return preg_replace_callback('(\$matches\[[1-9]+[0-9]*\])', function ($matches) use ($_matches) {
+        return preg_replace_callback('(\$matches\[[1-9]+[0-9]*])', function ($matches) use ($_matches) {
 
             $index = intval(substr($matches[0], 9, -1));
             return (isset($_matches[$index]) ? urlencode($_matches[$index]) : '');
@@ -224,7 +228,7 @@ class Rewriter
             return $url === '';
         }
 
-        return !!stripos(strtolower(urldecode($url)), $word);
+        return str_contains(strtolower(urldecode($url)), $word);
     }
 }
 

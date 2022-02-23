@@ -1,7 +1,7 @@
 <?php
 /**
  * @author    sh1zen
- * @copyright Copyright (C)  2021
+ * @copyright Copyright (C)  2022
  * @license   http://www.gnu.org/licenses/gpl.html GNU/GPL
  */
 
@@ -12,47 +12,27 @@ namespace SHZN\core;
  */
 class Cron
 {
-    private $settings;
+    private array $settings;
 
-    private $context;
+    private string $context;
 
     public function __construct($context)
     {
         $this->context = $context;
 
         $this->settings = shzn($context)->settings->get('cron', array(
-            'clear-time' => '05:00:00',
-            'active'     => true
+            'execution-time' => '03:00:00',
+            'active'         => true
         ));
 
         // cron job handler
         add_action("{$this->context}-cron", array($this, 'exec_cron'));
 
-        if (wp_doing_cron()) {
+        if ($this->settings['active'] and wp_doing_cron()) {
 
             // function cron job handler
             add_action('init', array($this, 'cron_function_hook'), 10, 0);
         }
-
-        if (is_admin()) {
-            /**
-             * Hooks to handle cron settings -> external module
-             */
-            add_filter("{$this->context}_cron_settings_fields", array($this, 'base_setting_fields'), 1, 1);
-            add_filter("{$this->context}_validate_cron_settings", array($this, 'base_setting_validator'), 1, 2);
-        }
-    }
-
-    public function get_settings($module, $defaults = array())
-    {
-        $cron_settings = $this->settings;
-
-        $module_cron_settings = (array)(isset($cron_settings[$module]) ? $cron_settings[$module] : array());
-
-        return wp_parse_args(
-            $module_cron_settings,
-            $defaults
-        );
     }
 
     /**
@@ -63,7 +43,7 @@ class Cron
      * @param string $hookname The hook name of the cron event to run.
      * @return bool Whether the execution was successful.
      */
-    public static function run_event($hookname)
+    public static function run_event(string $hookname, $force = false)
     {
         $crons = _get_cron_array();
 
@@ -76,6 +56,10 @@ class Cron
 
                 delete_transient('doing_cron');
 
+                if ($force) {
+                    $event['args'] = array_merge($event['args'], ['force' => true]);
+                }
+
                 if (!self::schedule_single_event($hookname, $event['args'])) {
                     return false;
                 }
@@ -87,7 +71,7 @@ class Cron
 
                 spawn_cron();
 
-                sleep(0.2);
+                usleep(400000);
 
                 return true;
             }
@@ -109,26 +93,21 @@ class Cron
      */
     public static function schedule_single_event($hook, $args = array(), $timestamp = 1, $clear = false)
     {
-        $event = (object)array(
-            'hook'      => $hook,
-            'timestamp' => $timestamp,
-            'schedule'  => false,
-            'args'      => $args,
-        );
-
         if ($clear) {
-            wp_clear_scheduled_hook($event->hook, $event->args);
+            wp_clear_scheduled_hook($hook, $args);
         }
 
         $crons = (array)_get_cron_array();
-        $key = md5(serialize($event->args));
 
-        if (isset($crons[$event->timestamp][$event->hook][$key]))
+        $key = md5(serialize($args));
+
+        if (isset($crons[$timestamp][$hook][$key])) {
             return false;
+        }
 
-        $crons[$event->timestamp][$event->hook][$key] = array(
-            'schedule' => $event->schedule,
-            'args'     => $event->args,
+        $crons[$timestamp][$hook][$key] = array(
+            'schedule' => false,
+            'args'     => $args,
         );
 
         uksort($crons, 'strnatcasecmp');
@@ -142,14 +121,25 @@ class Cron
      * @param int $timestamp
      * @return bool
      */
-    public static function schedule_function($function, $args = array(), $timestamp = 1)
+    public static function schedule_function($function, array $args = array(), int $timestamp = 1)
     {
         $events = get_option('cron.events', array());
 
-        if (!is_array($events))
+        if (!is_array($events)) {
             $events = array();
+        }
 
         $id = md5(serialize($function) . serialize($args));
+
+        if (!isset($events[$id])) {
+
+            $events[$id] = array(
+                'function'      => $function,
+                'accepted_args' => count($args)
+            );
+
+            update_option('cron.events', $events, 'no');
+        }
 
         /**
          * Reschedule event before check if events already exist to ensure that
@@ -157,29 +147,20 @@ class Cron
          */
         self::schedule_single_event($id, $args, $timestamp, true);
 
-        if (isset($events[$id])) {
-            return false;
-        }
-
-        $events[$id] = array(
-            'function'      => $function,
-            'accepted_args' => count($args)
-        );
-
-        return update_option('cron.events', $events, 'no');
+        return true;
     }
-
 
     /**
      * @param $function
      * @param array $args
      */
-    public static function unschedule_function($function, $args = array())
+    public static function unschedule_function($function, array $args = array())
     {
         $events = get_option('cron.events', array());
 
-        if (!is_array($events))
+        if (!is_array($events)) {
             return;
+        }
 
         $id = md5(serialize($function) . serialize($args));
 
@@ -195,15 +176,28 @@ class Cron
             unset($events[$id]);
         }
 
-        update_option('cron.events', array_filter($events));
+        update_option('cron.events', array_filter($events), 'no');
+    }
+
+    public function get_settings($module, $defaults = array())
+    {
+        $cron_settings = $this->settings;
+
+        $module_cron_settings = (array)(isset($cron_settings[$module]) ? $cron_settings[$module] : array());
+
+        return wp_parse_args(
+            $module_cron_settings,
+            $defaults
+        );
     }
 
     public function cron_function_hook()
     {
         $events = get_option('cron.events', false);
 
-        if (!$events)
+        if (!$events) {
             return;
+        }
 
         foreach ($events as $id => $event) {
 
@@ -215,27 +209,38 @@ class Cron
             }
         }
 
-        update_option('cron.events', array_filter($events));
+        update_option('cron.events', array_filter($events), 'no');
     }
 
-    public function base_setting_validator($valid, $input)
+    public function cron_setting_validator($input, $valid)
     {
-        $valid['clear-time'] = sanitize_text_field($input['clear-time']);
-        $valid['active'] = isset($input['active']);
+        $schedules = array_keys(wp_get_schedules());
 
-        $this->set_schedule(strtotime($valid['clear-time']));
-        return $valid;
+        $valid['active'] = isset($input['active']);
+        $valid['execution-time'] = sanitize_text_field($input['execution-time']);
+        $valid['recurrence'] = in_array($input['recurrence'], $schedules) ? $input['recurrence'] : 'daily';
+
+        $this->set_schedule($valid['active'] ? strtotime($valid['execution-time']) : false, $valid['recurrence']);
+
+        /**
+         * Filters all modules cron settings validation
+         * @since 1.4.0
+         */
+        return apply_filters("{$this->context}_validate_cron_settings", $valid, $input);
     }
 
     public function set_schedule($time, $recurrence = 'daily')
     {
-        $time = shzn_add_timezone($time);
-
         $this->deactivate();
 
-        if (!wp_next_scheduled("{$this->context}-cron")) {
+        if ($time) {
 
-            wp_schedule_event($time, $recurrence, "{$this->context}-cron");
+            $time = shzn_add_timezone($time);
+
+            if ($time and !wp_next_scheduled("{$this->context}-cron")) {
+
+                wp_schedule_event($time, $recurrence, "{$this->context}-cron");
+            }
         }
     }
 
@@ -244,28 +249,47 @@ class Cron
         wp_clear_scheduled_hook("{$this->context}-cron");
     }
 
-    public function base_setting_fields($cron_settings)
+    public function cron_setting_fields()
     {
-        $cron_settings[] = array('type' => 'time', 'name' => 'Auto Clear Time', 'id' => 'clear-time', 'value' => $this->settings['clear-time']);
-        $cron_settings[] = array('type' => 'checkbox', 'name' => 'Active', 'id' => 'active', 'value' => Settings::check($this->settings, 'active'));
+        $cron_settings = [];
 
-        return $cron_settings;
+        $schedules = array_keys(wp_get_schedules());
+
+        $cron_settings[] = array('type' => 'checkbox', 'name' => 'Active', 'id' => 'active', 'value' => Settings::check($this->settings, 'active'));
+        $cron_settings[] = array('type' => 'time', 'name' => 'Auto Clear Time', 'id' => 'execution-time', 'value' => $this->settings['execution-time'], 'depend' => 'active');
+        $cron_settings[] = array('type' => 'dropdown', 'name' => 'Schedule', 'id' => 'recurrence', 'list' => $schedules, 'value' => empty($this->settings['recurrence']) ? 'daily' : $this->settings['recurrence'], 'depend' => 'active');
+
+        /**
+         * Filters all modules cron settings
+         * @since 1.4.0
+         */
+        return apply_filters("{$this->context}_cron_settings_fields", $cron_settings);
     }
 
     public function activate()
     {
-        $this->set_schedule(strtotime($this->settings['clear-time']));
+        $this->set_schedule(strtotime($this->settings['execution-time']));
     }
 
-    public function exec_cron()
+    public function exec_cron($args = array())
     {
-        if (!Settings::check($this->settings, 'active'))
+        if (!Settings::check($this->settings, 'active') or Settings::check($this->settings, 'running')) {
             return;
+        }
+
+        shzn($this->context)->settings->update('cron.running', true, true);
 
         shzn($this->context)->meter->lap('init_cron');
 
-        do_action("{$this->context}_exec_cron", array());
+        do_action("{$this->context}_exec_cron", $args);
 
         shzn($this->context)->meter->lap('end_cron');
+
+        $this->reset_status();
+    }
+
+    public function reset_status()
+    {
+        shzn($this->context)->settings->update('cron.running', false, true);
     }
 }

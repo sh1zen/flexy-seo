@@ -1,7 +1,7 @@
 <?php
 /**
  * @author    sh1zen
- * @copyright Copyright (C)  2021
+ * @copyright Copyright (C)  2022
  * @license   http://www.gnu.org/licenses/gpl.html GNU/GPL
  */
 
@@ -11,19 +11,19 @@ use FlexySEO\Engine\Helpers\CurrentPage;
 use FlexySEO\Engine\Helpers\Helpers;
 use FlexySEO\Engine\Helpers\XRE_MetaBox;
 
-if (!defined('WPFS_SEO_ENGINE'))
+if (!defined('WPFS_SEO_ENGINE')) {
     define('WPFS_SEO_ENGINE', dirname(__FILE__) . '/seo_engine/');
+}
 
 class WPFS_SEO
 {
-    private static $_instance;
+    private static ?WPFS_SEO $_instance;
 
-    /**
-     * @var Helpers
-     */
-    public $helpers;
+    public ?Helpers $helpers = null;
 
-    public $metaBox;
+    public ?XRE_MetaBox $metaBox = null;
+
+    public ?Generator $generator = null;
 
     /**
      * Create the breadcrumb
@@ -85,11 +85,11 @@ class WPFS_SEO
     {
         $this->helpers = Helpers::Init($wp_query);
 
-        $generator = $this->load_generator($this->helpers->currentPage);
+        $this->generator = $this->load_generator($this->helpers->currentPage);
 
         $indexable = new Indexable();
 
-        $presenter = new Presenter($generator, $indexable);
+        $presenter = new Presenter($this->generator, $indexable);
 
         $presenter->build();
     }
@@ -112,10 +112,10 @@ class WPFS_SEO
         elseif ($current_page->is_date_archive()):
             include_once WPFS_SEO_ENGINE . 'generators/template/date-archive-generator.php';
             $generator = new \FlexySEO\Engine\Generators\Templates\DateArchive_Generator($current_page);
-        elseif ($current_page->is_home()):
+        elseif ($current_page->is_homepage()):
             include_once WPFS_SEO_ENGINE . 'generators/template/home-generator.php';
             $generator = new \FlexySEO\Engine\Generators\Templates\Home_Generator($current_page);
-        elseif ($current_page->is_simple_page() or $current_page->is_static_posts_page() or $current_page->is_attachment()):
+        elseif ($current_page->is_simple_page() or $current_page->is_posts_page() or $current_page->is_attachment()):
             include_once WPFS_SEO_ENGINE . 'generators/template/post-type-generator.php';
             $generator = new \FlexySEO\Engine\Generators\Templates\PostType_Generator($current_page);
         elseif ($current_page->is_term_archive()):

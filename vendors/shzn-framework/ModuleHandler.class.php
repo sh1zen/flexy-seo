@@ -1,7 +1,7 @@
 <?php
 /**
  * @author    sh1zen
- * @copyright Copyright (C)  2021
+ * @copyright Copyright (C)  2022
  * @license   http://www.gnu.org/licenses/gpl.html GNU/GPL
  */
 
@@ -33,6 +33,7 @@ class ModuleHandler
         $this->modules = array();
 
         foreach (glob($load_path . '*.php') as $file) {
+
             $module_name = basename($file, '.class.php');
 
             $this->modules[] = array(
@@ -48,8 +49,9 @@ class ModuleHandler
 
         if ($class = $this->module2classname($module)) {
 
-            if (isset($class::$name) and !is_null($class::$name))
-                $module_name = $default;
+            if (!empty($class::$name)) {
+                $module_name = $class::$name;
+            }
         }
 
         return ucwords(str_replace('_', ' ', $module_name));
@@ -64,9 +66,9 @@ class ModuleHandler
     {
         $base_name = self::module_slug($name, true);
 
-        $class = shzn($this->context)->cache->get_cache($base_name, 'modules-handler');
+        $class = shzn($this->context)->cache->get($base_name, 'modules-handler', null);
 
-        if (empty($class)) {
+        if (is_null($class)) {
 
             $class = false;
 
@@ -79,7 +81,7 @@ class ModuleHandler
                 }
             }
 
-            shzn($this->context)->cache->set_cache($base_name, $class, 'modules-handler');
+            shzn($this->context)->cache->set($base_name, $class, 'modules-handler');
         }
 
         return $class;
@@ -129,12 +131,12 @@ class ModuleHandler
         if (!$class)
             return null;
 
-        if ($object = shzn($this->context)->cache->get_cache($class, 'modules_object'))
+        if ($object = shzn($this->context)->cache->get($class, 'modules_object'))
             return $object;
 
         $object = new $class();
 
-        shzn($this->context)->cache->set_cache($class, $object, 'modules_object');
+        shzn($this->context)->cache->set($class, $object, 'modules_object');
 
         return $object;
     }
@@ -149,7 +151,7 @@ class ModuleHandler
      * @param string $scope
      * @param bool $only_active
      */
-    public function setup_modules($scope, $only_active = true)
+    public function setup_modules(string $scope, bool $only_active = true)
     {
         foreach ($this->get_modules(array('scopes' => $scope), $only_active) as $index => $module) {
 

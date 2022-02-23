@@ -1,4 +1,9 @@
 <?php
+/**
+ * @author    sh1zen
+ * @copyright Copyright (C)  2022
+ * @license   http://www.gnu.org/licenses/gpl.html GNU/GPL
+ */
 
 namespace FlexySEO\Engine\Generators;
 
@@ -50,7 +55,7 @@ class OpenGraph
      * Generates the OG Locale.
      * @param string $locale
      */
-    public function locale($locale = '')
+    public function locale(string $locale = '')
     {
         if (empty($locale))
             $locale = get_locale();
@@ -264,7 +269,7 @@ class OpenGraph
      * @param string $name
      * @return bool
      */
-    public function has($name)
+    public function has(string $name)
     {
         foreach ($this->tags as $tag_name => $value) {
             if ($tag_name == $name) {
@@ -289,7 +294,7 @@ class OpenGraph
      *
      * @param string $name
      */
-    public function remove($name)
+    public function remove(string $name)
     {
         foreach ($this->tags as $tag_name => $value) {
             if ($tag_name == $name) {
@@ -304,7 +309,7 @@ class OpenGraph
      * @param string $title
      * @return bool
      */
-    public function title($title)
+    public function title(string $title)
     {
         $title = trim($title);
 
@@ -323,7 +328,7 @@ class OpenGraph
      * @param string $type
      * @return bool
      */
-    public function type($type)
+    public function type(string $type)
     {
         $types = [
             'music.song',
@@ -363,7 +368,7 @@ class OpenGraph
             return false;
         }
 
-        if (strpos($imageFile, '://') === false and function_exists('asset')) {
+        if (!str_contains($imageFile, '://') and function_exists('asset')) {
             $imageFile = asset($imageFile);
         }
 
@@ -571,7 +576,7 @@ class OpenGraph
             return false;
         }
 
-        if (strpos($audioFile, '://') === false and function_exists('asset')) {
+        if (!str_contains($audioFile, '://') and function_exists('asset')) {
             $audioFile = asset($audioFile);
         }
 
@@ -670,7 +675,7 @@ class OpenGraph
             return false;
         }
 
-        if (strpos($videoFile, '://') === false and function_exists('asset')) {
+        if (!str_contains($videoFile, '://') and function_exists('asset')) {
             $videoFile = asset($videoFile);
         }
 
@@ -689,7 +694,7 @@ class OpenGraph
             ];
 
             $tag = $this->getTag('type');
-            if ($tag and strpos($tag, 'video.') !== false) {
+            if ($tag and str_contains($tag, 'video.')) {
                 $specialValid = [
                     'actor',
                     'role',

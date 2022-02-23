@@ -1,22 +1,22 @@
 <?php
 /**
  * @author    sh1zen
- * @copyright Copyright (C)  2021
+ * @copyright Copyright (C)  2022
  * @license   http://www.gnu.org/licenses/gpl.html GNU/GPL
  */
 
 namespace FlexySEO\modules;
 
+use FlexySEO\Engine\Generators\Schema;
 use SHZN\core\Graphic;
 use SHZN\modules\Module;
 use FlexySEO\Engine\WPFS_SEO;
-
 
 class Mod_seo extends Module
 {
     public $scopes = array('admin-page', 'settings', 'autoload');
 
-    private $performer_response = array();
+    private array $performer_response = array();
 
     public function __construct()
     {
@@ -68,56 +68,54 @@ class Mod_seo extends Module
 
                     settings_fields('wpfs-settings');
 
-                    $fields = array();
-
-                    echo Graphic::generateHTML_tabs_panels(array_merge(array(
+                    echo Graphic::generateHTML_tabs_panels(array(
 
                         array(
                             'id'        => 'seo-general',
                             'tab-title' => __('General', 'wpfs'),
-                            'callback'  => array($this, 'render_settings_block'),
+                            'callback'  => array($this, 'render_settings'),
                             'args'      => array('general')
                         ),
                         array(
                             'id'        => 'seo-special',
                             'tab-title' => __('Special pages', 'wpfs'),
-                            'callback'  => array($this, 'render_settings_block'),
+                            'callback'  => array($this, 'render_settings'),
                             'args'      => array('special')
                         ),
                         array(
                             'id'        => 'seo-post-type',
                             'tab-title' => __('Content types', 'wpfs'),
-                            'callback'  => array($this, 'render_settings_block'),
+                            'callback'  => array($this, 'render_settings'),
                             'args'      => array(get_post_types(array('public' => true)))
                         ),
                         array(
                             'id'        => 'seo-archives',
                             'tab-title' => __('Archives', 'wpfs'),
-                            'callback'  => array($this, 'render_settings_block'),
+                            'callback'  => array($this, 'render_settings'),
                             'args'      => array('archives')
                         ),
                         array(
                             'id'        => 'seo-tax',
                             'tab-title' => __('Taxonomy', 'wpfs'),
-                            'callback'  => array($this, 'render_settings_block'),
+                            'callback'  => array($this, 'render_settings'),
                             'args'      => array(get_taxonomies(array('public' => true)))
                         ),
                         array(
                             'id'        => 'seo-social',
                             'tab-title' => __('Social', 'wpfs'),
-                            'callback'  => array($this, 'render_settings_block'),
+                            'callback'  => array($this, 'render_settings'),
                             'args'      => array('social')
                         ),
                         array(
                             'id'        => 'seo-webmaster',
                             'tab-title' => __('Webmaster', 'wpfs'),
-                            'callback'  => array($this, 'render_settings_block'),
+                            'callback'  => array($this, 'render_settings'),
                             'args'      => array('webmaster')
                         ),
                         array(
                             'id'        => 'seo-schema-org',
                             'tab-title' => __('Schema.org', 'wpfs'),
-                            'callback'  => array($this, 'render_settings_block'),
+                            'callback'  => array($this, 'render_settings'),
                             'args'      => array('schema.org')
                         ),
                         array(
@@ -125,7 +123,7 @@ class Mod_seo extends Module
                             'tab-title' => __('Replacers', 'wpfs'),
                             'callback'  => array($this, 'render_replacers')
                         ),
-                    ), $fields));
+                    ));
                     ?>
                 </form>
             </block>
@@ -134,25 +132,18 @@ class Mod_seo extends Module
     }
 
     /**
-     * Handle the gui for tables list
-     * @param $block
+     * overwrite the base render setting gui for settings
+     * @param $filter
      * @return string
      */
-    public function render_settings_block($block)
-    {
-        return $this->render_settings($block);
-    }
-
-    public function render_settings($filter = '', $_setting_fields = array())
+    public function render_settings($filter = '')
     {
         $_header = $this->setting_form_templates('header');
         $_footer = $this->setting_form_templates('footer');
 
         $_divider = false;
 
-        if (empty($_setting_fields)) {
-            $_setting_fields = $this->setting_fields($filter);
-        }
+        $_setting_fields = $this->setting_fields($filter);
 
         ob_start();
 
@@ -182,8 +173,9 @@ class Mod_seo extends Module
 
         if (!empty($_footer)) {
 
-            if ($_divider)
+            if ($_divider) {
                 echo "<hr class='shzn-hr'>";
+            }
 
             echo "<section class='shzn-setting-footer'>" . $_footer . "</section>";
         }
@@ -193,8 +185,7 @@ class Mod_seo extends Module
 
     protected function setting_fields($filter = '')
     {
-        $fields = $res = array();
-
+        $fields = [];
 
         $fields['general'] = $this->group_setting_fields(
             $this->setting_field(__('Titles:', 'wpfs'), false, 'separator'),
@@ -312,9 +303,30 @@ class Mod_seo extends Module
             $this->setting_field(__('Schema settings:', 'wpfs'), false, 'separator'),
             $this->setting_field(__('Active', 'wpfs'), 'schema.enabled', 'checkbox', ['default_value' => true]),
             $this->setting_field(__('Organization', 'wpfs'), 'schema.organization.is', 'checkbox', ['parent' => 'schema.enabled', 'default_value' => false]),
-            $this->setting_field(__('Organization name', 'wpfs'), 'schema.organization.name', 'text', ['parent' => 'schema.organization.is']),
-            $this->setting_field(__('Organization logo', 'wpfs'), 'schema.organization.logo', 'upload-input', ['parent' => 'schema.organization.is', 'placeholder' => __('Paste your image URL or select a new image', 'wpfs')]),
-            $this->setting_field(__('Organization phone', 'wpfs'), 'schema.organization.phone', 'text', ['parent' => 'schema.organization.is']),
+            $this->setting_field(__('Organization Type', 'wpfs'), 'schema.organization.type', 'dropdown', ['parent' => 'schema.organization.is', 'default_value' => 'Corporation', 'list' => [
+                "Airline",
+                "Consortium",
+                "Corporation",
+                "EducationalOrganization",
+                "FundingScheme",
+                "GovernmentOrganization",
+                "LibrarySystem",
+                "LocalBusiness",
+                "MedicalOrganization",
+                "NewsMediaOrganization",
+                "OnlineBusiness",
+                "PerformingGroup",
+                "Project",
+                "ResearchOrganization",
+                "SearchRescueOrganization",
+                "SportsOrganization",
+                "WorkersUnion"
+            ]]),
+            $this->setting_field(__('Name', 'wpfs'), 'schema.organization.name', 'text', ['parent' => 'schema.organization.is']),
+            $this->setting_field(__('Description', 'wpfs'), 'schema.organization.description', 'text', ['parent' => 'schema.organization.is']),
+            $this->setting_field(__('Address', 'wpfs'), 'schema.organization.address', 'text', ['parent' => 'schema.organization.is']),
+            $this->setting_field(__('Founders (comma separated)', 'wpfs'), 'schema.organization.founder', 'text', ['parent' => 'schema.organization.is']),
+            $this->setting_field(__('Logo', 'wpfs'), 'schema.organization.logo', 'upload-input', ['parent' => 'schema.organization.is', 'placeholder' => __('Paste your image URL or select a new image', 'wpfs')]),
             $this->setting_field(__('Contact Type', 'wpfs'), 'schema.organization.contact_type', 'dropdown', ['parent' => 'schema.organization.is', 'list' => [
                 "Customer Service",
                 "Technical Support",
@@ -328,7 +340,8 @@ class Mod_seo extends Module
                 "Roadside Assistance",
                 "Package Tracking"
             ]]),
-
+            $this->setting_field(__('Phone', 'wpfs'), 'schema.organization.phone', 'text', ['parent' => 'schema.organization.is']),
+            $this->setting_field(__('E-mail', 'wpfs'), 'schema.organization.email', 'text', ['parent' => 'schema.organization.is']),
             $this->setting_field(__('Enable Sitelinks Search Box', 'wpfs'), 'schema.sitelink', 'checkbox', ['parent' => 'schema.enabled', 'default_value' => false])
         );
 
@@ -353,6 +366,8 @@ class Mod_seo extends Module
 
             $post_type = $post_type_object->name;
 
+            $post_type_sanitized = str_replace(array('-', '_'), ' ', $post_type);
+
             if ($post_type_object->has_archive) {
 
                 $archive_name = ucwords($post_type_object->label) . ($post_type_object->_builtin ? "" : " ({$post_type_object->name})");
@@ -372,27 +387,19 @@ class Mod_seo extends Module
 
             $fields[$post_type] = $this->group_setting_fields(
                 $this->setting_field(ucwords($post_type_object->label) . ($post_type_object->_builtin ? "" : " ({$post_type_object->name})"), false, 'separator'),
-                $this->setting_field(sprintf(__("Show \"%s\" in search results", 'wpfs'), str_replace(array('-', '_'), ' ', $post_type)), "post_type.{$post_type}.show", 'checkbox', ['default_value' => true]),
+                $this->setting_field(sprintf(__("Show <i>\"%s\"</i> in search results", 'wpfs'), $post_type_sanitized), "post_type.{$post_type}.show", 'checkbox', ['default_value' => true]),
                 $this->setting_field(__("Follow link directive", 'wpfs'), "post_type.{$post_type}.follow", 'checkbox', ['default_value' => true]),
-                $this->setting_field(__('Title', 'wpfs'), "post_type.{$post_type}}.title", 'text', ['default_value' => '%%title%%']),
+                $this->setting_field(__('Title', 'wpfs'), "post_type.{$post_type}.title", 'text', ['default_value' => '%%title%%']),
                 $this->setting_field(__('Meta description', 'wpfs'), "post_type.{$post_type}.meta_desc", 'textarea'),
-                $this->setting_field(__('Keywords', 'wpfs'), "post_type.{$post_type}.keywords")
+                $this->setting_field(__('Keywords', 'wpfs'), "post_type.{$post_type}.keywords"),
+                $post_type === 'page' ?
+                    $this->setting_field(sprintf(__('Predefined %s schema.org type', 'wpfs'), $post_type_sanitized), "post_type.{$post_type}.schema.pageType", 'dropdown', ['list' => Schema::$webPageGraphs, 'default_value' => 'WebPage']) :
+                    $this->setting_field(sprintf(__('Predefined %s schema.org type', 'wpfs'), $post_type_sanitized), "post_type.{$post_type}.schema.articleType", 'dropdown', ['list' => Schema::$webArticleGraphs, 'default_value' => 'Article']),
             );
         }
 
-        if (!empty($filter)) {
-            foreach ((array)$filter as $_filter) {
-                if (isset($fields[$_filter]))
-                    $res = array_merge($res, $fields[$_filter]);
-            }
-        }
-        else {
-            $res = call_user_func_array('array_merge', array_values($fields));
-        }
-
-        return $res;
+        return $this->group_setting_sections($fields, $filter);
     }
-
 
     /**
      * Handle the gui for exec-sql panel

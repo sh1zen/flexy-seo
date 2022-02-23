@@ -1,3 +1,9 @@
+/**
+ * @author    sh1zen
+ * @copyright Copyright (C)  2022
+ * @license   http://www.gnu.org/licenses/gpl.html GNU/GPL
+ */
+
 :root {
     --border-color: #717171;
     --tabs-bg-selected-color: #c5c5c5;
@@ -12,7 +18,7 @@
     background-color: #F3F4F5;
 }
 
-#wpbody-content{
+#wpbody-content {
     margin-top: 70px
 }
 
@@ -401,6 +407,21 @@ section.shzn-wrap {
     max-width: calc(100% - 400px);
 }
 
+.shzn-row {
+    display: flex;
+    justify-content: space-evenly;
+    flex-direction: row;
+    flex-wrap: wrap
+}
+
+.shzn-card {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    text-align: center;
+    justify-content: center;
+}
+
 aside.shzn {
     box-sizing: border-box;
     display: flex;
@@ -428,11 +449,11 @@ aside.shzn .shzn-box:not(:last-child) {
     position: fixed;
     left: 0;
     width: 100%;
-    top: 30px;
+    top: 0;
     background: var(--main-dark-color);
     color: var(--header-text-color);
     display: block;
-    padding: 1.5em 1.5em 1em 1.5em;
+    padding: 2.5em 1.5em 0.4em 1.5em;
     overflow: hidden;
     box-sizing: border-box;
     z-index: 1;
@@ -682,9 +703,13 @@ table.shzn tr.blank-row {
 }
 
 .shzn-dropdown__opener {
-    width: 20px;
+    width: 30px;
     height: 100%;
-    margin: 0 20px;
+    line-height: 30px;
+    margin: 0 10px;
+    display: block;
+    cursor: pointer;
+    text-align: center;
 }
 
 .shzn-uploader__init {
@@ -704,7 +729,7 @@ table.shzn tr.blank-row {
 }
 
 .shzn-multiselect__wrapper {
-    position: absolute;
+    position: relative;
     background: #fff;
     border: 1px solid #8c8f94;
     border-top: none;
@@ -868,11 +893,6 @@ ul.shzn-autocomplete li {
     border-bottom: 1px solid #dadada;
 }
 
-.shzn-list {
-    padding-left: 30px;
-    list-style: disc;
-}
-
 .shzn-progressbarCircle__stroke {
     animation: mck_progress 2s ease-in-out;
 }
@@ -914,6 +934,106 @@ ul.shzn-autocomplete li {
     transform: rotate(270deg);
 }
 
+.shzn-list {
+    list-style: disc;
+    padding: 0 20px;
+}
+
+
+.shzn-modalWrapper {
+    -webkit-animation: sw-motion-opacity-out .25s ease forwards;
+    animation: sw-motion-opacity-out .25s ease forwards;
+    display: flex;
+    position: fixed;
+    top: 0;
+    right: 0;
+    left: 0;
+    flex-direction: column;
+    justify-content: flex-start;
+    width: 100%;
+    height: 100%;
+    contain: content;
+    background-color: rgba(0, 0, 0, .4);
+    overflow-x: hidden;
+    z-index: 10000;
+    touch-action: auto
+}
+
+.shzn-modal {
+    display: none;
+    position: relative;
+    flex: 0 0 auto;
+    max-width: 100%;
+    width: 100%;
+    height: 100%;
+    margin: auto;
+    background-color: #fff;
+    contain: content;
+    overflow: hidden;
+    z-index: 1;
+    border-radius: 3px
+}
+
+.shzn-modal:last-child {
+    display: flex;
+    flex-direction: column
+}
+
+.shzn-modal__bottom, .shzn-modal__header {
+    box-sizing: border-box;
+    position: relative;
+    flex-shrink: 0;
+    width: 100%;
+    padding: 10px 12px;
+    background-color: #f5f5f5;
+    overflow: hidden;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+}
+
+.shzn-modal__title {
+    font-size: 18px;
+    font-weight: 500;
+    line-height: 28px;
+    margin: 0 auto
+}
+
+.shzn-modal__content {
+    padding: 16px;
+    flex-basis: auto;
+    flex-grow: 1;
+    flex-shrink: 1;
+    width: 100%;
+    overflow-x: hidden;
+    overflow-y: auto;
+    font-size: 14px;
+    box-sizing: border-box;
+}
+
+.shzn-modal__close {
+    display: flex;
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    align-items: center;
+    justify-content: center;
+    width: 1em;
+    height: 1em;
+    font-size: 2em;
+    z-index: 100;
+    cursor: pointer
+}
+
+.shzn-modal__close:hover {
+    color: #000
+}
+
+.shzn-modal__close svg {
+    pointer-events: none
+}
+
+
 @media only screen and (max-width: 1192px) {
 
     .shzn-wrap-flex section.shzn {
@@ -937,5 +1057,45 @@ ul.shzn-autocomplete li {
 
     #wpcontent {
         padding: 10px;
+    }
+}
+
+@media all and (min-width: 481px) {
+    .shzn-modalWrapper:after, .shzn-modalWrapper:before {
+        flex-basis: auto;
+        flex-grow: 1;
+        flex-shrink: 1;
+        width: 100%;
+        margin: 0 auto;
+        pointer-events: none;
+        content: "";
+        visibility: hidden
+    }
+
+    .shzn-modal {
+        width: 25em;
+        max-width: 90%;
+        height: auto
+    }
+
+    .shzn-modal--medium {
+        width: 60em;
+        max-height: 70%
+    }
+
+    .shzn-modal__content {
+        padding: 24px;
+    }
+
+    .shzn-modal__title {
+        font-size: 24px;
+    }
+
+    .shzn-modal__bottom, .shzn-modal__header {
+        justify-content: end
+    }
+
+    .shzn-modal__header {
+        text-align: left
     }
 }

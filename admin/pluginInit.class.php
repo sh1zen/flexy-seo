@@ -1,28 +1,41 @@
 <?php
+/**
+ * @author    sh1zen
+ * @copyright Copyright (C)  2022
+ * @license   http://www.gnu.org/licenses/gpl.html GNU/GPL
+ */
 
 namespace FlexySEO\core;
+
+use SHZN\core\UtilEnv;
 
 /**
  * Main class, used to setup the plugin
  */
 class PluginInit
 {
-    private static $_instance;
+    private static PluginInit $_instance;
 
     /**
      * Holds the plugin base name
      */
-    public $plugin_basename;
+    public string $plugin_basename;
 
     /**
      * Holds the plugin base url
      */
-    public $plugin_base_url;
+    public string $plugin_base_url;
+
+    /**
+     * Holds admin page presenter
+     * @var ?\FlexySeo\core\PagesHandler
+     */
+    public ?PagesHandler $adminPageHandler = null;
 
     public function __construct()
     {
-        $this->plugin_basename = plugin_basename(WPFS_FILE);
-        $this->plugin_base_url = plugin_dir_url(WPFS_FILE);
+        $this->plugin_basename = UtilEnv::plugin_basename(WPFS_FILE);
+        $this->plugin_base_url = UtilEnv::path_to_url(WPFS_ABSPATH);
 
         if (is_admin()) {
 
@@ -95,14 +108,14 @@ class PluginInit
             /**
              * Instancing all modules that need to interact in the Ajax process
              */
-           shzn('wpfs')->moduleHandler->setup_modules('ajax');
+            shzn('wpfs')->moduleHandler->setup_modules('ajax');
         }
         elseif (wp_doing_cron()) {
 
             /**
              * Instancing all modules that need to interact in the cron process
              */
-           shzn('wpfs')->moduleHandler->setup_modules('cron');
+            shzn('wpfs')->moduleHandler->setup_modules('cron');
         }
         elseif (is_admin()) {
 
@@ -111,25 +124,25 @@ class PluginInit
             /**
              * Load the admin pages handler
              */
-            new PagesHandler();
+            $object->adminPageHandler = new PagesHandler();
 
             /**
              * Instancing all modules that need to interact in admin area
              */
-           shzn('wpfs')->moduleHandler->setup_modules('admin');
+            shzn('wpfs')->moduleHandler->setup_modules('admin');
         }
         else {
 
             /**
              * Instancing all modules that need to interact only on the web-view
              */
-           shzn('wpfs')->moduleHandler->setup_modules('web-view');
+            shzn('wpfs')->moduleHandler->setup_modules('web-view');
         }
 
         /**
          * Instancing all modules that need to be always loaded
          */
-       shzn('wpfs')->moduleHandler->setup_modules('autoload');
+        shzn('wpfs')->moduleHandler->setup_modules('autoload');
 
         return self::$_instance;
     }

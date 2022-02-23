@@ -1,13 +1,18 @@
 <?php
+/**
+ * @author    sh1zen
+ * @copyright Copyright (C)  2022
+ * @license   http://www.gnu.org/licenses/gpl.html GNU/GPL
+ */
 
 namespace FlexySEO\Engine\Generators\Schema\Graphs;
 
-use FlexySEO\Engine\Generator;
+use FlexySEO\Engine\Generators\CommonGraphs;
+use FlexySEO\Engine\Generators\GraphBuilder;
+use FlexySEO\Engine\Helpers\CurrentPage;
 
 /**
  * WebPage graph class.
- *
- * @since 1.2.0
  */
 class WebPage extends Graph
 {
@@ -15,79 +20,80 @@ class WebPage extends Graph
      * The graph type.
      *
      * This value can be overridden by WebPage child graphs that are more specific.
-     *
-     * @since 1.2.0
-     *
-     * @var string
      */
-    protected $type = 'WebPage';
+    protected string $type = 'WebPage';
 
     /**
      * Returns the graph data.
-     * @return array $data The graph data.
-     * @since 1.2.0
-     *
+     * @param \FlexySEO\Engine\Helpers\CurrentPage $currentPage
+     * @param string $type
+     * @param ...$args
+     * @return GraphBuilder $data The graph data.
      */
-    public function get($type = '')
+    public function get(CurrentPage $currentPage, string $type = '', ...$args)
     {
         if (!empty($type)) {
             $this->type = $type;
         }
 
-        $homeUrl = shzn()->utility->home_url;
-
-        if (!$this->generator) {
-            return [];
-        }
-
         $url = $this->generator->get_permalink();
 
-        $data = [
-            '@type'       => $this->type,
-            '@id'         => $url . '#' . strtolower($this->type),
-            'url'         => $url,
-            'name'        => $this->generator->generate_title(),
-            'description' => $this->generator->get_description(),
-            'inLanguage'  => wpfseo()->language->currentLanguageCodeBCP47(),
-            'isPartOf'    => ['@id' => $homeUrl . '#website'],
-            'breadcrumb'  => ['@id' => $url . '#breadcrumblist']
-        ];
+        $schema = new GraphBuilder([
+            '@type'           => $this->type,
+            '@id'             => $url . '#webpage',
+            'url'             => $url,
+            'name'            => $this->generator->generate_title(),
+            'description'     => $this->generator->get_description(),
+            'keywords'        => $this->generator->get_keywords(),
+            'inLanguage'      => wpfseo()->language->currentLanguageCodeBCP47(),
+            'isPartOf'        => [
+                '@id' => WebSite::getSchemaID()
+            ],
+            'breadcrumb'      => [
+                '@id' => $url . '#breadcrumb'
+            ],
+            "potentialAction" => [
+                [
+                    "@type"  => "ReadAction",
+                    "target" => [$url]
+                ]
+            ]
+        ]);
 
-        $queried_object = wpfseo()->currentPage->get_queried_object();
+        if ($currentPage->is_simple_page()) {
 
-        if ($queried_object) {
+            $image = $this->generator->get_snippet_image('full');
 
-            if (is_singular() and !is_page()) {
+            $schema->set('primaryImageOfPage', CommonGraphs::imageObject($image, 'full', $url . '#primaryimage'));
 
-                $author = get_author_posts_url($queried_object->post_author);
-                if (!empty($author)) {
-                    $data['author'] = $author . '#author';
-                    $data['creator'] = $author . '#author';
+            $post = $currentPage->get_queried_object();
+
+            $schema->set('datePublished', mysql2date(DATE_W3C, $post->post_date_gmt, false));
+            $schema->set('dateModified', mysql2date(DATE_W3C, $post->post_modified_gmt, false));
+
+            if (is_page()) {
+
+                if (shzn('wpfs')->settings->get("seo.schema.organization.is", false)) {
+                    $schema->set(
+                        'publisher',
+                        ['@id' => Organization::getSchemaID()]
+                    );
                 }
             }
+            else {
 
-            if (is_singular()) {
+                $schema->set(
+                    'author',
+                    ['@id' => Person::getSchemaID($post->post_author)]
+                );
 
-                if (has_post_thumbnail($queried_object)) {
-                    $image = $this->image(get_post_thumbnail_id(), 'mainImage');
-                    if ($image) {
-                        $data['image'] = $image;
-                        $data['primaryImageOfPage'] = [
-                            '@id' => $url . '#mainImage'
-                        ];
-                    }
-                }
-
-                $data['datePublished'] = mysql2date(DATE_W3C, $queried_object->post_date_gmt, false);
-                $data['dateModified'] = mysql2date(DATE_W3C, $queried_object->post_modified_gmt, false);
-                return $data;
+                $schema->set(
+                    'creator',
+                    ['@id' => Person::getSchemaID($post->post_author)]
+                );
             }
         }
 
-        if (is_front_page()) {
-            $data['about'] = ['@id' => shzn()->utility->home_url . '#' . (shzn('wpfs')->settings->get('seo.schema.organization.is', false) ? 'organization' : 'person')];
-        }
-
-        return $data;
+        return $schema;
     }
 }

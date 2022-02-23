@@ -1,364 +1,811 @@
 /**
  * @author    sh1zen
- * @copyright Copyright (C)  2021
+ * @copyright Copyright (C)  2022
  * @license   http://www.gnu.org/licenses/gpl.html GNU/GPL
  */
 
 "use strict";
 
-function SHZNSemaphore() {
+(function ($, window, noGlobal) {
 
-    let list = [];
-
-    this.release = function (context = 'def') {
-        list[context] = false;
+    if (!$ || typeof $ === 'undefined' || typeof $ === undefined) {
+        return null;
     }
 
-    this.lock = function (context = 'def') {
-        list[context] = true;
-    }
+    let guid = 1, version = "1.0.0";
 
-    this.is_locked = function (context = 'def') {
-        return list[context] === true;
-
-    }
-}
-
-let shzn_semaphore = new SHZNSemaphore();
-
-function maybe_parse_json(str, check = false) {
-    try {
-        return JSON.parse(str);
-    } catch (e) {
-        return check ? false : str;
-    }
-}
-
-function shzn_ajaxHandler(options) {
-
-    let defaults = {
-        action: 'shzn',
-        mod: 'none',
-        mod_action: 'none',
-        mod_nonce: '',
-        mod_args: '',
-        mod_form: '',
-        use_loading: false,
-        callback: null
-    };
-
-    options = Object.assign(defaults, options);
-
-    shzn_semaphore.lock(options.mod_action);
-
-    if (options.use_loading)
-        options.use_loading.addClass("shzn-loader");
-
-    jQuery.ajax({
-        url: ajaxurl,
-        type: "GET",
-        dataType: "json",
-        global: false,
-        cache: false,
-        data: {
-            action: options.action,
-            mod: options.mod,
-            mod_action: options.mod_action,
-            mod_nonce: options.mod_nonce,
-            mod_args: options.mod_args,
-            mod_form: options.mod_form,
-        },
-        complete: function (jqXHR, status) {
-
-            if (typeof options.callback === "function") {
-
-                let res = maybe_parse_json(jqXHR.responseText);
-
-                if (!res)
-                    res = jqXHR.responseText;
-
-                if (typeof res.data !== 'undefined')
-                    setTimeout(options.callback(res.data, res.success), 100);
-                else
-                    setTimeout(options.callback(res, res.success), 100);
-            }
-
-            if (options.use_loading)
-                options.use_loading.removeClass("shzn-loader");
-
-            shzn_semaphore.release(options.mod_action);
-        }
-    });
-}
-
-function shzn_popup(args) {
-
-    let defargs = {
-        header: '',
-        body: '',
-        footer: '',
-        element: body
-    }
-
-    args = {...defargs, ...args}
-
-    let $context = jQuery(args.element);
-
-    $context.append(response)
-}
-
-(function ($) {
+    let semaphoreList = {};
 
     let $window = $(window),
-        $document = $('document'),
-        $body = $("body");
+        $document = $('document');
 
-    $.fn.shznNotice = function (response, status, locals) {
+    let shznCore = {};
 
-        let $this = $(this);
+    // Define a local copy of shzn
+    let shzn = function (selector, context) {
 
-        if (status) {
+        // The shzn object is actually just the init constructor 'enhanced'
+        // Need init if shzn is called (just allow error to be thrown if not included)
+        return new shzn.fn.init(selector, context);
+    };
 
-            if (response.length > 0) {
-                $this.append(response)
-            } else
-                $this.append("<p class='success'>" + locals.success + "</p>");
+    let locales = {};
 
-        } else {
+    shzn.locale = {
 
-            if (response.length > 0)
-                $this.append("<p class='error'>" + response + "</p>")
-            else
-                $this.append("<p class='error'>" + locals.error + "</p>");
-        }
+        add: function ($locale = {}) {
+            shzn.parse_args(locales, shzn.json.parse($locale))
+        },
+
+        get: function ($locale, $default = '') {
+            if (!$locale) {
+                return locales;
+            }
+            return locales[$locale] || $default;
+        },
     }
 
-    let shzn_tabHandler = function ($tabs) {
+    shzn.fn = $.fn;
+    shzn.prototype = $.prototype;
+    shzn.extend = shzn.fn.extend = $.extend;
 
-        // Store current URL hash.
-        let hash = window.location.hash.substring(1);
+    shzn.extend(shznCore, {
 
-        if (!($tabs instanceof jQuery)) {
-            console.log("Error initializing shzn_tabHandler");
-            return;
+        ux: {},
+        options: {},
+        cache: {},
+
+        setup: function () {
+
+            shzn.addUX({
+                'is-landscape': function () {
+                    return screen.availHeight > screen.availWidth
+                },
+                'is-mobile': function () {
+                    if (shzn.getUX('is-landscape'))
+                        return (screen.availWidth <= 1366) || (screen.availHeight <= 1024)
+                    else
+                        return (screen.availWidth <= 1024) || (screen.availHeight <= 1366)
+                },
+                'is-phone': function () {
+                    return (screen.availWidth <= 480) || (screen.availHeight <= 480)
+                },
+                'is-tablet': function () {
+                    return shzn.getUX('is-mobile') && !shzn.getUX('is-phone')
+                },
+                'is-laptop': function () {
+                    return !shzn.getUX('is-mobile')
+                }
+            });
         }
+    });
 
-        if ($tabs.length === 0)
-            return;
+    shzn.cache = {
 
-        let $tab_list = $tabs.find(".shzn-ar-tablist");
+        add: function (key, value) {
+            // Use (key + " ") to avoid collision with native prototype properties
+            if (shznCore.cache.push(key + " ") > 250) {
 
-        if ($tab_list.length === 0)
-            return;
+                // Only keep the most recent entries
+                delete [shznCore.cache.shift()];
+            }
 
-        let form_action = 'options.php';
+            return (shznCore.cache[key + " "] = value);
+        },
+        remove: function (key) {
 
-        /**
-         * Initialize aria attr
-         */
-        $tab_list.each(function () {
+            delete [shznCore.cache[key + " "]];
+        },
+        get: function (key, default_ = false) {
 
-            let $this_tab_list = $(this),
-                $this_tab_list_items = $this_tab_list.children(".shzn-ar-tab"),
-                $this_tab_list_links = $this_tab_list.find(".shzn-ar-tab_link");
+            if (typeof shznCore.cache[key + " "] !== "undefined") {
+                return shznCore.cache[key + " "];
+            }
 
-            // roles init
-            $this_tab_list.attr("role", "tablist"); // ul
-            $this_tab_list_items.attr("role", "presentation"); // li
-            $this_tab_list_links.attr("role", "tab"); // a
+            return default_;
+        },
+    }
 
-            // controls/tabindex attributes
-            $this_tab_list_links.each(function () {
+    shzn.fn = $.fn;
+    shzn.prototype = $.prototype;
+    shzn.extend = shzn.fn.extend = $.extend;
 
-                let $this = $(this),
-                    $href = $this.attr("href");
+    shzn.extend({
 
-                if (typeof $href !== "undefined" && $href !== "" && $href !== "#") {
-                    $this.attr({
-                        "aria-controls": $href.replace("#", ""),
-                        "tabindex": -1,
-                        "aria-selected": "false"
-                    });
+        getUID: function () {
+            return guid++;
+        },
+
+        isDefined: function (value, not = false) {
+            return !(value === null || typeof value === 'undefined' || typeof value === undefined) ? (not === false ? true : value) : not;
+        },
+
+        isArray: function (item, not = false) {
+            return this.isDefined(item) && (typeof item === 'object' && Array.isArray(item)) ? (not === false ? true : item) : not
+        },
+
+        isObject: function (item, not = false) {
+            return this.isDefined(item) && (typeof item === 'object' && !Array.isArray(item)) ? (not === false ? true : item) : not
+        },
+
+        isFunction: function (obj) {
+            return $.isFunction(obj)
+        },
+
+        isjQuery: function (o) {
+            return (
+                typeof !!o && typeof o === "object" && o instanceof jQuery
+            );
+        },
+
+        isNode: function (o) {
+            return (
+                typeof Node === "object" ? o instanceof Node :
+                    !!o && typeof o === "object" && typeof o.nodeType === "number" && typeof o.nodeName === "string"
+            );
+        },
+
+        isElement: function isElement(o) {
+            return (
+                typeof HTMLElement === "object" ? o instanceof HTMLElement : //DOM2
+                    !!o && typeof o === "object" && o.nodeType === 1 && typeof o.nodeName === "string"
+            );
+        },
+
+        booleanize: function (string) {
+
+            if (!string)
+                return false;
+
+            if (typeof string === 'string')
+                string = string.toLowerCase().trim();
+
+            switch (string) {
+                case "true":
+                case "yes":
+                case "1":
+                case "on":
+                    return true;
+                case "false":
+                case "no":
+                case "0":
+                case "off":
+                case null:
+                    return false;
+                default:
+                    return Boolean(string);
+            }
+        },
+
+        removeEmpty: function (item, default_ = null, strict = false) {
+            let res = null;
+
+            if (this.isDefined(item)) {
+
+                if (this.isObject(item) && !$.isEmptyObject(item)) {
+
+                    for (let propName in item) {
+
+                        item[propName] = shzn.removeEmpty(item[propName], null, strict);
+
+                        if (!this.isDefined(item[propName])) {
+                            delete item[propName];
+                        }
+                    }
+
+                    if (!$.isEmptyObject(item)) {
+                        res = item;
+                    }
+
+                } else if (this.isArray(item)) {
+                    if (item.length > 0) {
+
+                        res = item.map(el => {
+                            return shzn.removeEmpty(el, null, strict);
+                        }).filter(el => {
+                            return shzn.isDefined(el) && (shzn.isArray(el) ? el.length > 0 : true);
+                        });
+
+                    }
+                    //} else if (strict ? this.booleanize(item) : item !== false) {
+                } else if (!strict || (strict && this.booleanize(item))) {
+                    res = item;
+                }
+            }
+
+            return shzn.isDefined(res, default_);
+        },
+
+        parse_args_deep: function (default_, ...sources) {
+            if (!sources.length) return default_;
+            const source = sources.shift();
+
+            if (this.isObject(default_) && this.isObject(source)) {
+                for (const key in source) {
+                    if (this.isObject(source[key])) {
+                        if (!default_[key]) Object.assign(default_, {[key]: {}});
+                        this.parse_args_deep(default_[key], source[key]);
+                    } else {
+                        Object.assign(default_, {[key]: source[key]});
+                    }
+                }
+            }
+
+            return this.parse_args_deep(default_, ...sources);
+        },
+
+        parse_args: function (default_, ...sources) {
+            if (!sources.length) return default_;
+            const source = sources.shift();
+
+            if (this.isObject(default_) && this.isObject(source)) {
+                Object.assign(default_, source);
+            }
+
+            return this.parse_args(default_, ...sources);
+        },
+
+        filter_args_deep: function (default_, ...sources) {
+            if (!sources.length) return default_;
+            const source = sources.shift();
+
+            if (this.isObject(default_) && this.isObject(source)) {
+                for (const key in source) {
+                    if (key in default_) {
+                        if (this.isObject(default_[key])) {
+                            if (!source[key])
+                                Object.assign(source, {[key]: {}});
+                            this.filter_args_deep(default_[key], source[key]);
+                        } else {
+                            Object.assign(default_, {[key]: source[key]});
+                        }
+                    }
+                }
+            }
+
+            return this.filter_args_deep(default_, ...sources);
+        },
+
+        filter_args: function (default_, ...sources) {
+
+            if (!this.isObject(default_))
+                return Object.assign({}, ...sources);
+
+            let merged = Object.assign({}, ...sources);
+
+            for (const key in default_) {
+                if (key in merged) {
+                    Object.assign(default_, {[key]: merged[key]});
+                }
+            }
+
+            return default_;
+        },
+
+        delete: function (array, position = 0) {
+            delete array[position];
+            return array;
+        },
+
+        maybe_exec: function (item, runtime_args = null, context = null) {
+
+            if (shzn.isFunction(item)) {
+                return item.call(context, runtime_args);
+            }
+
+            if (shzn.isObject(item) && item.callback) {
+                // context used for this, runtime args, static args
+                return item.callback.call(context, item.args, runtime_args)
+            }
+
+            return item;
+        },
+
+        utf8_encode: function (str) {
+            return unescape(encodeURIComponent(str));
+        },
+
+        utf8_decode: function (str_data) {
+            return decodeURIComponent(escape(str_data));
+        },
+
+        serialize: function (obj, prefix) {
+            let str = [],
+                p;
+            for (p in obj) {
+                if (obj.hasOwnProperty(p)) {
+                    let k = prefix ? prefix + "[" + p + "]" : p,
+                        v = obj[p];
+                    str.push((v !== null && typeof v === "object") ?
+                        this.serialize(v, k) :
+                        encodeURIComponent(k) + "=" + encodeURIComponent(v));
+                }
+            }
+            return str.join("&");
+        },
+
+        addUX: function (ux) {
+            shzn.extend(shznCore.ux, ux);
+        },
+
+        getUX: function (item, default_ = '', args = null) {
+
+            if (typeof shznCore.ux[item] === "undefined")
+                return default_;
+
+            return shzn.maybe_exec(shznCore.ux[item], args)
+        },
+
+        removeUX: function (item) {
+            if (typeof shznCore.ux[item] === "undefined")
+                return false;
+
+            delete shznCore.ux[item];
+        },
+
+        addOption: function (opt) {
+            shzn.extend(shznCore.options, opt);
+        },
+
+        getOption: function (item, default_ = '') {
+
+            if (typeof shznCore.options[item] === "undefined")
+                return this.getUX(item, default_);
+
+            return shznCore.options[item];
+        },
+
+        json: {
+            stringify: JSON.stringify,
+
+            parse: function (data, default_) {
+
+                if (shzn.isObject(data))
+                    return data;
+
+                let parsed = default_;
+
+                if (data) {
+                    try {
+                        parsed = JSON.parse(data);
+                    } catch (e) {
+                        parsed = data;
+                    }
                 }
 
-                $this.removeAttr("href");
+                return parsed || default_;
+            }
+        },
+
+        addStorage: function (key, value) {
+            localStorage.setItem(key, this.json.stringify(value));
+        },
+
+        getStorage: function (key, _default = {}) {
+            return this.json.parse(localStorage.getItem(key), _default);
+        },
+
+        removeStorage: function (key) {
+            localStorage.removeItem(key);
+        },
+
+        hash: function (string, length = 12) {
+
+            let dictionary = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789",
+                hash = [], i, seed = 0x1539,
+                stringLength = string.length;
+
+            if (stringLength) {
+
+                let stringLength2 = Math.floor(stringLength / 2)
+
+                seed = (((seed << 5) - seed) + stringLength + string.charCodeAt(0)) | 0;
+
+                for (i = 0; i < stringLength2; i++) {
+
+                    seed = ((seed << 5) - seed) + string.charCodeAt(i) - string.charCodeAt(stringLength - i - 1);
+                }
+            }
+
+            for (i = 0; i < length; i++) {
+                seed = (214013 * seed + 2531011) >>> 2;
+                hash[i] = dictionary[seed % 62];
+            }
+
+            return hash.join('');
+        },
+
+        semaphore: {
+
+            release: function (context = 'core') {
+                semaphoreList[context] = false;
+            },
+
+            lock: function (context = 'core') {
+                semaphoreList[context] = true;
+            },
+
+            is_locked: function (context = 'core') {
+                return semaphoreList[context] || false;
+
+            },
+        },
+
+        ajaxHandler: function (options) {
+
+            let defaults = {
+                mod: 'none',
+                mod_action: 'none',
+                mod_nonce: '',
+                mod_args: '',
+                mod_form: '',
+                use_loading: false,
+                callback: null
+            };
+
+            options = shzn.parse_args(defaults, options);
+
+            shzn.semaphore.lock(options.mod_action);
+
+            if (options.use_loading) {
+                options.use_loading.addClass("shzn-loader");
+            }
+
+            jQuery.ajax({
+                url: ajaxurl,
+                type: "GET",
+                dataType: "json",
+                global: false,
+                cache: false,
+                data: {
+                    action: 'shzn',
+                    mod: options.mod,
+                    mod_action: options.mod_action,
+                    mod_nonce: options.mod_nonce,
+                    mod_args: options.mod_args,
+                    mod_form: options.mod_form,
+                },
+                complete: function (jqXHR, status) {
+
+                    if (typeof options.callback === "function") {
+
+                        let res = shzn.json.parse(jqXHR.responseText);
+
+                        if (!res) {
+                            res = jqXHR.responseText;
+                        }
+
+                        setTimeout(options.callback(res.data, res.status), 100);
+                    }
+
+                    if (options.use_loading) {
+                        options.use_loading.removeClass("shzn-loader");
+                    }
+
+                    shzn.semaphore.release(options.mod_action);
+                }
             });
-        });
+        }
+    });
 
-        /**
-         * handle tab content
-         */
-        $(".shzn-ar-tabcontent").attr({
-            "role": "tabpanel", // contents
-            "aria-hidden": "true", // all hidden
-            //"tabindex": -1
-        }).each(function () {
-            let $this = $(this), $this_id = $this.attr("id");
-            // label by link
-            $this.attr("aria-labelledby", "lbl_" + $this_id);
-        });
+    shzn.fn.extend({
 
+        addNotice: function (response, status) {
 
-        // search if hash is ON not disabled tab
-        if (hash !== "") {
+            let $this = $(this), text = response.text || response;
 
-            let $tab_content = $("#" + hash + ".shzn-ar-tabcontent");
+            if (typeof text !== 'string') {
+                text = shzn.locale.get(status, 'Request processed.');
+            }
 
-            if ($tab_content.length !== 0) {
+            $this.append("<p class='" + status + "'>" + text + "</p>");
 
-                if ($("#lbl_" + hash + ".shzn-ar-tab_link:not([aria-disabled='true'])").length) {
+            if (response.list) {
+                for (let data of response.list) {
+                    $this.append("<p class='" + data.status + "'>" + data.text + "</p>");
+                }
+            }
+        },
 
-                    // display not disabled
-                    $tab_content.removeAttr("aria-hidden");
+        tabHandler: function () {
 
-                    // selection menu
-                    $("#lbl_" + hash + ".shzn-ar-tab_link").attr({
+            // Store current URL hash.
+            let hash = window.location.hash.substring(1);
+
+            let $tabs = $(this);
+
+            if ($tabs.length === 0 || $tabs.find(".shzn-ar-tablist").length === 0) {
+                return;
+            }
+
+            let form_action = 'options.php';
+
+            // handle tab content
+            $tabs.each(function () {
+
+                let has_selected = false, $tab = $(this);
+
+                $tab.find(".shzn-ar-tablist").each(function () {
+
+                    let $this_tab_list = $(this),
+                        $this_tab_list_items = $this_tab_list.children(".shzn-ar-tab"),
+                        $this_tab_list_links = $this_tab_list.find(".shzn-ar-tab_link");
+
+                    // roles init
+                    $this_tab_list.attr("role", "tablist"); // ul
+                    $this_tab_list_items.attr("role", "presentation"); // li
+                    $this_tab_list_links.attr("role", "tab"); // a
+
+                    // controls/tabindex attributes
+                    $this_tab_list_links.each(function () {
+
+                        let $this = $(this),
+                            $href = $this.attr("href");
+
+                        if (typeof $href !== "undefined" && $href !== "" && $href !== "#") {
+                            $this.attr({
+                                "aria-controls": $href.replace("#", ""),
+                                "tabindex": -1,
+                                "aria-selected": "false"
+                            });
+                        }
+
+                        $this.removeAttr("href");
+                    });
+
+                    $this_tab_list.on("click", ".shzn-ar-tab_link[aria-disabled='true']", function (e) {
+                        e.preventDefault();
+                    });
+
+                    $this_tab_list.on("click", ".shzn-ar-tab_link:not([aria-disabled='true'])", function (event) {
+
+                        let $this = $(this),
+                            $hash_to_update = $this.attr("aria-controls"),
+                            $tab_content_linked = $("#" + $this.attr("aria-controls")),
+                            $parent = $this.closest(".shzn-ar-tabs"),
+
+                            $all_tab_links = $parent.find(".shzn-ar-tab_link"),
+                            $all_tab_contents = $parent.find(".shzn-ar-tabcontent"),
+
+                            $form = $tab_content_linked.find('#shzn-uoptions');
+
+                        // aria selected false on all links
+                        $all_tab_links.attr({
+                            "tabindex": -1,
+                            "aria-selected": "false"
+                        });
+
+                        // add aria selected on $this
+                        $this.attr({
+                            "aria-selected": "true",
+                            "tabindex": 0
+                        });
+
+                        // add aria-hidden on all tabs contents
+                        $all_tab_contents.attr("aria-hidden", "true");
+
+                        if (typeof $form !== 'undefined') {
+                            $form.attr('action', form_action + '#' + $hash_to_update);
+                        }
+
+                        // remove aria-hidden on tab linked
+                        $tab_content_linked.removeAttr("aria-hidden");
+
+                        setTimeout(function () {
+                            history.pushState(null, null, location.pathname + location.search + '#' + $hash_to_update)
+                        }, 300);
+
+                        event.preventDefault();
+                    });
+                });
+
+                $tab.find(".shzn-ar-tabcontent").each(function () {
+
+                    let $this = $(this), $this_id = $this.attr("id");
+
+                    let attrs = {
+                        "role": "tabpanel", // contents
+                        "aria-labelledby": "lbl_" + $this_id, // label by link
+                    };
+
+                    // search if hash is ON not disabled tab
+                    if (hash === $this_id && $this.attr('aria-disabled') !== 'true') {
+
+                        has_selected = true;
+
+                        $('#lbl_' + $this_id).attr("aria-selected", "true");
+                        $this.find('#shzn-uoptions').attr('action', form_action + '#' + hash);
+
+                        attrs["aria-hidden"] = "false";
+                        attrs["aria-selected"] = "true";
+                        attrs["tabindex"] = 0;
+
+                    } else {
+                        attrs["aria-hidden"] = "true";
+                        attrs["tabindex"] = "-1";
+                    }
+
+                    $this.attr(attrs);
+                });
+
+                // if not selected => select first not disabled
+                if (!has_selected) {
+                    let $first_link = $tab.find('.shzn-ar-tab_link:not([aria-disabled="true"]):first');
+
+                    $first_link.attr({
                         "aria-selected": "true",
                         "tabindex": 0
                     });
 
-                    $tab_content.find('#shzn-uoptions').attr('action', form_action + '#' + hash);
-
+                    // first content
+                    $('#' + $first_link.attr('aria-controls')).removeAttr("aria-hidden");
                 }
-            }
+            });
         }
+    });
 
-        // if no selected => select first not disabled
-        $tabs.each(function () {
-            let $this = $(this),
-                $tab_selected = $this.find('.shzn-ar-tab_link[aria-selected="true"]'),
-                $first_link = $this.find('.shzn-ar-tab_link:not([aria-disabled="true"]):first'),
-                $first_content = $('#' + $first_link.attr('aria-controls'));
+    shzn.ui = {
+        popup: {
+            close: function (elem, options = {}) {
 
-            if ($tab_selected.length === 0) {
-                $first_link.attr({
-                    "aria-selected": "true",
-                    "tabindex": 0
+                options = shzn.parse_args({
+                    remove: true,
+                    restore: false,
+                    beforeClose: null
+                }, options);
+
+                shzn.maybe_exec(options.beforeClose, null, elem);
+
+                let $elem = $(elem);
+
+                $elem.closest('.shzn-modalWrapper').fadeOut(400, function () {
+
+                    if (options.restore) {
+                        $elem.find('.shzn-modal__content').children().detach().appendTo(options.restore);
+                    }
+
+                    if (options.remove) {
+                        $elem.remove();
+                    }
+
+                    $('body').removeClass('sw-notScrollable');
                 });
-                $first_content.removeAttr("aria-hidden");
-            }
-        });
+            },
 
-        /* Events ---------------------------------------------------------------------------------------------------------- */
-        /* click on a tab link disabled */
-        $body.on("click", ".shzn-ar-tab_link[aria-disabled='true']", function (e) {
-            e.preventDefault();
-        });
+            render: function (options) {
 
-        $body.on("click", ".shzn-ar-tab_link:not([aria-disabled='true'])", function (event) {
+                options = shzn.parse_args({
+                    title: false,
+                    body: false, //callable object args + function
+                    restore: true,
+                    parseElement: false,
+                    beforeAppend: null,
+                    afterAppend: null,
+                    beforeClose: null,
+                    afterClose: null,
+                    size: 'small', //medium large
+                    message: false,
+                    remove: true
+                }, options);
 
-            let $this = $(this),
-                $hash_to_update = $this.attr("aria-controls"),
-                $tab_content_linked = $("#" + $this.attr("aria-controls")),
-                $parent = $this.closest(".shzn-ar-tabs"),
-
-                $all_tab_links = $parent.find(".shzn-ar-tab_link"),
-                $all_tab_contents = $parent.find(".shzn-ar-tabcontent"),
-
-                $form = $tab_content_linked.find('#shzn-uoptions');
-
-            // aria selected false on all links
-            $all_tab_links.attr({
-                "tabindex": -1,
-                "aria-selected": "false"
-            });
-
-            // add aria selected on $this
-            $this.attr({
-                "aria-selected": "true",
-                "tabindex": 0
-            });
-
-            // add aria-hidden on all tabs contents
-            $all_tab_contents.attr("aria-hidden", "true");
-
-            if (typeof $form !== 'undefined') {
-                $form.attr('action', form_action + '#' + $hash_to_update);
-            }
-
-            // remove aria-hidden on tab linked
-            $tab_content_linked.removeAttr("aria-hidden");
-
-            setTimeout(function () {
-                history.pushState(null, null, location.pathname + location.search + '#' + $hash_to_update)
-            }, 300);
-
-            event.preventDefault();
-        });
-
-        /* Key down in tabs */
-        $body.on("keydown", ".shzn-ar-tablist", function (event) {
-
-            let $parent = $(this).closest('.shzn-ar-tabs');
-
-            // some event should be activated only if the focus is on tabs (not on tabpanel)
-            if (!$(document.activeElement).is($parent.find('.shzn-ar-tab_link'))) {
-                return;
-            }
-
-            // catch keyboard event only if focus is on tab
-            if (!event.ctrlKey) {
-
-                let $activated = $parent.find('.shzn-ar-tab_link[aria-selected="true"]').parent();
-
-                // strike left in the tab
-                if (event.keyCode === 37) {
-
-                    let $last_link = $parent.find('.shzn-ar-tab:last-child .shzn-ar-tab_link'),
-                        $prev = $activated;
-
-                    // search valid previous
-                    do {
-                        // if we are on first => activate last
-                        if ($prev.is(".shzn-ar-tab:first-child")) {
-                            $prev = $last_link.parent();
-                        }
-                        // else previous
-                        else {
-                            $prev = $prev.prev();
-                        }
-                    }
-                    while ($prev.children('.shzn-ar-tab_link').attr('aria-disabled') === 'true' && $prev !== $activated);
-
-                    $prev.children(".shzn-ar-tab_link").click().focus();
-
-                    event.preventDefault();
+                if (options.message) {
+                    alert(options.message);
+                    return;
                 }
-                // strike  right in the tab
-                else if (event.keyCode === 39) {
 
-                    let $first_link = $parent.find('.shzn-ar-tab:first-child .shzn-ar-tab_link'),
-                        $next = $activated;
+                let modal_id = 'swModal' + shzn.getUID(), bodyContent, detached = false, restoreContainer = false;
 
-                    // search valid next
-                    do {
-                        // if we are on last => activate first
-                        if ($next.is(".shzn-ar-tab:last-child")) {
-                            $next = $first_link.parent();
-                        }
-                        // else previous
-                        else {
-                            $next = $next.next();
-                        }
+                if (shzn.isjQuery(options.body)) {
+                    if (options.parseElement) {
+                        bodyContent = $.parseHTML(options.body.html(), document, true);
+                    } else {
+                        bodyContent = '';
+
+                        if (options.restore)
+                            restoreContainer = options.body.parent();
+
+                        detached = options.body.detach();
                     }
-                    while ($next.children('.shzn-ar-tab_link').attr('aria-disabled') === 'true' && $next !== $activated);
-
-                    $next.children(".shzn-ar-tab_link").click().focus();
-
-                    event.preventDefault();
-
+                } else {
+                    bodyContent = shzn.maybe_exec(options.body, null, this)
                 }
-            }
 
-        });
-    };
+                let modal_form = '<section class="shzn-modalWrapper">' +
+                    '<section id="' + modal_id + '" class="shzn-modal shzn-modal--' + options.size + '" style="display: none">' +
+                    '<span class="shzn-modal__close" role="button">&times;</span>' +
+                    (options.title ? '<div class="shzn-modal__header">' + '<h4 class="shzn-modal__title">' + options.title + '</h4>' + '</div>' : '') +
+                    '<div class="shzn-modal__content">' + bodyContent + '</div>' +
+                    (options.bottom ? '<div class="shzn-modal__bottom">' + shzn.maybe_exec(options.bottom, null, this) + '</div>' : '') +
+                    '</section></section>';
+
+                if (options.beforeAppend) {
+                    modal_form = shzn.maybe_exec(options.beforeAppend, modal_form, this)
+                }
+
+                $('body').append(modal_form).addClass('sw-notScrollable');
+
+                let current_modal = $("#" + modal_id);
+
+                if (detached) {
+                    current_modal.find('.shzn-modal__content').append(detached);
+                }
+
+                current_modal.fadeIn(300);
+
+                if (options.afterAppend) {
+                    shzn.maybe_exec(options.afterAppend, current_modal, this)
+                }
+
+                current_modal.one('click', '.shzn-modal__close', function () {
+
+                    shznUI.popup.close(current_modal, {
+                        restore: restoreContainer,
+                        remove: options.remove,
+                        beforeClose: {
+                            callback: options.beforeClose,
+                            args: current_modal
+                        }
+                    });
+
+                    shzn.maybe_exec({
+                        callback: options.beforeClose,
+                        args: current_modal
+                    }, null, current_modal);
+
+                    current_modal.off();
+                });
+
+                return modal_id;
+            }
+        },
+
+        circleChart: function (percent, color, size, stroke) {
+            return `<svg class="shzn-progressbarCircle__chart" viewbox="0 0 36 36" width="${size}" height="${size}" xmlns="http://www.w3.org/2000/svg">
+        <path class="shzn-progressbarCircle__bg" stroke="#eeeeee" stroke-width="${stroke * 0.5}" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+        <path class="shzn-progressbarCircle__stroke" stroke="${color}" stroke-width="${stroke}" stroke-dasharray="${percent},100" stroke-linecap="round" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+        <text class="shzn-progressbarCircle__info" x="50%" y="50%" alignment-baseline="central" text-anchor="middle" font-size="8">${percent}%</text></svg>`;
+        }
+    }
+
+    shzn.clipboard = {
+
+        write: function (value = window.location.href) {
+            let inputDump = document.createElement('input'), hrefText = value;
+            document.body.appendChild(inputDump);
+            inputDump.value = hrefText;
+            inputDump.select();
+            document.execCommand('copy');
+            document.body.removeChild(inputDump);
+        },
+
+        read: async function () {
+            return await navigator.clipboard.readText();
+        }
+    }
+
+    let shznUtil = shzn.utility, shznUI = shzn.ui;
+
+    // Expose shzn
+    if (typeof noGlobal === "undefined") {
+        window.shzn = shzn;
+    }
+
+    return shzn;
+
+})(jQuery, typeof window !== "undefined" ? window : this);
+
+(function ($) {
+
+    let $window = $(window),
+        $document = $('document');
 
     function handleDependent(parent, visible = true, deep = true) {
 
         $('.shzn *[data-parent*="' + parent + '"]').each(function () {
             let $this = $(this),
+                parents = $this.data('parent'),
                 cntx = $this,
-                visibleAction = $this.data('parent').charAt(0) === "!" ? !visible : visible;
+                visibleAction = parents.substr(parents.indexOf(parent) - 1, 1) === "!" ? !visible : visible;
 
             if (!$this.hasClass('shzn-separator')) {
                 cntx = $this.closest('tr');
@@ -372,20 +819,23 @@ function shzn_popup(args) {
                 handleDependent(this.id, visible, deep)
             }
 
-            visibleAction ? cntx.removeClass('shzn-disabled-blur') : cntx.addClass('shzn-disabled-blur');
+            if (visibleAction) {
+                cntx.removeClass('shzn-disabled-blur');
+                //cntx.slideToggle();
+            } else {
+                cntx.addClass('shzn-disabled-blur');
+                //cntx.slideToggle();
+            }
         });
-    }
-
-    function createCircleChart(percent, color, size, stroke) {
-        return `<svg class="shzn-progressbarCircle__chart" viewbox="0 0 36 36" width="${size}" height="${size}" xmlns="http://www.w3.org/2000/svg">
-        <path class="shzn-progressbarCircle__bg" stroke="#eeeeee" stroke-width="${stroke * 0.5}" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
-        <path class="shzn-progressbarCircle__stroke" stroke="${color}" stroke-width="${stroke}" stroke-dasharray="${percent},100" stroke-linecap="round" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-        <text class="shzn-progressbarCircle__info" x="50%" y="50%" alignment-baseline="central" text-anchor="middle" font-size="8">${percent}%</text></svg>`;
     }
 
     $document.ready(function () {
 
         let media_uploader;
+
+        /**
+         * handle wp media uploader
+         */
         $(".shzn-uploader__init").on('click', function (e) {
             e.preventDefault();
             let btn_uploader = $(this);
@@ -414,7 +864,7 @@ function shzn_popup(args) {
                 size = $chart.data("size") || 100,
                 stroke = $chart.data("stroke") || 1;
 
-            $chart.html(createCircleChart(percent, color, size, stroke));
+            $chart.html(shzn.ui.circleChart(percent, color, size, stroke));
         })
 
         $(".shzn-collapse-handler").on("click", function () {
@@ -444,7 +894,7 @@ function shzn_popup(args) {
             });
         });
 
-        shzn_tabHandler($('.shzn-ar-tabs'));
+        $('.shzn-ar-tabs').tabHandler();
 
         $(".shzn-apple-switch").each(function () {
 
@@ -475,12 +925,51 @@ function shzn_popup(args) {
                 }
             });
         });
+
+        $('button[data-shzn="ajax-action"]').each(function (e) {
+
+            $(this).on('click', function (e) {
+
+                e.preventDefault();
+
+                let $this = $(this), $body = $('body');
+                let e_args = {};
+
+                if ($this.data('refer')) {
+                    let o = $body.find('[data-referred="' + $this.data('refer') + '"]');
+                    e_args[o.attr('name')] = o.val();
+                }
+
+                shzn.ajaxHandler({
+                    use_loader: $body,
+                    mod: $this.data('mod') || $this.data('module'),
+                    mod_action: $this.data('action'),
+                    mod_nonce: $this.data('nonce'),
+                    mod_args: shzn.parse_args($this.data('args') || {}, e_args),
+                    callback: function (res, status) {
+
+                        if (typeof res === "undefined") {
+                            res = {
+                                title: 'Error',
+                                body: 'Parsing response error.'
+                            };
+                        }
+
+                        shzn.ui.popup.render({
+                            title: res.title || "Notice",
+                            body: typeof res === 'string' ? res : (res.body || "Something went wrong."),
+                            size: 'small'
+                        });
+                    }
+                })
+            });
+        });
     });
 
-
     $window.on('beforeunload', function (e) {
-        if ($body.hasClass('shzn-doingAction')) {
-            return SHZN.locale.text_close_warning || 'Are you sure you want to leave?';
+        if ($('body').hasClass('shzn-doingAction')) {
+            (e || window.event).returnValue = shzn.locale.get('text_close_warning');
+            return shzn.locale.get('text_close_warning');
         }
     });
 

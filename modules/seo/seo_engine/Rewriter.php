@@ -1,7 +1,7 @@
 <?php
 /**
  * @author    sh1zen
- * @copyright Copyright (C)  2021
+ * @copyright Copyright (C)  2022
  * @license   http://www.gnu.org/licenses/gpl.html GNU/GPL
  */
 
@@ -88,7 +88,7 @@ class Rewriter
          *
          * @param string $result The page number link.
          * @param int $pagenum The page number.
-         * @since 1.2.0
+
          *
          */
         $result = apply_filters('get_pagenum_link', $result, $pagenum);
