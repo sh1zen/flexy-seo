@@ -7,7 +7,6 @@
 
 namespace FlexySEO\Engine\Helpers;
 
-use FlexySEO\core\Options;
 use FlexySEO\Engine\Generators\Schema;
 
 class XRE_MetaBox
@@ -22,7 +21,7 @@ class XRE_MetaBox
 
     public static function get_value($id, $item, $context, $default = false)
     {
-        return Options::get($id, $item, $context, $default);
+        return shzn('wpfs')->options->get($id, $item, $context, $default);
     }
 
     public function enqueue_scripts()
@@ -61,7 +60,7 @@ class XRE_MetaBox
             $meta_name = $field_meta['name'];
 
             if (empty($metas[$meta_name])) {
-                Options::remove($post_id, $meta_name, "customMeta");
+                shzn('wpfs')->options->remove($post_id, $meta_name, "customMeta");
                 continue;
             }
 
@@ -72,10 +71,10 @@ class XRE_MetaBox
             }
 
             if (empty($value)) {
-                Options::remove($post_id, $meta_name, "customMeta");
+                shzn('wpfs')->options->remove($post_id, $meta_name, "customMeta");
             }
             else {
-                Options::update($post_id, $meta_name, $value, "customMeta");
+                shzn('wpfs')->options->update($post_id, $meta_name, $value, "customMeta");
             }
         }
     }
@@ -87,8 +86,8 @@ class XRE_MetaBox
 
         if (isset($post->ID) and $post->ID) {
             $post_id = $post->ID;
-            $keyword = Options::get($post_id, "keywords", "customMeta", "");
-            $description = Options::get($post_id, "description", "customMeta", "");
+            $keyword = shzn('wpfs')->options->get($post_id, "keywords", "customMeta", "");
+            $description = shzn('wpfs')->options->get($post_id, "description", "customMeta", "");
         }
 
         $supportedPageGraphs = array_map(function ($graph) {
@@ -120,7 +119,7 @@ class XRE_MetaBox
                 'type'              => 'select',
                 'sanitize_callback' => 'sanitize_text_field',
                 'values'            => $supportedPageGraphs,
-                'value'             => Options::get($post_id, "graphPageType", "customMeta")
+                'value'             => shzn('wpfs')->options->get($post_id, "graphPageType", "customMeta")
             ],
             [
                 'name'              => 'graphArticleType',
@@ -128,7 +127,7 @@ class XRE_MetaBox
                 'type'              => 'select',
                 'sanitize_callback' => 'sanitize_text_field',
                 'values'            => $supportedArticleGraphs,
-                'value'             => Options::get($post_id, "graphArticleType", "customMeta")
+                'value'             => shzn('wpfs')->options->get($post_id, "graphArticleType", "customMeta")
             ],
         ];
     }

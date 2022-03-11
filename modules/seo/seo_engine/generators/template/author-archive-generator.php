@@ -7,7 +7,6 @@
 
 namespace FlexySEO\Engine\Generators\Templates;
 
-use FlexySEO\core\Options;
 use FlexySEO\Engine\Generator;
 use FlexySEO\Engine\Generators\OpenGraph;
 use FlexySEO\Engine\Helpers\CurrentPage;
@@ -145,13 +144,13 @@ class AuthorArchive_Generator extends Generator
             $url = "https://secure.gravatar.com/avatar/cb5febbf69fa9e85698bac992b2a4433?s=500&d=mm&r=g";
         }
 
-        $snippet_data = Options::get($url, "snippet_data", "cache", false);
+        $snippet_data = shzn('wpfs')->options->get($url, "snippet_data", "cache", false);
 
         if (!$snippet_data) {
 
-            $snippet_data = wpfseo()->images->get_snippet_data($url, $size, $this->current_page->get_queried_object());
+            $snippet_data = wpfseo()->images->get_snippet_data($url, $size);
 
-            Options::add($url, "snippet_data", $snippet_data, "cache", WEEK_IN_SECONDS);
+            shzn('wpfs')->options->add($url, "snippet_data", $snippet_data, "cache", WEEK_IN_SECONDS);
         }
 
         return $snippet_data;

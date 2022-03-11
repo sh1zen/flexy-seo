@@ -48,13 +48,17 @@ class UtilEnv
         return function_exists('set_time_limit') and set_time_limit($time);
     }
 
-    public static function create_db($table_name, $args)
+    public static function db_create($table_name, $args)
     {
         global $wpdb;
 
         $charset_collate = $wpdb->get_charset_collate();
 
-        $sql = "CREATE TABLE {$wpdb->prefix}{$table_name} ( ";
+        if (!str_starts_with($table_name, $wpdb->prefix)) {
+            $table_name = $wpdb->prefix . $table_name;
+        }
+
+        $sql = "CREATE TABLE IF NOT EXISTS {$table_name} ( ";
 
         foreach ($args['fields'] as $key => $value) {
             $sql .= " {$key} {$value}, ";
@@ -62,11 +66,33 @@ class UtilEnv
 
         $sql .= " PRIMARY KEY  ({$args['primary_key']})";
 
-        $sql .= " ) $charset_collate;";
+        $sql .= " ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 $charset_collate;";
 
         require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
 
         return dbDelta($sql);
+    }
+
+    public static function db_search_replace($search, $replace, $table, $column, $where = [])
+    {
+        global $wpdb;
+
+        $_where = '';
+
+        if (!empty($where)) {
+
+            $conditions = [];
+
+            foreach ($where as $field => $value) {
+                $conditions[] = "{$field} = {$value}";
+            }
+
+            $_where = "WHERE " . implode(' AND ', $conditions);
+        }
+
+        shzn_var_dump($wpdb->prepare("UPDATE {$table} SET {$column} = REPLACE({$column}, '%s', '%s') {$_where};", $search, $replace));
+
+        return $wpdb->query($wpdb->prepare("UPDATE {$table} SET {$column} = REPLACE({$column}, '%s', '%s') {$_where};", $search, $replace));
     }
 
     /**
@@ -629,11 +655,7 @@ class UtilEnv
     {
         $base_dir = self::normalize_path(ABSPATH, false);
 
-        if ($file) {
-            $path = pathinfo($path, PATHINFO_DIRNAME);
-        }
-
-        return site_url(str_replace($base_dir, '', self::normalize_path($path, false))) . '/';
+        return site_url(str_replace($base_dir, '', self::normalize_path($path, !$file)));
     }
 
     /**
@@ -674,12 +696,16 @@ class UtilEnv
         return trim($file, '/');
     }
 
+    public static function change_file_extension($file, $extension)
+    {
+        return str_replace(pathinfo($file, PATHINFO_EXTENSION), $extension, $file);
+    }
+
     /**
      * Get domain URL
      *
      * @return string
      */
-
     public static function home_domain_root_url()
     {
         $home_url = get_home_url();
@@ -1119,6 +1145,51 @@ class UtilEnv
         return $temp[0];
     }
 
+    public static function get_server_load()
+    {
+        if (function_exists('sys_getloadavg')) {
+            return sys_getloadavg()[0];
+        }
+
+        if (PHP_OS !== 'WINNT' and PHP_OS !== 'WIN32') {
+            if (@file_exists('/proc/loadavg')) {
+
+                if ($fh = @fopen('/proc/loadavg', 'r')) {
+                    $data = @fread($fh, 6);
+                    @fclose($fh);
+                    $load_avg = explode(" ", $data);
+                    $server_load = trim($load_avg[0]);
+                }
+            }
+            else {
+
+                $data = @system('uptime');
+                preg_match('/(.*):{1}(.*)/', $data, $matches);
+                $load_arr = explode(',', $matches[2]);
+                $server_load = trim($load_arr[0]);
+            }
+        }
+        else {
+            $cmd = "wmic cpu get loadpercentage /all";
+            @exec($cmd, $output);
+
+            if ($output) {
+                foreach ($output as $line) {
+                    if ($line && preg_match("/^[0-9]+\$/", $line)) {
+                        $server_load = $line;
+                        break;
+                    }
+                }
+            }
+        }
+
+        if (empty($server_load)) {
+            $server_load = __('N/A', 'wpopt');
+        }
+
+        return $server_load;
+    }
+
     /**
      * Checks if current request is REST REQUEST
      * @param $url
@@ -1231,13 +1302,19 @@ class UtilEnv
     }
 
     /**
-     * @param string $log
+     * @param  $log
+     * @param string $filename
      */
-    public static function write_log($log)
+    public static function write_log($log, string $filename = '')
     {
-        if (true === WP_DEBUG) {
+        if (WP_DEBUG or SHZN_DEBUG) {
+
             if (is_array($log) || is_object($log)) {
-                error_log(print_r($log, true));
+                $log = print_r($log, true);
+            }
+
+            if ($filename) {
+                file_put_contents(self::normalize_path(WP_CONTENT_DIR) . $filename, $log, FILE_APPEND);
             }
             else {
                 error_log($log);
@@ -1298,25 +1375,33 @@ class UtilEnv
     }
 
     /**
-     * check if time left is under a specific percentage
-     * @param int $percent
-     * @param bool $autorise
-     * @return bool
+     * check if time left is more than a margin otherwise try to rise it
+     *
+     * @param int $margin
+     * @param int $extend
+     * @return int|bool
      */
-    public static function safe_time_limit($percent = 0.1, $autorise = 30)
+    public static function safe_time_limit(int $margin = 0, int $extend = 0)
     {
-        if (($max_et = absint(ini_get('max_execution_time'))) === 0)
+        static $time_reset = WP_START_TIMESTAMP;
+
+        if (($max_exec_time = absint(ini_get('max_execution_time'))) === 0) {
             return true;
-
-        if (1 - ((microtime(true) - WP_START_TIMESTAMP) / $max_et <= $percent)) {
-
-            if ($autorise)
-                return self::rise_time_limit($autorise);
-            else
-                return false;
         }
 
-        return true;
+        $left_time = $max_exec_time - (microtime(true) - $time_reset);
+
+        if ($margin > $left_time) {
+
+            if ($extend and self::rise_time_limit($extend)) {
+                $time_reset = microtime(true);
+                return $extend;
+            }
+
+            return false;
+        }
+
+        return $left_time;
     }
 
     public static function verify_nonce($name, $nonce = false)
@@ -1326,5 +1411,42 @@ class UtilEnv
         }
 
         return wp_verify_nonce($nonce, $name);
+    }
+
+    function _getServerLoadLinuxData()
+    {
+        if (is_readable("/proc/stat")) {
+            $stats = @file_get_contents("/proc/stat");
+
+            if ($stats !== false) {
+                // Remove double spaces to make it easier to extract values with explode()
+                $stats = preg_replace("/[[:blank:]]+/", " ", $stats);
+
+                // Separate lines
+                $stats = str_replace(array("\r\n", "\n\r", "\r"), "\n", $stats);
+                $stats = explode("\n", $stats);
+
+                // Separate values and find line for main CPU load
+                foreach ($stats as $statLine) {
+                    $statLineData = explode(" ", trim($statLine));
+
+                    // Found!
+                    if
+                    (
+                        (count($statLineData) >= 5) &&
+                        ($statLineData[0] == "cpu")
+                    ) {
+                        return array(
+                            $statLineData[1],
+                            $statLineData[2],
+                            $statLineData[3],
+                            $statLineData[4],
+                        );
+                    }
+                }
+            }
+        }
+
+        return null;
     }
 }

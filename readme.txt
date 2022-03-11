@@ -5,7 +5,7 @@ Donate link: https://www.paypal.com/donate?business=dev.sh1zen%40outlook.it&item
 Requires at least: 4.6.0
 Tested up to: 5.9
 Requires PHP: 7.0 
-Stable tag: 1.4.0
+Stable tag: 1.4.3
 License: GNU v3.0 License
 URI: https://github.com/sh1zen/flexy-seo/blob/master/LICENSE
 
@@ -103,11 +103,17 @@ work! Otherwise, go to the new added module "Setting" and try a reset.
 
 == Upgrade Notice ==
 
-= 1.4.0 =
+= 1.4.3 =
 
  * Welcome to the new Flexy-SEO, now supporting @schema.org, PHP 8.1 and WordPress 5.9
 
 == Changelog ==
+
+= 1.4.3 =
+
+* improved core performances
+* improved database and caching performances
+* fixed a bug in snippet_image generator
 
 = 1.4.0 =
 

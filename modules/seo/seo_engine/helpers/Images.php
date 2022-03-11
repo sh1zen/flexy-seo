@@ -7,7 +7,6 @@
 
 namespace FlexySEO\Engine\Helpers;
 
-use FlexySEO\core\Options;
 use SHZN\core\UtilEnv;
 
 /**
@@ -53,7 +52,7 @@ class Images
             return $url;
         }
 
-        $id = Options::get($url, 'attachmentUrlToPostId', 'cache');
+        $id = shzn('wpfs')->options->get($url, 'attachmentUrlToPostId', 'cache');
 
         if ($id === 'not_found') {
             return 0;
@@ -68,12 +67,12 @@ class Images
         $id = attachment_url_to_postid($url);
 
         if (empty($id)) {
-            Options::update($url, 'attachmentUrlToPostId', 'not_found', 'cache', WEEK_IN_SECONDS);
+            shzn('wpfs')->options->update($url, 'attachmentUrlToPostId', 'not_found', 'cache', WEEK_IN_SECONDS);
             return 0;
         }
 
         // We have the Post ID, but it's not in the cache yet. We do that here and return.
-        Options::update($url, 'attachmentUrlToPostId', $id, 'cache', WEEK_IN_SECONDS);
+        shzn('wpfs')->options->update($url, 'attachmentUrlToPostId', $id, 'cache', WEEK_IN_SECONDS);
 
         return $id;
     }
@@ -481,30 +480,42 @@ class Images
         return preg_match("/$uploadDirUrl.*/", $url);
     }
 
-    public function get_snippet_data($url, $size = 'thumbnail', $post = null)
+    /**
+     * @param int|string $object wp_attachment_id, path, url
+     * @param string $size
+     * @return array|false
+     */
+    public function get_snippet_data($object, $size = 'thumbnail')
     {
         $width = 0;
         $height = 0;
 
-        $image_path = UtilEnv::url_to_path($url);
+        $snippet_data = false;
 
-        if ($image_path) {
-            list($width, $height) = wp_getimagesize($image_path);
-        }
+        if (is_numeric($object)) {
 
-        if ($post) {
+            if ($image_data = wp_get_attachment_image_src($object, $size)) {
 
-            if ($post_thumbnail_id = get_post_thumbnail_id($post)) {
-
-                if ($image_data = wp_get_attachment_image_src($post_thumbnail_id, $size)) {
-                    $url = $image_data[0];
-                    $width = $image_data[1];
-                    $height = $image_data[2];
-                }
+                $snippet_data = ['url' => $image_data[0], 'width' => $image_data[1], 'height' => $image_data[2]];
             }
         }
+        else {
 
-        return ['url' => $url, 'width' => $width, 'height' => $height];
+            if (UtilEnv::is_url($object)) {
+                $image_path = UtilEnv::url_to_path($object);
+            }
+            else {
+                $image_path = UtilEnv::normalize_path($object);
+            }
+
+            if ($image_path) {
+                list($width, $height) = wp_getimagesize($image_path);
+            }
+
+            $snippet_data = ['url' => $object, 'width' => $width, 'height' => $height];
+        }
+
+        return $snippet_data;
     }
 
     /**

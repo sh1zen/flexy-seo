@@ -12,7 +12,6 @@ use SHZN\core\Graphic;
 use SHZN\modules\Module;
 use FlexySEO\Engine\WPFS_SEO;
 
-
 class Mod_seo extends Module
 {
     public $scopes = array('admin-page', 'settings', 'autoload');
@@ -69,56 +68,54 @@ class Mod_seo extends Module
 
                     settings_fields('wpfs-settings');
 
-                    $fields = array();
-
-                    echo Graphic::generateHTML_tabs_panels(array_merge(array(
+                    echo Graphic::generateHTML_tabs_panels(array(
 
                         array(
                             'id'        => 'seo-general',
                             'tab-title' => __('General', 'wpfs'),
-                            'callback'  => array($this, 'render_settings_block'),
+                            'callback'  => array($this, 'render_settings'),
                             'args'      => array('general')
                         ),
                         array(
                             'id'        => 'seo-special',
                             'tab-title' => __('Special pages', 'wpfs'),
-                            'callback'  => array($this, 'render_settings_block'),
+                            'callback'  => array($this, 'render_settings'),
                             'args'      => array('special')
                         ),
                         array(
                             'id'        => 'seo-post-type',
                             'tab-title' => __('Content types', 'wpfs'),
-                            'callback'  => array($this, 'render_settings_block'),
+                            'callback'  => array($this, 'render_settings'),
                             'args'      => array(get_post_types(array('public' => true)))
                         ),
                         array(
                             'id'        => 'seo-archives',
                             'tab-title' => __('Archives', 'wpfs'),
-                            'callback'  => array($this, 'render_settings_block'),
+                            'callback'  => array($this, 'render_settings'),
                             'args'      => array('archives')
                         ),
                         array(
                             'id'        => 'seo-tax',
                             'tab-title' => __('Taxonomy', 'wpfs'),
-                            'callback'  => array($this, 'render_settings_block'),
+                            'callback'  => array($this, 'render_settings'),
                             'args'      => array(get_taxonomies(array('public' => true)))
                         ),
                         array(
                             'id'        => 'seo-social',
                             'tab-title' => __('Social', 'wpfs'),
-                            'callback'  => array($this, 'render_settings_block'),
+                            'callback'  => array($this, 'render_settings'),
                             'args'      => array('social')
                         ),
                         array(
                             'id'        => 'seo-webmaster',
                             'tab-title' => __('Webmaster', 'wpfs'),
-                            'callback'  => array($this, 'render_settings_block'),
+                            'callback'  => array($this, 'render_settings'),
                             'args'      => array('webmaster')
                         ),
                         array(
                             'id'        => 'seo-schema-org',
                             'tab-title' => __('Schema.org', 'wpfs'),
-                            'callback'  => array($this, 'render_settings_block'),
+                            'callback'  => array($this, 'render_settings'),
                             'args'      => array('schema.org')
                         ),
                         array(
@@ -126,7 +123,7 @@ class Mod_seo extends Module
                             'tab-title' => __('Replacers', 'wpfs'),
                             'callback'  => array($this, 'render_replacers')
                         ),
-                    ), $fields));
+                    ));
                     ?>
                 </form>
             </block>
@@ -135,25 +132,18 @@ class Mod_seo extends Module
     }
 
     /**
-     * Handle the gui for tables list
-     * @param $block
+     * overwrite the base render setting gui for settings
+     * @param $filter
      * @return string
      */
-    public function render_settings_block($block)
-    {
-        return $this->render_settings($block);
-    }
-
-    public function render_settings($filter = '', $_setting_fields = array())
+    public function render_settings($filter = '')
     {
         $_header = $this->setting_form_templates('header');
         $_footer = $this->setting_form_templates('footer');
 
         $_divider = false;
 
-        if (empty($_setting_fields)) {
-            $_setting_fields = $this->setting_fields($filter);
-        }
+        $_setting_fields = $this->setting_fields($filter);
 
         ob_start();
 
@@ -183,8 +173,9 @@ class Mod_seo extends Module
 
         if (!empty($_footer)) {
 
-            if ($_divider)
+            if ($_divider) {
                 echo "<hr class='shzn-hr'>";
+            }
 
             echo "<section class='shzn-setting-footer'>" . $_footer . "</section>";
         }
@@ -387,7 +378,6 @@ class Mod_seo extends Module
 
         return $this->group_setting_sections($fields, $filter);
     }
-
 
     /**
      * Handle the gui for exec-sql panel

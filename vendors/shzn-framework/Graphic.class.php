@@ -79,14 +79,16 @@ class Graphic
 
         $args['input_name'] = $args['name_prefix'] ? "{$args['name_prefix']}[{$args['id']}]" : $args['id'];
 
-        if (!is_array($args['classes']))
+        if (!is_array($args['classes'])) {
             $args['classes'] = [$args['classes']];
+        }
 
         if ($context === 'action') {
             $_oInner .= "<input name='action' type='hidden' value='{$args['id']}'>";
 
-            if (empty($args['type']))
+            if (empty($args['type'])) {
                 $args['type'] = 'submit';
+            }
         }
         elseif ($context === 'table') {
 
@@ -212,6 +214,12 @@ class Graphic
                 $_oInner .= "<span " . self::buildProps([
                         'class' => self::classes($args['classes']),
                     ]) . " {$dataValues}>{$args['value']}</span>";
+                break;
+
+            case "link":
+                $_oInner .= "<a " . self::buildProps([
+                        'class' => self::classes($args['classes']),
+                    ]) . " {$dataValues} href='{$args['value']['href']}'>{$args['value']['text']}</a>";
                 break;
 
             case "action":
@@ -355,10 +363,11 @@ class Graphic
             <ul class="shzn-ar-tablist" aria-label="shzn-menu">
                 <?php
                 foreach ($fields as $field) {
+                    $tab_title = empty($field['tab-title']) ? $field['panel-title'] : $field['tab-title'];
                     ?>
                     <li class="shzn-ar-tab">
                         <a id="lbl_<?php echo $field['id']; ?>" class="shzn-ar-tab_link"
-                           href="#<?php echo $field['id']; ?>"><?php echo $field['tab-title']; ?></a>
+                           href="#<?php echo $field['id']; ?>"><?php echo $tab_title; ?></a>
                     </li>
                     <?php
                 }
@@ -391,14 +400,16 @@ class Graphic
             return '';
 
         $HTML = '';
-        if (isset($field['panel-title']))
+        if (!empty($field['panel-title'])) {
             $HTML .= "<h2>{$field['panel-title']}</h2>";
+        }
 
         if (isset($field['callback'])) {
             $args = isset($field['args']) ? $field['args'] : array();
 
-            if (is_callable($field['callback']))
+            if (is_callable($field['callback'])) {
                 $HTML .= call_user_func_array($field['callback'], $args);
+            }
         }
 
         return $HTML;
@@ -437,6 +448,6 @@ class Graphic
 
     public static function is_on_screen($slug)
     {
-        return isset($_GET['page']) and trim($_GET['page']) === trim($slug);
+        return isset($_GET['page']) and str_contains($_GET['page'], trim($slug));
     }
 }

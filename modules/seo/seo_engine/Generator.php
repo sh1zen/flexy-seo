@@ -7,8 +7,6 @@
 
 namespace FlexySEO\Engine;
 
-
-use FlexySEO\core\Options;
 use FlexySEO\Engine\Generators\OpenGraph;
 use FlexySEO\Engine\Generators\Schema;
 use FlexySEO\Engine\Generators\TwitterCard;
@@ -44,17 +42,21 @@ class Generator
     {
         $codes = [];
 
-        if (!empty($code = shzn('wpfs')->settings->get('seo.webmaster.google.vercode', '')))
+        if (!empty($code = shzn('wpfs')->settings->get('seo.webmaster.google.vercode', ''))) {
             $codes['google-site-verification'] = $code;
+        }
 
-        if (!empty($code = shzn('wpfs')->settings->get('seo.webmaster.baidu.vercode', '')))
+        if (!empty($code = shzn('wpfs')->settings->get('seo.webmaster.baidu.vercode', ''))) {
             $codes['baidu-site-verification'] = $code;
+        }
 
-        if (!empty($code = shzn('wpfs')->settings->get('seo.webmaster.bing.vercode', '')))
+        if (!empty($code = shzn('wpfs')->settings->get('seo.webmaster.bing.vercode', ''))) {
             $codes['msvalidate.01'] = $code;
+        }
 
-        if (!empty($code = shzn('wpfs')->settings->get('seo.webmaster.yandex.vercode', '')))
+        if (!empty($code = shzn('wpfs')->settings->get('seo.webmaster.yandex.vercode', ''))) {
             $codes['yandex-verification'] = $code;
+        }
 
         return $codes;
     }
@@ -67,7 +69,7 @@ class Generator
      */
     public function get_robots($robots = array())
     {
-        //$indexable = Options::get($this->current_page->get_queried_object_id(), "indexable", "customMeta", true);
+        //$indexable = shzn('wpfs')->options->get($this->current_page->get_queried_object_id(), "indexable", "customMeta", true);
 
         $valid = [
             'index'             => 'index', //$indexable ? 'index' : 'noindex',
@@ -93,7 +95,7 @@ class Generator
         }
 
         if ($this->current_page->is_simple_page()) {
-            $_keywords = Options::get($this->current_page->get_queried_object_id(), "keywords", "customMeta", "");
+            $_keywords = shzn('wpfs')->options->get($this->current_page->get_queried_object_id(), "keywords", "customMeta", "");
 
             if (!empty($_keywords)) {
                 $keywords = $_keywords;
@@ -323,24 +325,76 @@ class Generator
             return $_image;
         }
 
-        if ($size === 'thumbnail') {
-            $url = shzn('wpfs')->settings->get('seo.org.logo_url.small', '');
-        }
-        else {
-            $url = shzn('wpfs')->settings->get('seo.org.logo_url.wide', '');
+        if ($this->current_page->is_simple_page()) {
+
+            $url = shzn('wpfs')->options->get($this->current_page->get_queried_object_id(), "snippet_uri", "cache", '');
+
+            if (empty($url)) {
+
+                $url = get_post_thumbnail_id($this->current_page->get_queried_object());
+
+                if ($url) {
+                    shzn('wpfs')->options->add($this->current_page->get_queried_object_id(), "snippet_uri", $url, "cache", WEEK_IN_SECONDS);
+                }
+                else {
+
+                    $images = new \WP_Query(array(
+                        'post_parent'            => $this->current_page->get_queried_object_id(),
+                        'post_type'              => 'attachment',
+                        'post_mime_type'         => 'image',
+                        'order'                  => 'ASC',
+                        'orderby'                => 'menu_order',
+                        'post_status'            => 'inherit',
+                        'no_found_rows'          => true,
+                        'cache_results'          => false,
+                        'update_post_term_cache' => false,
+                        'update_post_meta_cache' => false,
+                        'posts_per_page'         => 1,
+                        'fields'                 => 'ids'
+                    ));
+
+                    if (!empty($images->posts)) {
+                        $url = $images->posts[0];
+                        shzn('wpfs')->options->add($this->current_page->get_queried_object_id(), "snippet_uri", $url, "cache", WEEK_IN_SECONDS);
+                    }
+                    else {
+                        shzn('wpfs')->options->add($this->current_page->get_queried_object_id(), "snippet_uri", "not_found", "cache", WEEK_IN_SECONDS);
+                    }
+
+                    unset($images);
+                }
+            }
+
+            if ($url === 'not_found') {
+                $url = '';
+            }
         }
 
         if (empty($url)) {
-            return false;
+
+            if ($size === 'thumbnail') {
+                $url = shzn('wpfs')->settings->get('seo.org.logo_url.small', '');
+            }
+            else {
+                $url = shzn('wpfs')->settings->get('seo.org.logo_url.wide', '');
+            }
+
+            if (empty($url)) {
+                return false;
+            }
         }
 
-        $snippet_data = Options::get($url, "snippet_data", "cache", false);
+        $snippet_data = shzn('wpfs')->options->get($url, "snippet_data", "cache", false);
 
         if (!$snippet_data) {
 
-            $snippet_data = wpfseo()->images->get_snippet_data($url, $size, $this->current_page->get_queried_object());
+            $snippet_data = wpfseo()->images->get_snippet_data($url, $size);
 
-            Options::add($url, "snippet_data", $snippet_data, "cache", WEEK_IN_SECONDS);
+            if (!$snippet_data) {
+                return false;
+            }
+
+            shzn('wpfs')->options->add($url, "snippet_data", $snippet_data, "cache", WEEK_IN_SECONDS);
         }
 
         $this->set_cache("snippet_image", $snippet_data);
@@ -361,7 +415,7 @@ class Generator
         }
 
         if ($this->current_page->is_simple_page()) {
-            $_description = Options::get($this->current_page->get_queried_object_id(), "description", "customMeta", "");
+            $_description = shzn('wpfs')->options->get($this->current_page->get_queried_object_id(), "description", "customMeta", "");
 
             if (!empty($_description)) {
                 $description = $_description;

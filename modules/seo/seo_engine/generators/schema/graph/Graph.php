@@ -7,7 +7,6 @@
 
 namespace FlexySEO\Engine\Generators\Schema\Graphs;
 
-use FlexySEO\core\Options;
 use FlexySEO\Engine\Generator;
 
 /**
@@ -51,7 +50,7 @@ abstract class Graph
     {
         if (!filter_var($imageId, FILTER_VALIDATE_URL)) {
 
-            $cacheData = Options::get($imageId, 'imageURLID', 'cache');
+            $cacheData = shzn('wpfs')->options->get($imageId, 'imageURLID', 'cache');
 
             if ($cacheData and is_array($cacheData)) {
                 list($imageUrl, $attachmentId) = $cacheData;
@@ -65,7 +64,7 @@ abstract class Graph
 
                 $imageUrl = wp_get_attachment_image_url($attachmentId, 'full');
 
-                Options::update($imageId, 'imageURLID', [$imageUrl, $attachmentId], 'cache');
+                shzn('wpfs')->options->update($imageId, 'imageURLID', [$imageUrl, $attachmentId], 'cache');
             }
         }
         else {

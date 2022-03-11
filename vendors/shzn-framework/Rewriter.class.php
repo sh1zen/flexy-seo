@@ -7,7 +7,7 @@
 
 class Rewriter
 {
-    private static $_instance;
+    private static Rewriter $_instance;
 
     public $request_path;
     public $request_args;

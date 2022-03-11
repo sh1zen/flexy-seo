@@ -29,14 +29,7 @@ class PagesHandler
 
     public function add_plugin_pages()
     {
-        add_menu_page(
-            'Flexy SEO',
-            'Flexy SEO',
-            'customize',
-            'wp-flexyseo',
-            array($this, 'render_main'),
-            'dashicons-admin-site'
-        );
+        add_menu_page('Flexy SEO', 'Flexy SEO', 'customize', 'wp-flexyseo', array($this, 'render_main'), 'dashicons-admin-site');
 
         /**
          * Modules - sub pages
@@ -67,13 +60,13 @@ class PagesHandler
     public function enqueue_scripts()
     {
         wp_enqueue_style('wpfs_css');
-        wp_enqueue_script('wpfs_js');
+        wp_enqueue_script('vendor-shzn-js');
     }
 
     public function enqueue_scripts_edit_page()
     {
         wp_enqueue_style('wpfs_css');
-        wp_enqueue_script('wpfs_js');
+        wp_enqueue_script('vendor-shzn-js');
     }
 
     public function render_core_settings()
@@ -89,8 +82,9 @@ class PagesHandler
 
         $object = shzn('wpfs')->moduleHandler->get_module_instance($module_slug);
 
-        if (is_null($object))
+        if (is_null($object)) {
             return;
+        }
 
         $this->enqueue_scripts();
 
@@ -105,17 +99,13 @@ class PagesHandler
 
         wp_register_style('wpfs_css', "{$assets_url}assets/style{$min}.css", ['vendor-shzn-css']);
 
-        wp_register_script('wpfs_js', "{$assets_url}assets/settings{$min}.js", ['jquery', 'vendor-shzn-js']);
-
-        wp_localize_script('wpfs_js', 'wpfs', array(
-            'strings' => array(
-                'text_na' => __('N/A', 'wpfs'),
-                'saved'   => __('Settings Saved', 'wpfs'),
-                'error'   => __('Request fail', 'wpfs'),
-                'success' => __('Request succeed', 'wpfs'),
-                'running' => __('Running', 'wpfs'),
-            )
-        ));
+        shzn_localize([
+            'text_na' => __('N/A', 'wpfs'),
+            'saved'   => __('Settings Saved', 'wpfs'),
+            'error'   => __('Request fail', 'wpfs'),
+            'success' => __('Request succeed', 'wpfs'),
+            'running' => __('Running', 'wpfs'),
+        ]);
     }
 
     public function render_faqs()

@@ -65,7 +65,7 @@ class Mod_breadcrumbs extends Module
             <section class='shzn-header'><h1>SEO / Breadcrumbs</h1></section>
             <block class="shzn">
                 <?php
-                echo $this->render_settings('');
+                echo $this->render_settings();
                 ?>
             </block>
         </section>

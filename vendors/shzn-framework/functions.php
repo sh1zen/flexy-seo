@@ -5,6 +5,63 @@
  * @license   http://www.gnu.org/licenses/gpl.html GNU/GPL
  */
 
+function shzn_localize($data = [])
+{
+    global $wp_scripts;
+
+    if (empty($data) or !($wp_scripts instanceof WP_Scripts)) {
+        return false;
+    }
+
+    if (wp_scripts()->query("vendor-shzn-js", 'done')) {
+        echo "<script type='text/javascript'>shzn.locale.add(" . json_encode($data) . ")</script>";
+    }
+    else {
+        return $wp_scripts->add_inline_script("vendor-shzn-js", "shzn.locale.add(" . json_encode($data) . ")", 'after');
+    }
+
+    return true;
+}
+
+function shzn_convert_to_javascript_object(array $arr, $sequential_keys = false, $quotes = false, $beautiful_json = false)
+{
+    $output = "{";
+    $count = 0;
+    foreach ($arr as $key => $value) {
+
+        if (shzn_is_assoc($arr) or ($sequential_keys === true)) {
+            $output .= ($quotes ? '"' : '') . $key . ($quotes ? '"' : '') . ' : ';
+        }
+
+        if (is_array($value)) {
+            $output .= shzn_convert_to_javascript_object($value, $sequential_keys, $quotes, $beautiful_json);
+        }
+        else if (is_bool($value)) {
+            $output .= ($value ? 'true' : 'false');
+        }
+        else if (is_numeric($value)) {
+            $output .= $value;
+        }
+        else {
+            $output .= ($quotes || $beautiful_json ? '"' : '') . $value . ($quotes || $beautiful_json ? '"' : '');
+        }
+
+        if (++$count < count($arr)) {
+            $output .= ', ';
+        }
+    }
+
+    $output .= "}";
+
+    return $output;
+}
+
+function shzn_is_assoc(array $arr)
+{
+    if (array() === $arr) return false;
+    return array_keys($arr) !== range(0, count($arr) - 1);
+}
+
 function shzn_module_panel_url($module = '', $panel = '')
 {
     return admin_url("admin.php?page={$module}#{$panel}");

@@ -151,7 +151,7 @@ class ModuleHandler
      * @param string $scope
      * @param bool $only_active
      */
-    public function setup_modules($scope, $only_active = true)
+    public function setup_modules(string $scope, bool $only_active = true)
     {
         foreach ($this->get_modules(array('scopes' => $scope), $only_active) as $index => $module) {
 

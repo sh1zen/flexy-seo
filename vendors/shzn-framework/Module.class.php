@@ -7,6 +7,7 @@
 
 namespace SHZN\modules;
 
+use SHZN\core\Ajax;
 use SHZN\core\UtilEnv;
 use SHZN\core\Graphic;
 use SHZN\core\Settings;
@@ -78,7 +79,7 @@ class Module
         // check if this module loads on cron and do a cronjob
         if (is_admin() or wp_doing_cron()) {
 
-            if (in_array('cron', $this->scopes) and method_exists($this, 'cron_handler')) {
+            if (in_array('cron', $this->scopes)) {
 
                 $cron_defaults = isset($args['cron_settings']) ? $args['cron_settings'] : array();
 
@@ -97,10 +98,12 @@ class Module
 
                 if (Graphic::is_on_screen($this->slug)) {
 
-                   if(did_action('admin_enqueue_scripts'))
-                       $this->enqueue_scripts();
-                   else
+                    if (did_action('admin_enqueue_scripts')) {
+                        $this->enqueue_scripts();
+                    }
+                    else {
                         add_action('admin_enqueue_scripts', [$this, 'enqueue_scripts']);
+                    }
                 }
 
                 add_action('admin_notices', array($this, 'admin_notices'));
@@ -112,6 +115,8 @@ class Module
 
     public function enqueue_scripts()
     {
+        wp_enqueue_style('vendor-shzn-css');
+        wp_enqueue_script('vendor-shzn-js');
     }
 
     public function admin_notices()
@@ -161,175 +166,12 @@ class Module
 
     public function cron_validate_settings($valid, $input)
     {
-        return $valid;
+        return $this->internal_validate_settings($this->cron_setting_fields(), $input, $valid);
     }
 
-    public function cron_setting_fields($cron_settings)
+    private function internal_validate_settings($settings, $input, $valid)
     {
-        return $cron_settings;
-    }
-
-    public function ajax_handler($args = array())
-    {
-        wp_send_json_error(
-            array(
-                'error' => __('WP Optimizer::ajax_handler -> empty ajax handler for ' . $this->slug, $this->context),
-            )
-        );
-    }
-
-    public function render_settings()
-    {
-        if ($this->restricted_access('settings')) {
-            ob_start();
-            $this->render_disabled();
-            return ob_get_clean();
-        }
-
-        $_header = $this->setting_form_templates('header');
-        $_footer = $this->setting_form_templates('footer');
-
-        $_divider = false;
-
-        $_setting_fields = $this->setting_fields();
-
-        $option_name = shzn($this->context)->settings->option_name;
-
-        ob_start();
-
-        if (!empty($_setting_fields)) {
-
-            $_divider = true;
-
-            ?>
-            <form id="shzn-uoptions" action="options.php" method="post">
-                <?php
-
-                if ($_header) {
-                    echo "<h3 class='shzn'>{$_header}</h3>";
-                }
-
-                settings_fields("{$this->context}-settings");
-                ?>
-                <input type="hidden" name="<?php echo "{$option_name}[change]" ?>" value="<?php echo $this->slug; ?>">
-                <table class="shzn shzn-settings">
-                    <tbody>
-                    <?php Graphic::generate_fields($_setting_fields, array('name_prefix' => $option_name)); ?>
-                    </tbody>
-                </table>
-                <p class="shzn-submit">
-                    <input type="submit" class="button-primary" value="<?php _e('Save Changes', $this->context) ?>"/>
-                </p>
-            </form>
-            <?php
-        }
-
-        if (!empty($_footer)) {
-
-            if ($_divider)
-                echo "<hr class='shzn-hr'>";
-
-            $_divider = true;
-
-            echo "<section class='shzn-setting-footer'>" . $_footer . "</section>";
-        }
-
-        $custom_action_form = $this->custom_actions_form();
-
-        if (!empty($custom_action_form)) {
-
-            if ($_divider)
-                echo "<hr class='shzn-hr'>";
-
-            echo $custom_action_form;
-        }
-
-        return ob_get_clean();
-    }
-
-    public function restricted_access($context = '')
-    {
-        return false;
-    }
-
-    private function render_disabled()
-    {
-        ?>
-        <block><h2><?php _e('This Module is disabled for you or for your settings.', $this->context); ?></h2></block>
-        <?php
-    }
-
-    /**
-     * Provides the setting page content
-     * header, footer, sidebar
-     *
-     * @param $context
-     * @return string
-     */
-    protected function setting_form_templates($context)
-    {
-        return '';
-    }
-
-    protected function setting_fields()
-    {
-        return array();
-    }
-
-    private function custom_actions_form()
-    {
-        $options = $this->custom_actions();
-
-        if (empty($options))
-            return '';
-
-        ob_start();
-
-        foreach ($options as $option) {
-            ?>
-            <form class="shzn-custom-action" method="POST">
-                <?php
-
-                Graphic::generate_field(array(
-                    'type'    => 'hidden',
-                    'id'      => "{$this->context}-{$this->slug}-custom-action",
-                    'value'   => wp_create_nonce("{$this->context}-{$this->slug}-custom-action"),
-                    'context' => 'nonce'
-                ));
-
-                $option['classes'] = "button {$option['button_types']} button-large";
-                $option['context'] = "action";
-
-                echo "<p>" . Graphic::generate_field($option, false) . "</p>";
-                ?>
-            </form>
-            <?php
-        }
-        return ob_get_clean();
-    }
-
-    protected function custom_actions()
-    {
-        return array();
-    }
-
-    public function render_admin_page()
-    {
-        if ($this->restricted_access('render-admin'))
-            $this->render_disabled();
-    }
-
-    /**
-     * Provides general setting validator
-     * for custom settings : override it
-     *
-     * @param $input
-     * @param $valid
-     * @return array
-     */
-    public function validate_settings($input, $valid)
-    {
-        foreach ($this->setting_fields() as $field) {
+        foreach ($settings as $field) {
 
             switch ($field['type']) {
                 case 'checkbox':
@@ -374,6 +216,181 @@ class Module
         return (array)$valid;
     }
 
+    public function cron_setting_fields($cron_settings = [])
+    {
+        return $cron_settings;
+    }
+
+    public function cron_handler($args = array())
+    {
+        return true;
+    }
+
+    public function ajax_handler($args = array())
+    {
+        Ajax::response([
+            'body'  => sprintf(__('Wrong ajax request for %s', $this->context), $this->slug),
+            'title' => __('Request error', $this->context)
+        ], 'error');
+    }
+
+    public function render_settings($filter = '')
+    {
+        if ($this->restricted_access('settings')) {
+            ob_start();
+            $this->render_disabled();
+            return ob_get_clean();
+        }
+
+        $_header = $this->setting_form_templates('header');
+        $_footer = $this->setting_form_templates('footer');
+
+        $_divider = false;
+
+        $_setting_fields = $this->setting_fields($filter);
+
+        $option_name = shzn($this->context)->settings->option_name;
+
+        ob_start();
+
+        if (!empty($_setting_fields)) {
+
+            $_divider = true;
+
+            ?>
+            <form id="shzn-uoptions" action="options.php" method="post">
+                <?php
+
+                if ($_header) {
+                    echo "<h3 class='shzn'>{$_header}</h3>";
+                }
+
+                settings_fields("{$this->context}-settings");
+                ?>
+                <input type="hidden" name="<?php echo "{$option_name}[change]" ?>" value="<?php echo $this->slug; ?>">
+                <table class="shzn shzn-settings">
+                    <tbody>
+                    <?php Graphic::generate_fields($_setting_fields, array('name_prefix' => $option_name)); ?>
+                    </tbody>
+                </table>
+                <p class="shzn-submit">
+                    <input type="submit" class="button-primary" value="<?php _e('Save Changes', $this->context) ?>"/>
+                </p>
+            </form>
+            <?php
+        }
+
+        if (!empty($_footer)) {
+
+            if ($_divider) {
+                echo "<hr class='shzn-hr'>";
+            }
+
+            $_divider = true;
+
+            echo "<section class='shzn-setting-footer'>" . $_footer . "</section>";
+        }
+
+        $custom_action_form = $this->custom_actions_form();
+
+        if (!empty($custom_action_form)) {
+
+            if ($_divider) {
+                echo "<hr class='shzn-hr'>";
+            }
+
+            echo $custom_action_form;
+        }
+
+        return ob_get_clean();
+    }
+
+    public function restricted_access($context = '')
+    {
+        return false;
+    }
+
+    private function render_disabled()
+    {
+        ?>
+        <block><h2><?php _e('This Module is disabled for you or for your settings.', $this->context); ?></h2></block>
+        <?php
+    }
+
+    /**
+     * Provides the setting page content
+     * header, footer, sidebar
+     *
+     * @param $context
+     * @return string
+     */
+    protected function setting_form_templates($context)
+    {
+        return '';
+    }
+
+    protected function setting_fields($filter = '')
+    {
+        return array();
+    }
+
+    private function custom_actions_form()
+    {
+        $options = $this->custom_actions();
+
+        if (empty($options))
+            return '';
+
+        ob_start();
+
+        foreach ($options as $option) {
+            ?>
+            <form class="shzn-custom-action" method="POST">
+                <?php
+
+                Graphic::generate_field(array(
+                    'type'    => 'hidden',
+                    'id'      => "{$this->context}-{$this->slug}-custom-action",
+                    'value'   => wp_create_nonce("{$this->context}-{$this->slug}-custom-action"),
+                    'context' => 'nonce'
+                ));
+
+                $option['classes'] = "button {$option['button_types']} button-large";
+                $option['context'] = "action";
+
+                echo "<p>" . Graphic::generate_field($option, false) . "</p>";
+                ?>
+            </form>
+            <?php
+        }
+        return ob_get_clean();
+    }
+
+    protected function custom_actions()
+    {
+        return array();
+    }
+
+    public function render_admin_page()
+    {
+        if ($this->restricted_access('render-admin')) {
+            $this->render_disabled();
+        }
+    }
+
+    /**
+     * Provides general setting validator
+     * for custom settings : override it
+     *
+     * @param $input
+     * @param $valid
+     * @return array
+     */
+    public function validate_settings($input, $valid)
+    {
+        return $this->internal_validate_settings($this->setting_fields(), $input, $valid);
+    }
+
     protected function group_setting_fields(...$args)
     {
         return array_merge(array_filter($args));
@@ -409,7 +426,7 @@ class Module
             'list'          => ''
         ], $args);
 
-        if ($id) {
+        if ($id or $type === 'link') {
             $value = ($args['value'] === false) ? $this->option($id, $args['default_value']) : $args['value'];
         }
         else {

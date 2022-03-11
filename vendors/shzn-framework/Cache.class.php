@@ -11,7 +11,9 @@ class Cache
 {
     private $use_wp_cache;
 
-    private $cache = array();
+    private array $cache = array();
+
+    private int $cached_data = 0;
 
     public function __construct($use_wp_cache = false)
     {
@@ -62,6 +64,8 @@ class Cache
             $data = clone $data;
         }
 
+        $this->cached_data++;
+
         $this->cache[$group][$key] = $data;
 
         return true;
@@ -96,6 +100,8 @@ class Cache
         }
 
         unset($this->cache[$group][$key]);
+
+        $this->cached_data--;
 
         return true;
     }

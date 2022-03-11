@@ -7,6 +7,8 @@
 
 namespace SHZN\core;
 
+use ParagonIE\Sodium\Core\Util;
+
 class Settings
 {
     /**
@@ -101,7 +103,7 @@ class Settings
             if (!isset($settings[$slug])) {
 
                 if ($update) {
-                    $this->update($default, $context);
+                    $this->update($context, $default);
                 }
 
                 return $default;
@@ -119,21 +121,43 @@ class Settings
         return $settings;
     }
 
-    public function update($option_data, $context, $force = false)
+    public function update($context, $option_data, $force = false)
     {
         if (empty($context)) {
             return false;
         }
 
+        // remove consecutive dots and add a last one for while loop
+        $setting_path = trim(preg_replace('#\.+#', '.', $context), '.');
+
+        $settings = &$this->settings;
+
+        while (($pos = strpos($setting_path, '.')) !== false) {
+
+            $slug = substr($setting_path, 0, $pos);
+
+            if (empty($slug)) {
+                break;
+            }
+
+            if (!isset($settings[$slug])) {
+                $settings[$slug] = [];
+            }
+
+            $settings = &$settings[$slug];
+
+            $setting_path = substr($setting_path, $pos + 1);
+        }
+
         if (!isset($this->settings[$context])) {
-            $this->settings[$context] = array();
+            $settings[$setting_path] = array();
         }
 
         if ($force) {
-            $this->settings[$context] = $option_data;
+            $settings[$setting_path] = $option_data;
         }
         else {
-            $this->settings[$context] = wp_parse_args($option_data, $this->settings[$context]);
+            $settings[$setting_path] = wp_parse_args($option_data, $settings[$setting_path]);
         }
 
         return $this->reset($this->settings);

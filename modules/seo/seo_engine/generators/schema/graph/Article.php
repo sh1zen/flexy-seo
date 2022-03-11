@@ -7,7 +7,6 @@
 
 namespace FlexySEO\Engine\Generators\Schema\Graphs;
 
-use FlexySEO\core\Options;
 use FlexySEO\Engine\Generators\Schema;
 
 /**

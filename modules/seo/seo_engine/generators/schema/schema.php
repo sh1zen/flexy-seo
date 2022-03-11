@@ -7,7 +7,6 @@
 
 namespace FlexySEO\Engine\Generators;
 
-use FlexySEO\core\Options;
 use FlexySEO\Engine\Helpers\CurrentPage;
 use SHZN\core\UtilEnv;
 
@@ -223,7 +222,7 @@ class Schema
 
         //graphArticleType or graphPageType
 
-        return Options::get(
+        return shzn('wpfs')->options->get(
             $post->ID,
             $selector,
             "customMeta",

@@ -11,10 +11,12 @@ use SHZN\core\UtilEnv;
 define('SHZN_FRAMEWORK', dirname(__FILE__) . '/');
 define('SHZN_DEBUG', $_SERVER["SERVER_ADDR"] === '127.0.0.1');
 
-const SHZN_VERSION = "1.1.2";
+const SHZN_VERSION = "1.1.5";
 
-require_once SHZN_FRAMEWORK . 'environment/php_polyfill/loader.php';
-require_once SHZN_FRAMEWORK . 'environment/wp_polyfill.php';
+if(did_action( 'wp_loaded' )) {
+    require_once SHZN_FRAMEWORK . 'environment/php_polyfill/loader.php';
+    require_once SHZN_FRAMEWORK . 'environment/wp_polyfill.php';
+}
 
 require_once SHZN_FRAMEWORK . 'functions.php';
 
@@ -30,6 +32,7 @@ require_once SHZN_FRAMEWORK . 'Cache.class.php';
 require_once SHZN_FRAMEWORK . 'Storage.class.php';
 require_once SHZN_FRAMEWORK . 'Disk.class.php';
 require_once SHZN_FRAMEWORK . 'Settings.class.php';
+require_once SHZN_FRAMEWORK . 'Options.class.php';
 
 require_once SHZN_FRAMEWORK . 'Ajax.class.php';
 require_once SHZN_FRAMEWORK . 'Cron.class.php';
@@ -52,10 +55,8 @@ function shzn_admin_enqueue_scripts()
     wp_register_style('vendor-shzn-css', "{$shzn_assets_url}/assets/css/style{$min}.css", [], SHZN_VERSION);
     wp_register_script('vendor-shzn-js', "{$shzn_assets_url}/assets/js/core{$min}.js", ['jquery'], SHZN_VERSION);
 
-    wp_localize_script("vendor-shzn-js", "SHZN", [
-        'locale' => [
-            'text_close_warning' => __('Are you sure you want to leave?', 'shzn')
-        ]
+    shzn_localize([
+        'text_close_warning' => __('Are you sure you want to leave?', 'shzn')
     ]);
 }
 
