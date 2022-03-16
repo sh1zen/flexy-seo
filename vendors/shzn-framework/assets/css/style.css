@@ -18,7 +18,7 @@
     background-color: #F3F4F5;
 }
 
-#wpbody-content{
+#wpbody-content {
     margin-top: 70px
 }
 
@@ -407,6 +407,21 @@ section.shzn-wrap {
     max-width: calc(100% - 400px);
 }
 
+.shzn-row {
+    display: flex;
+    justify-content: space-evenly;
+    flex-direction: row;
+    flex-wrap: wrap
+}
+
+.shzn-card {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    text-align: center;
+    justify-content: center;
+}
+
 aside.shzn {
     box-sizing: border-box;
     display: flex;
@@ -434,11 +449,11 @@ aside.shzn .shzn-box:not(:last-child) {
     position: fixed;
     left: 0;
     width: 100%;
-    top: 30px;
+    top: 0;
     background: var(--main-dark-color);
     color: var(--header-text-color);
     display: block;
-    padding: 1.5em 1.5em 1em 1.5em;
+    padding: 2.5em 1.5em 0.4em 1.5em;
     overflow: hidden;
     box-sizing: border-box;
     z-index: 1;
@@ -1044,7 +1059,6 @@ ul.shzn-autocomplete li {
         padding: 10px;
     }
 }
-
 
 @media all and (min-width: 481px) {
     .shzn-modalWrapper:after, .shzn-modalWrapper:before {

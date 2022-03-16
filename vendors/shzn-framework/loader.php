@@ -5,7 +5,6 @@
  * @license   http://www.gnu.org/licenses/gpl.html GNU/GPL
  */
 
-use SHZN\core\shzn_wrapper;
 use SHZN\core\UtilEnv;
 
 define('SHZN_FRAMEWORK', dirname(__FILE__) . '/');
@@ -80,7 +79,7 @@ function shzn($context = 'common', $args = false, $components = [])
     if ($args or !empty($components)) {
 
         if (!isset($cached[$context]) or !is_object($cached[$context])) {
-            $cached[$context] = new shzn_wrapper($context, $args, $components);
+            $cached[$context] = new \SHZN\core\shzn_wrapper($context, $args, $components);
 
             $cached[$context]->setup();
         }

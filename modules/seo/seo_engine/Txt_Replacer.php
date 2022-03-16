@@ -133,14 +133,14 @@ class Txt_Replacer
     {
         $res = false;
 
-        $replacer = shzn('wpfs')->cache->get_cache("{$rule}-{$type}", "Replacer");
+        $replacer = shzn('wpfs')->cache->get("{$rule}-{$type}", "Replacer");
 
         if ($replacer) {
             if (is_callable($replacer)) {
                 $res = call_user_func($replacer, $object);
 
                 // update the callable with its result to get more efficiency
-                shzn('wpfs')->cache->force_cache("{$rule}-{$type}", $res, "Replacer");
+                shzn('wpfs')->cache->force_set("{$rule}-{$type}", $res, "Replacer");
             }
             else {
                 $res = $replacer;
@@ -251,7 +251,7 @@ class Txt_Replacer
             return;
         }
 
-        shzn('wpfs')->cache->set_cache("{$rule}-{$type}", $replacement, "Replacer");
+        shzn('wpfs')->cache->set("{$rule}-{$type}", $replacement, "Replacer");
     }
 
     /**

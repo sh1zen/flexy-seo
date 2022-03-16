@@ -66,7 +66,7 @@ class ModuleHandler
     {
         $base_name = self::module_slug($name, true);
 
-        $class = shzn($this->context)->cache->get_cache($base_name, 'modules-handler', null);
+        $class = shzn($this->context)->cache->get($base_name, 'modules-handler', null);
 
         if (is_null($class)) {
 
@@ -81,7 +81,7 @@ class ModuleHandler
                 }
             }
 
-            shzn($this->context)->cache->set_cache($base_name, $class, 'modules-handler');
+            shzn($this->context)->cache->set($base_name, $class, 'modules-handler');
         }
 
         return $class;
@@ -131,12 +131,12 @@ class ModuleHandler
         if (!$class)
             return null;
 
-        if ($object = shzn($this->context)->cache->get_cache($class, 'modules_object'))
+        if ($object = shzn($this->context)->cache->get($class, 'modules_object'))
             return $object;
 
         $object = new $class();
 
-        shzn($this->context)->cache->set_cache($class, $object, 'modules_object');
+        shzn($this->context)->cache->set($class, $object, 'modules_object');
 
         return $object;
     }

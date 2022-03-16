@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: wpfs-translation\n"
 "Report-Msgid-Bugs-To: https://github.com/sh1zen/flexy-seo/issues\n"
-"POT-Creation-Date: 2022-03-16 02:03+0100\n"
+"POT-Creation-Date: 2022-03-25 14:31+0100\n"
 "PO-Revision-Date: 2020-05-13 02:34+0200\n"
 "Last-Translator: sh1zen\n"
 "Language-Team: sh1zen\n"
@@ -40,7 +40,7 @@ msgid "FAQ"
 msgstr ""
 
 #: admin/PagesHandler.class.php:103
-#: vendors/shzn-framework/UtilEnv.php:1187
+#: vendors/shzn-framework/UtilEnv.php:1160
 msgid "N/A"
 msgstr ""
 
@@ -737,19 +737,19 @@ msgstr ""
 msgid "This Module is disabled for you or for your settings."
 msgstr ""
 
-#: vendors/shzn-framework/Settings.class.php:182
+#: vendors/shzn-framework/Settings.class.php:157
 msgid "Core Settings"
 msgstr ""
 
-#: vendors/shzn-framework/Settings.class.php:239
+#: vendors/shzn-framework/Settings.class.php:214
 msgid "Modules Settings"
 msgstr ""
 
-#: vendors/shzn-framework/Settings.class.php:247
+#: vendors/shzn-framework/Settings.class.php:222
 #, php-format
 msgid "No modules enabled. To enable them go <a href='%s'>here</a>."
 msgstr ""
 
-#: vendors/shzn-framework/loader.php:59
+#: vendors/shzn-framework/loader.php:58
 msgid "Are you sure you want to leave?"
 msgstr ""

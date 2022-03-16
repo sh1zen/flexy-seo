@@ -43,13 +43,15 @@ require_once WPFS_SEO_ENGINE_GENERATORS . 'schema/schema.php';
 
 /**
  * @param string $context
- * @return \FlexySEO\Engine\WPFS_SEO|\FlexySEO\Engine\Helpers\Helpers
  */
 function wpfseo($context = 'helpers')
 {
     switch ($context) {
         case 'helpers':
             return WPFS_SEO::getInstance()->helpers;
+
+        case 'generator':
+            return WPFS_SEO::getInstance()->generator;
 
         default:
             return WPFS_SEO::getInstance();

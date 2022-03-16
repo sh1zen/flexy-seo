@@ -26,7 +26,6 @@ class Indexable
 
     public function __construct()
     {
-
         $this->type = wpfseo()->currentPage->get_page_type();
 
         $this->object_id = wpfseo()->currentPage->get_queried_object_id();

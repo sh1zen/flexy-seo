@@ -7,8 +7,6 @@
 
 namespace FlexySEO\Engine\Helpers;
 
-use FlexySEO\core\Cache;
-
 /**
  * A helper object for WordPress posts.
  */
@@ -414,7 +412,7 @@ class CurrentPage
      */
     public function get_date_archive_permalink()
     {
-        if ($permalink = $this->cache->get_cache('date_archive_permalink')) {
+        if ($permalink = $this->cache->get('date_archive_permalink')) {
             return $permalink;
         }
 
@@ -430,7 +428,7 @@ class CurrentPage
             $permalink = \get_year_link($wp_query->get('year'));
         }
 
-        $this->cache->set_cache('date_archive_permalink', $permalink, 'cph');
+        $this->cache->set('date_archive_permalink', $permalink, 'cph');
 
         return $permalink;
     }

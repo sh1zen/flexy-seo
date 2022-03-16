@@ -9,7 +9,7 @@ namespace SHZN\core;
 
 class Graphic
 {
-    public static function generate_fields($fields_args, $args, $display = true)
+    public static function generate_fields($fields_args, $args = [], $display = true)
     {
         $output = '';
         $levels = array();
@@ -405,7 +405,7 @@ class Graphic
         }
 
         if (isset($field['callback'])) {
-            $args = isset($field['args']) ? $field['args'] : array();
+            $args = $field['args'] ?? array();
 
             if (is_callable($field['callback'])) {
                 $HTML .= call_user_func_array($field['callback'], $args);

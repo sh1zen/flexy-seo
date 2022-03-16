@@ -13,10 +13,10 @@
  * Author URI: https://sh1zen.github.io/
  * Text Domain: wpfs
  * Domain Path: /languages
- * Version: 1.4.3
+ * Version: 1.4.5
  */
 
-const WPFS_VERSION = '1.4.3';
+const WPFS_VERSION = '1.4.5';
 
 const WPFS_FILE = __FILE__;
 define('WPFS_ABSPATH', dirname(__FILE__) . '/');

@@ -103,12 +103,12 @@ class Helpers
 
     public function __get($key)
     {
-        return $this->cache->get_cache($key, 'wpfs_helpers');
+        return $this->cache->get($key, 'wpfs_helpers');
     }
 
     public function __set($key, $data)
     {
-        return $this->cache->set_cache($key, $data, 'wpfs_helpers', true);
+        return $this->cache->set($key, $data, 'wpfs_helpers', true);
     }
 
     /**

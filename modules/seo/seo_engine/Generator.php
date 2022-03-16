@@ -121,12 +121,12 @@ class Generator
 
     protected final function get_cache($cacheKey)
     {
-        return shzn('wpfs')->cache->get_cache($cacheKey, "generator");
+        return shzn('wpfs')->cache->get($cacheKey, "generator");
     }
 
     protected final function set_cache($cacheKey, $data)
     {
-        return shzn('wpfs')->cache->set_cache($cacheKey, $data, "generator", true);
+        return shzn('wpfs')->cache->set($cacheKey, $data, "generator", true);
     }
 
     public function schema()

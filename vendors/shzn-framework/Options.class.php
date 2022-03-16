@@ -43,15 +43,13 @@ class Options
     {
         global $wpdb;
 
-        $option = trim($option);
-
         if (empty($option)) {
             return $default;
         }
 
         $cache_key = $obj_id . $option . $context;
 
-        if (!is_null($value = $this->cache->get_cache($cache_key, 'db_cache', null))) {
+        if ($cache and !is_null($value = $this->cache->get($cache_key, 'db_cache', null))) {
             return $value;
         }
 
@@ -76,7 +74,7 @@ class Options
         }
 
         if ($cache) {
-            $this->cache->set_cache($cache_key, $value, 'db_cache');
+            $this->cache->set($cache_key, $value, 'db_cache');
         }
 
         return $value;
@@ -93,8 +91,6 @@ class Options
     {
         global $wpdb;
 
-        $option = trim($option);
-
         if (empty($option) or !$obj_id) {
             return false;
         }
@@ -105,7 +101,7 @@ class Options
             return false;
         }
 
-        $this->cache->delete_cache($obj_id . $option . $context, 'db_cache');
+        $this->cache->delete($obj_id . $option . $context, 'db_cache');
 
         return true;
     }
@@ -125,8 +121,6 @@ class Options
     {
         global $wpdb;
 
-        $option = trim($option);
-
         if (empty($option)) {
             return false;
         }
@@ -135,9 +129,9 @@ class Options
             $expiration = 0;
         }
 
-        $old_value = $this->get($obj_id, $option, $context);
+        $old_value = $this->get($obj_id, $option, $context, null);
 
-        if ($old_value === false) {
+        if ($old_value === null) {
             return $this->add($obj_id, $option, $value, $context, $expiration);
         }
 
@@ -155,20 +149,13 @@ class Options
             $expiration += time();
         }
 
-        $update_args = array(
-            'value'      => $serialized_value,
-            'context'    => $context,
-            'obj_id'     => $obj_id,
-            'expiration' => $expiration
-        );
-
-        $result = $wpdb->update($this->table_name(), $update_args, array('item' => $option));
+        $result = $wpdb->query($wpdb->prepare("REPLACE INTO " . $this->table_name() . " (obj_id, context, item, value, expiration) VALUES (%s, %s, %s, %s, %d)", $obj_id, $context, $option, $serialized_value, $expiration));
 
         if (!$result) {
             return false;
         }
 
-        shzn($this->environment)->cache->set_cache($obj_id . $option . $context, $value, 'db_cache', true);
+        shzn($this->environment)->cache->set($obj_id . $option . $context, $value, 'db_cache', true);
 
         return true;
     }
@@ -184,8 +171,6 @@ class Options
     public function add($obj_id, $option, $value = false, string $context = 'core', int $expiration = 0)
     {
         global $wpdb;
-
-        $option = trim($option);
 
         if (empty($option) or !$obj_id) {
             return false;
@@ -211,28 +196,60 @@ class Options
             return false;
         }
 
-        $this->cache->set_cache($obj_id . $option . $context, $value, 'db_cache', true);
+        $this->cache->set($obj_id . $option . $context, $value, 'db_cache', true);
 
         return true;
     }
 
-    public function get_all($option, $context = 'core', $default = false, $limiter = false)
+    public function remove_all($context, $option = '')
     {
         global $wpdb;
 
-        $option = trim($option);
+        if (empty($option)) {
+            $sql = $wpdb->prepare("DELETE FROM " . $this->table_name() . " WHERE context = %s", $context);
+        }
+        else {
+            $sql = $wpdb->prepare("DELETE FROM " . $this->table_name() . " WHERE context = %s AND item = %s", $context, $option);
+        }
+
+        $result = $wpdb->query($sql);
+
+        if (!$result) {
+            return false;
+        }
+
+        $this->cache->delete('db_cache');
+
+        return true;
+    }
+
+    public function add_value($obj_id, $value = false, $context = 'core', $expiration = 0)
+    {
+        return $this->update($obj_id, 'key_value', $value, $context, $expiration);
+    }
+
+    public function get_value($obj_id, $context = 'core', $default = false, $cache = true)
+    {
+        return $this->get($obj_id, 'key_value', $context, $default, $cache);
+    }
+
+    public function get_all($option, $context = 'core', $default = false, $limiter = false, $offset = 0)
+    {
+        global $wpdb;
 
         if (empty($option)) {
             return $default;
         }
 
-        $rows = $wpdb->get_results($wpdb->prepare("SELECT * FROM " . $this->table_name() . " WHERE item = %s AND context = %s " . ($limiter ? "LIMIT {$limiter}" : ""), $option, $context));
+        $rows = $wpdb->get_results($wpdb->prepare("SELECT * FROM " . $this->table_name() . " WHERE item = %s AND context = %s " . ($limiter ? "LIMIT {$limiter}" : "") . " OFFSET {$offset}", $option, $context));
 
         if (!$rows) {
             return $default;
         }
 
         $values = $default;
+
+        $wpdb->flush();
 
         foreach ($rows as $row) {
 
@@ -254,5 +271,54 @@ class Options
         }
 
         return $values;
+    }
+
+    public function remove_by_id($id)
+    {
+        global $wpdb;
+
+        $row = $this->get_by_id($id);
+
+        if ($row) {
+            $this->cache->delete($row['obj_id'] . $row['item'] . $row['context'], 'db_cache');
+        }
+
+        $this->cache->delete($row['obj_id'], 'db_cache');
+
+        return boolval($wpdb->query($wpdb->prepare("DELETE FROM " . $this->table_name() . " WHERE id = %s", $id)));
+    }
+
+    public function get_by_id($id)
+    {
+        global $wpdb;
+
+        $res = false;
+
+        $row = $wpdb->get_row($wpdb->prepare("SELECT * FROM " . $this->table_name() . " WHERE id = %s", $id), OBJECT);
+
+        if (!$row) {
+            return false;
+        }
+
+        $expiration = $row->expiration ? intval($row->expiration) : false;
+
+        if (!$expiration or $expiration >= time()) {
+            $res = [
+                'id'         => $row->id,
+                'obj_id'     => $row->obj_id,
+                'context'    => $row->context,
+                'item'       => $row->item,
+                'value'      => maybe_unserialize($row->value),
+                'expiration' => $row->expiration,
+            ];
+
+            $this->cache->set($row->obj_id . $row->item . $row->context, $res['value'], 'db_cache', true);
+            $this->cache->set($row->id, $res, 'db_cache', true);
+        }
+        else {
+            $this->remove($row->obj_id, $row->item, $row->context);
+        }
+
+        return $res;
     }
 }

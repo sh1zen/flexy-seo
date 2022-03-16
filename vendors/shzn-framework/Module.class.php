@@ -470,7 +470,7 @@ class Module
             $group = "module_{$this->slug}";
         }
 
-        return shzn($this->context)->cache->get_cache($key, $group, $default);
+        return shzn($this->context)->cache->get($key, $group, $default);
     }
 
     protected function cache_set($key, $data, $group = '', $force = false)
@@ -479,6 +479,6 @@ class Module
             $group = "module_{$this->slug}";
         }
 
-        return shzn($this->context)->cache->set_cache($key, $data, $group, $force);
+        return shzn($this->context)->cache->set($key, $data, $group, $force);
     }
 }

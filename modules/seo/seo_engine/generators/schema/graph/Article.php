@@ -83,7 +83,7 @@ class Article extends Graph
     private function postImage($post)
     {
         if (has_post_thumbnail($post)) {
-            return $this->image(get_post_thumbnail_id(), 'articleImage');
+            return $this->image(get_post_thumbnail_id($post), 'articleImage');
         }
 
         $images = wpfseo()->images->get_images_from_content($post->post_content);

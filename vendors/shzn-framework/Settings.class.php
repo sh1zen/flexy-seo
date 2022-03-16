@@ -37,38 +37,6 @@ class Settings
         }
     }
 
-    public static function get_option($settings, $setting_path, $default = false)
-    {
-        // remove last separator
-        $setting_path = rtrim($setting_path, '.');
-
-        while (strlen($setting_path) > 0) {
-
-            $pos = strpos($setting_path, '.');
-
-            if ($pos === false) {
-                $pos = strlen($setting_path);
-            }
-
-            $slug = substr($setting_path, 0, $pos);
-
-            if (!isset($settings[$slug])) {
-                return $default;
-            }
-
-            $settings = $settings[$slug];
-
-            // update search key
-            $setting_path = substr_replace($setting_path, '', 0, $pos + 1);
-        }
-
-        if (is_array($settings) or is_object($settings)) {
-            $settings = wp_parse_args($settings, $default);
-        }
-
-        return $settings;
-    }
-
     public static function check($settings, $key, $default = false)
     {
         if (isset($settings[$key])) {
@@ -87,10 +55,22 @@ class Settings
      */
     public function get(string $context = '', $default = [], bool $update = false)
     {
-        $settings = $this->settings;
+        $res = self::get_option($this->settings, $context, null);
 
+        if (is_null($res)) {
+            if ($update) {
+                $this->update($context, $default);
+            }
+            return $default;
+        }
+
+        return $res;
+    }
+
+    public static function get_option($settings, $setting_path, $default = false)
+    {
         // remove consecutive dots and add a last one for while loop
-        $setting_path = preg_replace('#\.+#', '.', $context . '.');
+        $setting_path = preg_replace('#\.+#', '.', $setting_path . '.');
 
         while (($pos = strpos($setting_path, '.')) !== false) {
 
@@ -101,11 +81,6 @@ class Settings
             }
 
             if (!isset($settings[$slug])) {
-
-                if ($update) {
-                    $this->update($context, $default);
-                }
-
                 return $default;
             }
 

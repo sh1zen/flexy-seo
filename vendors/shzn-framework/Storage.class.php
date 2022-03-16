@@ -84,8 +84,9 @@ class Storage
 
         $path = $this->generate_path($context, $key);
 
-        if (!file_exists($path))
+        if (!file_exists($path)) {
             return false;
+        }
 
         $data = file_get_contents($path);
 

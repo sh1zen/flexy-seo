@@ -44,7 +44,7 @@ class Rewriter
     {
         $request = explode('?', $_SERVER['REQUEST_URI']);
         $req_uri = $request[0];
-        $req_args = isset($request[1]) ? $request[1] : '';
+        $req_args = $request[1] ?? '';
 
         $home_path = trim(parse_url($this->home_url, PHP_URL_PATH), '/');
         $home_path_regex = sprintf('|^%s|i', preg_quote($home_path, '|'));
@@ -57,10 +57,7 @@ class Rewriter
         $this->request_args = [];
 
         if (!empty($req_args)) {
-            foreach (explode("&", $req_args, 2) as $arg) {
-                list($key, $value) = explode("=", $arg, 2);
-                $this->request_args[$key] = $value;
-            }
+            parse_str($_SERVER['QUERY_STRING'],  $this->request_args);
         }
     }
 

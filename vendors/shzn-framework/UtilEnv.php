@@ -90,8 +90,6 @@ class UtilEnv
             $_where = "WHERE " . implode(' AND ', $conditions);
         }
 
-        shzn_var_dump($wpdb->prepare("UPDATE {$table} SET {$column} = REPLACE({$column}, '%s', '%s') {$_where};", $search, $replace));
-
         return $wpdb->query($wpdb->prepare("UPDATE {$table} SET {$column} = REPLACE({$column}, '%s', '%s') {$_where};", $search, $replace));
     }
 
@@ -368,8 +366,9 @@ class UtilEnv
         $uri = @parse_url($url, PHP_URL_PATH);
 
         // convert FALSE and other return values to string
-        if (empty($uri))
+        if (empty($uri)) {
             return '';
+        }
 
         return rtrim($uri, '/');
     }
@@ -495,32 +494,6 @@ class UtilEnv
     }
 
     /**
-     * Normalizes file name
-     *
-     * Relative to site root!
-     *
-     * @param string $file
-     * @return string
-     */
-    public static function normalize_file($file)
-    {
-        if (self::is_url($file)) {
-            if (!str_contains($file, '?')) {
-                $home_url_regexp = '~' . self::home_url_regexp() . '~i';
-                $file = preg_replace($home_url_regexp, '', $file);
-            }
-        }
-
-        if (!self::is_url($file)) {
-            $file = self::normalize_path($file);
-            $file = str_replace(self::site_root(), '', $file);
-            $file = ltrim($file, '/');
-        }
-
-        return $file;
-    }
-
-    /**
      * Returns home url regexp
      *
      * @return string
@@ -558,43 +531,6 @@ class UtilEnv
         return strtr($string, array(
             ' ' => '\ '
         ));
-    }
-
-    /**
-     * Converts win path to unix
-     *
-     * @param string $path
-     * @param bool $trailing_slash
-     * @return string
-     */
-    public static function normalize_path($path, $trailing_slash = false)
-    {
-        $wrapper = '';
-
-        // Remove the trailing slash
-        if (!$trailing_slash) {
-            $path = rtrim($path, '/');
-        }
-        else {
-            $path .= '/';
-        }
-
-        if (wp_is_stream($path)) {
-            list($wrapper, $path) = explode('://', $path, 2);
-
-            $wrapper .= '://';
-        }
-        else {
-            // Windows paths should uppercase the drive letter.
-            if (':' === substr($path, 1, 1)) {
-                $path = ucfirst($path);
-            }
-        }
-
-        // Standardise all paths to use '/' and replace multiple slashes down to a singular.
-        $path = preg_replace('#(?<=.)[/\\\]+#', '/', $path);
-
-        return $wrapper . $path;
     }
 
     /**
@@ -649,6 +585,43 @@ class UtilEnv
         }
 
         return $absolutes;
+    }
+
+    /**
+     * Converts win path to unix
+     *
+     * @param string $path
+     * @param bool $trailing_slash
+     * @return string
+     */
+    public static function normalize_path($path, $trailing_slash = false)
+    {
+        $wrapper = '';
+
+        // Remove the trailing slash
+        if (!$trailing_slash) {
+            $path = rtrim($path, '/');
+        }
+        else {
+            $path .= '/';
+        }
+
+        if (wp_is_stream($path)) {
+            list($wrapper, $path) = explode('://', $path, 2);
+
+            $wrapper .= '://';
+        }
+        else {
+            // Windows paths should uppercase the drive letter.
+            if (':' === substr($path, 1, 1)) {
+                $path = ucfirst($path);
+            }
+        }
+
+        // Standardise all paths to use '/' and replace multiple slashes down to a singular.
+        $path = preg_replace('#(?<=.)[/\\\]+#', '/', $path);
+
+        return $wrapper . $path;
     }
 
     public static function path_to_url($path, $file = false)
@@ -1304,17 +1277,18 @@ class UtilEnv
     /**
      * @param  $log
      * @param string $filename
+     * @param bool $force
      */
-    public static function write_log($log, string $filename = '')
+    public static function write_log($log, string $filename = '', bool $force = false)
     {
-        if (WP_DEBUG or SHZN_DEBUG) {
+        if (WP_DEBUG or SHZN_DEBUG or $force) {
 
             if (is_array($log) || is_object($log)) {
                 $log = print_r($log, true);
             }
 
             if ($filename) {
-                file_put_contents(self::normalize_path(WP_CONTENT_DIR) . $filename, $log, FILE_APPEND);
+                file_put_contents(self::normalize_path(WP_CONTENT_DIR) . DIRECTORY_SEPARATOR . $filename, $log, FILE_APPEND);
             }
             else {
                 error_log($log);

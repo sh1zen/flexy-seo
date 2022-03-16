@@ -4,8 +4,8 @@ Tags: SEO, Breadcrumbs, Content analysis, Readability, Schema
 Donate link: https://www.paypal.com/donate?business=dev.sh1zen%40outlook.it&item_name=Thank+you+in+advanced+for+the+kind+donations.+You+will+sustain+me+building+better+software.&currency_code=EUR
 Requires at least: 4.6.0
 Tested up to: 5.9
-Requires PHP: 7.0 
-Stable tag: 1.4.3
+Requires PHP: 7.4
+Stable tag: 1.4.5
 License: GNU v3.0 License
 URI: https://github.com/sh1zen/flexy-seo/blob/master/LICENSE
 
@@ -103,13 +103,13 @@ work! Otherwise, go to the new added module "Setting" and try a reset.
 
 == Upgrade Notice ==
 
-= 1.4.3 =
+= 1.4.5 =
 
  * Welcome to the new Flexy-SEO, now supporting @schema.org, PHP 8.1 and WordPress 5.9
 
 == Changelog ==
 
-= 1.4.3 =
+= 1.4.5 =
 
 * improved core performances
 * improved database and caching performances

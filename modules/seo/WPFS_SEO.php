@@ -11,19 +11,19 @@ use FlexySEO\Engine\Helpers\CurrentPage;
 use FlexySEO\Engine\Helpers\Helpers;
 use FlexySEO\Engine\Helpers\XRE_MetaBox;
 
-if (!defined('WPFS_SEO_ENGINE'))
+if (!defined('WPFS_SEO_ENGINE')) {
     define('WPFS_SEO_ENGINE', dirname(__FILE__) . '/seo_engine/');
+}
 
 class WPFS_SEO
 {
-    private static $_instance;
+    private static ?WPFS_SEO $_instance;
 
-    /**
-     * @var Helpers
-     */
-    public $helpers;
+    public ?Helpers $helpers = null;
 
-    public $metaBox;
+    public ?XRE_MetaBox $metaBox = null;
+
+    public ?Generator $generator = null;
 
     /**
      * Create the breadcrumb
@@ -85,11 +85,11 @@ class WPFS_SEO
     {
         $this->helpers = Helpers::Init($wp_query);
 
-        $generator = $this->load_generator($this->helpers->currentPage);
+        $this->generator = $this->load_generator($this->helpers->currentPage);
 
         $indexable = new Indexable();
 
-        $presenter = new Presenter($generator, $indexable);
+        $presenter = new Presenter($this->generator, $indexable);
 
         $presenter->build();
     }

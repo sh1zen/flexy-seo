@@ -7,7 +7,6 @@
 
 namespace FlexySEO\Engine;
 
-use FlexySEO\core\Settings;
 use FlexySEO\Engine\Helpers\SEOScriptTag;
 use FlexySEO\Engine\Helpers\SEOTag;
 

@@ -292,7 +292,7 @@ class Images
      *
      * @return array|false Returns an array with image data on success, false on failure.
      */
-    public function get_image($attachment_id, $size)
+    public function get_image($attachment_id, string $size = 'large')
     {
         $image = false;
         if ($size === 'full') {
@@ -410,6 +410,64 @@ class Images
     }
 
     /**
+     * @param int|string $object wp_attachment_id, path, url
+     * @param string $size
+     * @return array|false
+     */
+    public function get_snippet_data($object, $size = 'thumbnail')
+    {
+        $width = 0;
+        $height = 0;
+
+        $snippet_data = false;
+
+        if (is_numeric($object)) {
+
+            if ($image_data = wp_get_attachment_image_src($object, $size)) {
+
+                $snippet_data = ['url' => $image_data[0], 'width' => $image_data[1], 'height' => $image_data[2]];
+            }
+        }
+        else {
+
+            if (UtilEnv::is_url($object)) {
+                $image_path = UtilEnv::url_to_path($object);
+            }
+            else {
+                $image_path = UtilEnv::normalize_path($object);
+            }
+
+            if ($image_path) {
+                list($width, $height) = wp_getimagesize($image_path);
+            }
+
+            $snippet_data = ['url' => $object, 'width' => $width, 'height' => $height];
+        }
+
+        return $snippet_data;
+    }
+
+    public function getPostImage($post, $size = 'large', $useContent = true)
+    {
+        $image = '';
+        $post = get_post($post);
+
+        if (has_post_thumbnail($post)) {
+            $image = wp_get_attachment_image_url(get_post_thumbnail_id($post), $size);
+        }
+
+        if ($useContent) {
+            $images = wpfseo()->images->get_images_from_content($post->post_content);
+
+            if ($images) {
+                $image = wpfseo()->images->removeImageDimensions($images[0]);
+            }
+        }
+
+        return $image;
+    }
+
+    /**
      * Grabs the images from the content.
      *
      * @param string $content The post content string.
@@ -478,44 +536,6 @@ class Images
     {
         $uploadDirUrl = wpfseo()->string->escapeRegex(UtilEnv::wp_upload_dir('baseurl'));
         return preg_match("/$uploadDirUrl.*/", $url);
-    }
-
-    /**
-     * @param int|string $object wp_attachment_id, path, url
-     * @param string $size
-     * @return array|false
-     */
-    public function get_snippet_data($object, $size = 'thumbnail')
-    {
-        $width = 0;
-        $height = 0;
-
-        $snippet_data = false;
-
-        if (is_numeric($object)) {
-
-            if ($image_data = wp_get_attachment_image_src($object, $size)) {
-
-                $snippet_data = ['url' => $image_data[0], 'width' => $image_data[1], 'height' => $image_data[2]];
-            }
-        }
-        else {
-
-            if (UtilEnv::is_url($object)) {
-                $image_path = UtilEnv::url_to_path($object);
-            }
-            else {
-                $image_path = UtilEnv::normalize_path($object);
-            }
-
-            if ($image_path) {
-                list($width, $height) = wp_getimagesize($image_path);
-            }
-
-            $snippet_data = ['url' => $object, 'width' => $width, 'height' => $height];
-        }
-
-        return $snippet_data;
     }
 
     /**
