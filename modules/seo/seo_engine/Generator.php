@@ -304,8 +304,6 @@ class Generator
             $this->current_page->get_query_type()
         );
 
-        $title = apply_filters("wpfs_title", $title);
-
         $title = trim($title);
 
         if (str_contains($title, '&')) {

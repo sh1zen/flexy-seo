@@ -72,7 +72,8 @@ class Presenter
 
         // Filter the title for compatibility with other plugins and themes.
         if (shzn('wpfs')->settings->get('seo.title.rewrite', true)) {
-            add_filter('wp_title', array($this, 'filter_title'), 15);
+            add_filter('wp_title', array($this, 'filter_title'), 10, 1);
+            add_filter('the_title', array($this, 'filter_title'), 10, 1);
         }
 
         // canonical, rel_prev, rel_next
