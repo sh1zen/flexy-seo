@@ -136,23 +136,6 @@ class UtilEnv
         return \trim(\str_replace('  ', ' ', \str_replace(["\t", "\n", "\r", "\f"], ' ', $string)));
     }
 
-    public static function filename_to_url($filename, $use_site_url = false)
-    {
-        // using wp-content instead of document_root as known dir since dirbased
-        // multisite wp adds blogname to the path inside site_url
-        if (!str_starts_with($filename, WP_CONTENT_DIR)) {
-            return '';
-        }
-
-        $uri_from_wp_content = substr($filename, strlen(WP_CONTENT_DIR));
-
-        if (DIRECTORY_SEPARATOR != '/')
-            $uri_from_wp_content = str_replace(DIRECTORY_SEPARATOR, '/',
-                $uri_from_wp_content);
-
-        return content_url($uri_from_wp_content);
-    }
-
     /**
      * Returns true if server is Apache
      *
@@ -195,21 +178,6 @@ class UtilEnv
     public static function is_iis()
     {
         return isset($_SERVER['SERVER_SOFTWARE']) and stristr($_SERVER['SERVER_SOFTWARE'], 'IIS') !== false;
-    }
-
-    /**
-     * Returns domain from host
-     *
-     * @param $url
-     * @return string
-     */
-    public static function url_to_host($url)
-    {
-        $a = parse_url($url);
-        if (isset($a['host']))
-            return $a['host'];
-
-        return '';
     }
 
     /**
@@ -260,32 +228,6 @@ class UtilEnv
     {
         return ((defined('SUBDOMAIN_INSTALL') and SUBDOMAIN_INSTALL) ||
             (defined('VHOST') and VHOST == 'yes'));
-    }
-
-    /**
-     * Returns SSL home url
-     *
-     * @return string
-     */
-    public static function home_url_maybe_https()
-    {
-        $home_url = get_home_url();
-        return self::url_to_maybe_https($home_url);
-    }
-
-    /**
-     * Returns SSL URL if current connection is https
-     *
-     * @param string $url
-     * @return string
-     */
-    public static function url_to_maybe_https($url)
-    {
-        if (self::is_https()) {
-            $url = str_replace('http://', 'https://', $url);
-        }
-
-        return $url;
     }
 
     /**
@@ -342,125 +284,6 @@ class UtilEnv
     }
 
     /**
-     * Returns blog path
-     *
-     * Example:
-     *
-     * siteurl=http://domain.com/site/blog
-     * return /site/blog/
-     *
-     * With trailing slash!
-     *
-     * @return string
-     */
-    public static function site_url_uri()
-    {
-        return self::url_to_uri(site_url()) . '/';
-    }
-
-    /**
-     * Returns path from URL. Without trailing slash
-     */
-    public static function url_to_uri($url)
-    {
-        $uri = @parse_url($url, PHP_URL_PATH);
-
-        // convert FALSE and other return values to string
-        if (empty($uri)) {
-            return '';
-        }
-
-        return rtrim($uri, '/');
-    }
-
-    /**
-     * Returns home domain
-     *
-     * @return string
-     */
-    public static function home_url_host()
-    {
-        $home_url = get_home_url();
-        $parse_url = @parse_url($home_url);
-
-        if ($parse_url and isset($parse_url['host'])) {
-            return $parse_url['host'];
-        }
-
-        return self::host();
-    }
-
-    public static function host()
-    {
-        $host_port = self::host_port();
-
-        $pos = strpos($host_port, ':');
-        if ($pos === false) {
-            return $host_port;
-        }
-
-        return substr($host_port, 0, $pos);
-    }
-
-    /**
-     * Returns server hostname with port
-     *
-     * @return string
-     */
-    public static function host_port()
-    {
-        static $host = null;
-
-        if ($host === null) {
-            if (!empty($_SERVER['HTTP_HOST'])) {
-                // HTTP_HOST sometimes is not set causing warning
-                $host = $_SERVER['HTTP_HOST'];
-            }
-            else {
-                $host = '';
-            }
-        }
-
-        return $host;
-    }
-
-    /**
-     * Returns home path
-     *
-     * Example:
-     *
-     * home=http://domain.com/site/
-     * siteurl=http://domain.com/site/blog
-     * return /site/
-     *
-     * With trailing slash!
-     *
-     * @return string
-     */
-    public static function home_url_uri()
-    {
-        return self::url_to_uri(get_home_url()) . '/';
-    }
-
-    public static function network_home_url_uri()
-    {
-        $uri = network_home_url('', 'relative');
-
-        /* There is a bug in WP where network_home_url can return
-         * a non-relative URI even though scheme is set to relative.
-         */
-        if (self::is_url($uri)) {
-            $uri = parse_url($uri, PHP_URL_PATH);
-        }
-
-        if (empty($uri)) {
-            return '/';
-        }
-
-        return $uri;
-    }
-
-    /**
      * Check if URL is valid
      *
      * @param string $url
@@ -469,39 +292,6 @@ class UtilEnv
     public static function is_url($url)
     {
         return preg_match('~^(https?:)?//~', $url);
-    }
-
-    /**
-     * Parses path
-     *
-     * @param string $path
-     * @return array|string|string[]
-     */
-    public static function parse_path($path)
-    {
-        return str_replace(array(
-            '%BLOG_ID%',
-            '%POST_ID%',
-            '%BLOG_ID%',
-            '%HOST%'
-        ), array(
-            (isset($GLOBALS['blog_id']) and is_numeric($GLOBALS['blog_id']) ? (int)$GLOBALS['blog_id'] : 0),
-            (isset($GLOBALS['post_id']) and is_numeric($GLOBALS['post_id']) ?
-                    (int)$GLOBALS['post_id'] : 0),
-            get_current_blog_id(),
-            self::host()
-        ), $path);
-    }
-
-    /**
-     * Returns home url regexp
-     *
-     * @return string
-     */
-    public static function home_url_regexp()
-    {
-        $home_url = get_home_url();
-        return self::get_url_regexp($home_url);
     }
 
     /**
@@ -531,24 +321,6 @@ class UtilEnv
         return strtr($string, array(
             ' ' => '\ '
         ));
-    }
-
-    /**
-     * Returns absolute path to blog install dir
-     *
-     * Example:
-     *
-     * DOCUMENT_ROOT=/var/www/vhosts/domain.com
-     * install dir=/var/www/vhosts/domain.com/site/blog
-     * return /var/www/vhosts/domain.com/site/blog
-     *
-     * No trailing slash!
-     *
-     * @return string
-     */
-    public static function site_root()
-    {
-        return self::realpath(ABSPATH);
     }
 
     /**
@@ -640,23 +412,17 @@ class UtilEnv
      */
     public static function url_to_path(string $url)
     {
+        if (!is_string($url)) {
+            return false;
+        }
+
         $parsed_url_path = parse_url($url, PHP_URL_PATH);
 
         if (empty($parsed_url_path)) {
             return false;
         }
 
-        $base_dir = self::normalize_path(ABSPATH, false);
-
-        $basename = basename($base_dir);
-
-        $file = ltrim($base_dir . substr($parsed_url_path, strpos($parsed_url_path, $basename) + strlen($basename)), '/');
-
-        if (file_exists($file)) {
-            return $file;
-        }
-
-        return false;
+        return realpath($_SERVER['DOCUMENT_ROOT'] . $parsed_url_path);
     }
 
     public static function plugin_basename($file)
@@ -672,91 +438,6 @@ class UtilEnv
     public static function change_file_extension($file, $extension)
     {
         return str_replace(pathinfo($file, PATHINFO_EXTENSION), $extension, $file);
-    }
-
-    /**
-     * Get domain URL
-     *
-     * @return string
-     */
-    public static function home_domain_root_url()
-    {
-        $home_url = get_home_url();
-        $parse_url = @parse_url($home_url);
-
-        if ($parse_url and isset($parse_url['scheme']) and isset($parse_url['host'])) {
-            $scheme = $parse_url['scheme'];
-            $host = $parse_url['host'];
-            $port = (isset($parse_url['port']) and $parse_url['port'] != 80 ? ':' . (int)$parse_url['port'] : '');
-            return sprintf('%s://%s%s', $scheme, $host, $port);
-        }
-
-        return false;
-    }
-
-    /**
-     * Normalizes file name for minify
-     * Relative to document root!
-     *
-     * @param $url
-     * @return string
-     */
-    public static function url_to_docroot_filename($url)
-    {
-        $data = array(
-            'home_url' => get_home_url(),
-            'url'      => $url
-        );
-
-        $home_url = $data['home_url'];
-        $normalized_url = $data['url'];
-        $normalized_url = self::remove_query_all($normalized_url);
-
-        // cut protocol
-        $normalized_url = preg_replace('~^http(s)?://~', '//', $normalized_url);
-        $home_url = preg_replace('~^http(s)?://~', '//', $home_url);
-
-        if (!str_starts_with($normalized_url, $home_url)) {
-            // not a home url, return unchanged since cant be
-            // converted to filename
-            return null;
-        }
-
-        $path_relative_to_home = str_replace($home_url, '', $normalized_url);
-
-        $home = set_url_scheme(get_option('home'), 'http');
-        $siteurl = set_url_scheme(get_option('siteurl'), 'http');
-
-        $home_path = rtrim(self::site_path(), '/');
-        // adjust home_path if site is not is home
-        if (!empty($home) and 0 !== strcasecmp($home, $siteurl)) {
-            // $siteurl - $home
-            $wp_path_rel_to_home = rtrim(str_ireplace($home, '', $siteurl), '/');
-            if (str_ends_with($home_path, $wp_path_rel_to_home)) {
-                $home_path = substr($home_path, 0, -strlen($wp_path_rel_to_home));
-            }
-        }
-
-        // common encoded characters
-        $path_relative_to_home = str_replace('%20', ' ', $path_relative_to_home);
-
-        $full_filename = $home_path . DIRECTORY_SEPARATOR .
-            trim($path_relative_to_home, DIRECTORY_SEPARATOR);
-
-        $docroot = self::document_root();
-        if (str_starts_with($full_filename, $docroot)) {
-            $docroot_filename = substr($full_filename, strlen($docroot));
-        }
-        else {
-            $docroot_filename = $path_relative_to_home;
-        }
-
-        // sometimes urls (coming from other plugins/themes)
-        // contain multiple "/" like "my-folder//myfile.js" which
-        // fails to recognize by filesystem, while url is accessible
-        $docroot_filename = str_replace('//', DIRECTORY_SEPARATOR, $docroot_filename);
-
-        return ltrim($docroot_filename, DIRECTORY_SEPARATOR);
     }
 
     /**
@@ -782,81 +463,19 @@ class UtilEnv
      */
     public static function site_path()
     {
-        $home = set_url_scheme(get_option('home'), 'http');
-        $siteurl = set_url_scheme(get_option('siteurl'), 'http');
+        $home    = set_url_scheme( get_option( 'home' ), 'http' );
+        $siteurl = set_url_scheme( get_option( 'siteurl' ), 'http' );
 
-        $home_path = ABSPATH;
-        if (!empty($home) and 0 !== strcasecmp($home, $siteurl)) {
-            $wp_path_rel_to_home = str_ireplace($home, '', $siteurl); /* $siteurl - $home */
-            // fix of get_home_path, used when index.php is moved outside of
-            // wp folder.
-            $pos = strripos(
-                str_replace('\\', '/', $_SERVER['SCRIPT_FILENAME']),
-                trailingslashit($wp_path_rel_to_home));
-            if ($pos !== false) {
-                $home_path = substr($_SERVER['SCRIPT_FILENAME'], 0, $pos);
-                $home_path = trailingslashit($home_path);
-            }
-            else if (defined('WP_CLI')) {
-                $pos = strripos(
-                    str_replace('\\', '/', ABSPATH),
-                    trailingslashit($wp_path_rel_to_home));
-                if ($pos !== false) {
-                    $home_path = substr(ABSPATH, 0, $pos);
-                    $home_path = trailingslashit($home_path);
-                }
-            }
+        if ( ! empty( $home ) && 0 !== strcasecmp( $home, $siteurl ) ) {
+            $wp_path_rel_to_home = str_ireplace( $home, '', $siteurl ); /* $siteurl - $home */
+            $pos                 = strripos( str_replace( '\\', '/', $_SERVER['SCRIPT_FILENAME'] ), trailingslashit( $wp_path_rel_to_home ) );
+            $home_path           = substr( $_SERVER['SCRIPT_FILENAME'], 0, $pos );
+            $home_path           = trailingslashit( $home_path );
+        } else {
+            $home_path = ABSPATH;
         }
 
-        return str_replace('\\', DIRECTORY_SEPARATOR, $home_path);
-    }
-
-    /**
-     * Returns absolute path to document root
-     *
-     * No trailing slash!
-     *
-     * @return string
-     */
-    public static function document_root()
-    {
-        static $document_root = null;
-
-        if (!is_null($document_root))
-            return $document_root;
-
-        if (!empty($_SERVER['SCRIPT_FILENAME']) and
-            !empty($_SERVER['PHP_SELF'])) {
-            $script_filename = self::normalize_path(
-                $_SERVER['SCRIPT_FILENAME']);
-            $php_self = self::normalize_path(
-                $_SERVER['PHP_SELF']);
-            if (str_ends_with($script_filename, $php_self)) {
-                $document_root = substr($script_filename, 0, -strlen($php_self));
-                return realpath($document_root);
-            }
-        }
-
-        if (!empty($_SERVER['PATH_TRANSLATED'])) {
-            $document_root = substr(
-                self::normalize_path($_SERVER['PATH_TRANSLATED']),
-                0,
-                -strlen(self::normalize_path($_SERVER['PHP_SELF'])));
-        }
-        elseif (!empty($_SERVER['DOCUMENT_ROOT'])) {
-            $document_root = self::normalize_path($_SERVER['DOCUMENT_ROOT']);
-        }
-        else {
-            $document_root = ABSPATH;
-        }
-
-        return realpath($document_root);
-    }
-
-    public static function docroot_to_full_filename($docroot_filename)
-    {
-        return rtrim(self::document_root(), DIRECTORY_SEPARATOR) .
-            DIRECTORY_SEPARATOR . $docroot_filename;
+        return str_replace( '\\', '/', $home_path );
     }
 
     /**
@@ -866,65 +485,7 @@ class UtilEnv
      */
     public static function remove_query($url)
     {
-        return preg_replace('~(\?|&amp;|&#038;|&)+ver=[a-z0-9-_.]+~i', '', $url);
-    }
-
-    /**
-     * Returns full URL from relative one
-     * @param $relative_url
-     * @return string
-     */
-    public static function url_relative_to_full($relative_url)
-    {
-        $relative_url = self::path_remove_dots($relative_url);
-
-        if (str_starts_with($relative_url, '//')) {
-            $relative_url = (self::is_https() ? 'https' : 'http') . ':' . $relative_url;
-        }
-
-        $rel = parse_url($relative_url);
-
-        // it's full url already
-        if (isset($rel['scheme']) || isset($rel['host'])) {
-            return $relative_url;
-        }
-
-        $home_parsed = parse_url(get_home_url());
-        $rel['host'] = $home_parsed['host'];
-        if (isset($home_parsed['port'])) {
-            $rel['port'] = $home_parsed['port'];
-        }
-
-        $host = isset($rel['host']) ? $rel['host'] : '';
-        $port = isset($rel['port']) ? ':' . $rel['port'] : '';
-        $path = isset($rel['path']) ? $rel['path'] : '';
-        $query = isset($rel['query']) ? '?' . $rel['query'] : '';
-        return (self::is_https() ? 'https' : 'http') . "://$host$port$path$query";
-    }
-
-    /**
-     * Returns real path of given path
-     *
-     * @param string $path
-     * @return string
-     */
-    public static function path_remove_dots($path)
-    {
-        $absolutes = array();
-
-        foreach (explode('/', $path) as $part) {
-            if ('.' == $part) {
-                continue;
-            }
-            if ('..' == $part) {
-                array_pop($absolutes);
-            }
-            else {
-                $absolutes[] = $part;
-            }
-        }
-
-        return implode('/', $absolutes);
+        return preg_replace('~(\?|&amp;|&#038;|&)+ver=[a-z\d-_.]+~i', '', $url);
     }
 
     /**
@@ -1049,36 +610,6 @@ class UtilEnv
     }
 
     /**
-     * Redirects to URL
-     *
-     * @param string $url
-     * @param array $params
-     *
-     * @return void
-     */
-    public static function safe_redirect_temp($url = '', $params = array())
-    {
-        $url = self::url_format($url, $params);
-
-        $status_code = 302;
-
-        $protocol = $_SERVER["SERVER_PROTOCOL"];
-        if ('HTTP/1.1' === $protocol) {
-            $status_code = 307;
-        }
-
-        $text = get_status_header_desc($status_code);
-        if (!empty($text)) {
-            $status_header = "$protocol $status_code $text";
-            @header($status_header, true, $status_code);
-        }
-
-        @header('Cache-Control: no-cache');
-        wp_safe_redirect($url, $status_code);
-        exit();
-    }
-
-    /**
      * Detects post ID
      *
      * @return integer
@@ -1148,7 +679,7 @@ class UtilEnv
 
             if ($output) {
                 foreach ($output as $line) {
-                    if ($line && preg_match("/^[0-9]+\$/", $line)) {
+                    if ($line && preg_match("/^\d+\$/", $line)) {
                         $server_load = $line;
                         break;
                     }
@@ -1214,7 +745,7 @@ class UtilEnv
         if (empty($val))
             return 0;
 
-        $val = preg_replace('/[^0-9kmgtb]/', '', strtolower($val));
+        $val = preg_replace('/[^\dkmgtb]/', '', strtolower($val));
 
         if (!preg_match("/\b(\d+(?:\.\d+)?)\s*([kmgt]?b)\b/", trim($val), $matches))
             return absint($val);
@@ -1385,42 +916,5 @@ class UtilEnv
         }
 
         return wp_verify_nonce($nonce, $name);
-    }
-
-    function _getServerLoadLinuxData()
-    {
-        if (is_readable("/proc/stat")) {
-            $stats = @file_get_contents("/proc/stat");
-
-            if ($stats !== false) {
-                // Remove double spaces to make it easier to extract values with explode()
-                $stats = preg_replace("/[[:blank:]]+/", " ", $stats);
-
-                // Separate lines
-                $stats = str_replace(array("\r\n", "\n\r", "\r"), "\n", $stats);
-                $stats = explode("\n", $stats);
-
-                // Separate values and find line for main CPU load
-                foreach ($stats as $statLine) {
-                    $statLineData = explode(" ", trim($statLine));
-
-                    // Found!
-                    if
-                    (
-                        (count($statLineData) >= 5) &&
-                        ($statLineData[0] == "cpu")
-                    ) {
-                        return array(
-                            $statLineData[1],
-                            $statLineData[2],
-                            $statLineData[3],
-                            $statLineData[4],
-                        );
-                    }
-                }
-            }
-        }
-
-        return null;
     }
 }

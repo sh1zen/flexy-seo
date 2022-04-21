@@ -1,11 +1,11 @@
 === Flexy SEO === 
 Contributors: sh1zen 
-Tags: SEO, Breadcrumbs, Content analysis, Readability, Schema, performances
+Tags: SEO, Breadcrumbs, Content analysis, Readability, Schema, Ranking
 Donate link: https://www.paypal.com/donate?business=dev.sh1zen%40outlook.it&item_name=Thank+you+in+advanced+for+the+kind+donations.+You+will+sustain+me+building+better+software.&currency_code=EUR
 Requires at least: 4.6.0
-Tested up to: 5.9
+Tested up to: 6.0
 Requires PHP: 7.4
-Stable tag: 1.4.6
+Stable tag: 1.4.8
 License: GNU v3.0 License
 URI: https://github.com/sh1zen/flexy-seo/blob/master/LICENSE
 
@@ -102,6 +102,16 @@ Deactivate the plugin and reactivate it, if this doesn't work try to uninstall a
 work! Otherwise, go to the new added module "Setting" and try a reset.
 
 == Changelog ==
+
+= 1.4.8 = 
+
+* tested up to WordPress 6.0
+* fixed some core bugs
+
+= 1.4.7 =
+
+* added wpfs_document_title()
+* improved title generation for breadcrumbs
 
 = 1.4.6 =
 

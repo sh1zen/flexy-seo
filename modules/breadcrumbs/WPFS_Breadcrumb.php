@@ -468,7 +468,7 @@ class WPFS_Breadcrumb
 
             case 'title':
                 $replaces[] = array(
-                    'text' => wp_get_document_title(),
+                    'text' => wpfs_document_title(),
                     'url'  => get_permalink($this->queried_object->ID)
                 );
                 break;
@@ -483,7 +483,7 @@ class WPFS_Breadcrumb
             case 'post_parent':
                 if (isset($this->queried_object->post_parent) and $this->queried_object->post_parent) {
                     $replaces[] = array(
-                        'text' => get_the_title($this->queried_object->post_parent),
+                        'text' => get_post($this->queried_object->post_parent)->post_title,
                         'url'  => get_permalink($this->queried_object->post_parent)
                     );
                 }
@@ -501,7 +501,7 @@ class WPFS_Breadcrumb
             case 'queried_object':
                 if ($wp_query->is_singular()) {
                     $replaces[] = array(
-                        'text' => get_the_title($this->queried_object->ID),
+                        'text' => get_post($this->queried_object->ID)->post_title,
                         'url'  => get_permalink($this->queried_object->ID)
                     );
                 }

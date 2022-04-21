@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: wpfs-translation\n"
 "Report-Msgid-Bugs-To: https://github.com/sh1zen/flexy-seo/issues\n"
-"POT-Creation-Date: 2022-04-07 01:18+0200\n"
+"POT-Creation-Date: 2022-05-07 11:28+0200\n"
 "PO-Revision-Date: 2020-05-13 02:34+0200\n"
 "Last-Translator: sh1zen\n"
 "Language-Team: sh1zen\n"
@@ -39,8 +39,7 @@ msgstr ""
 msgid "FAQ"
 msgstr ""
 
-#: admin/PagesHandler.class.php:103
-#: vendors/shzn-framework/UtilEnv.php:1160
+#: admin/PagesHandler.class.php:103 vendors/shzn-framework/UtilEnv.php:691
 msgid "N/A"
 msgstr ""
 
@@ -244,6 +243,23 @@ msgstr ""
 
 #: admin/PluginInit.class.php:230
 msgid "Buy me a beer"
+msgstr ""
+
+#: ext_interface/wpfs_functions.php:86
+msgid "Page not found"
+msgstr ""
+
+#: ext_interface/wpfs_functions.php:92
+#, php-format
+msgid "Search Results for &#8220;%s&#8221;"
+msgstr ""
+
+#: ext_interface/wpfs_functions.php:131
+msgid "Y"
+msgstr ""
+
+#: ext_interface/wpfs_functions.php:135
+msgid "F Y"
 msgstr ""
 
 #: modules/breadcrumbs.class.php:78

@@ -156,7 +156,7 @@ class Schema
         }
 
         if ($cPage->is_author_archive()) {
-            array_push($this->graphTypes, 'CollectionPage', 'PersonAuthor');
+            array_push($this->graphTypes, 'CollectionPage', 'Person');
             return;
         }
 
