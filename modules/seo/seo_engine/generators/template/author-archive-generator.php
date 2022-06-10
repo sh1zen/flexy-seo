@@ -136,23 +136,8 @@ class AuthorArchive_Generator extends Generator
         return parent::get_description(shzn('wpfs')->settings->get($this->settings_path . 'meta_desc', ''));
     }
 
-    protected function get_snippet_image($size = 'thumbnail')
+    public function get_snippet_image($size = 'thumbnail')
     {
-        $url = get_avatar_url($this->current_page->get_queried_object_id());
-
-        if (empty($url)) {
-            $url = "https://secure.gravatar.com/avatar/cb5febbf69fa9e85698bac992b2a4433?s=500&d=mm&r=g";
-        }
-
-        $snippet_data = shzn('wpfs')->options->get($url, "snippet_data", "cache", false);
-
-        if (!$snippet_data) {
-
-            $snippet_data = wpfseo()->images->get_snippet_data($url, $size);
-
-            shzn('wpfs')->options->add($url, "snippet_data", $snippet_data, "cache", WEEK_IN_SECONDS);
-        }
-
-        return $snippet_data;
+        return wpfseo('helpers')->get_user_snippet_image($this->current_page->get_queried_object_id(), $size);
     }
 }

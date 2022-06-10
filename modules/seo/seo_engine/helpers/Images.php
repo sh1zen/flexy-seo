@@ -7,6 +7,7 @@
 
 namespace FlexySEO\Engine\Helpers;
 
+use SHZN\core\Cache;
 use SHZN\core\UtilEnv;
 
 /**
@@ -14,31 +15,6 @@ use SHZN\core\UtilEnv;
  */
 class Images
 {
-    /**
-     * Find an attachment ID for a given URL.
-     *
-     * @param string $url The URL to find the attachment for.
-     *
-     * @return int The found attachment ID, or 0 if none was found.
-     */
-    public function get_attachment_by_url($url)
-    {
-        /*
-         * As get_attachment_by_url won't work on resized versions of images,
-         * we strip out the size part of an image URL.
-         */
-        $url = preg_replace('/(.*)-\d+x\d+\.(jpg|png|gif)$/i', '$1.$2', $url);
-
-        $uploads_base_url = UtilEnv::wp_upload_dir('baseurl');
-
-        // Don't try to do this for external URLs.
-        if (!str_starts_with($url, $uploads_base_url)) {
-            return 0;
-        }
-
-        return $this->attachmentUrlToPostId($url);
-    }
-
     /**
      * Implements the attachment_url_to_postid with use of WP Cache.
      *
@@ -63,6 +39,19 @@ class Images
             return $id;
         }
 
+        /*
+        * As get_attachment_by_url won't work on resized versions of images,
+        * we strip out the size part of an image URL.
+        */
+        $url = preg_replace('#(.*)-\d+x\d+\.([a-z]{1,5})$#i', '$1.$2', $url);
+
+        $uploads_base_url = UtilEnv::wp_upload_dir('baseurl');
+
+        // Don't try to do this for external URLs.
+        if (!str_starts_with($url, $uploads_base_url)) {
+            return 0;
+        }
+
         // Note: We use the WP COM version if we can, see above.
         $id = attachment_url_to_postid($url);
 
@@ -77,11 +66,32 @@ class Images
         return $id;
     }
 
+    /**
+     * Retrieve attachment url.
+     *
+     * @param $attachment_id
+     * @param string $size
+     * @return array|false
+     */
+    public function attachmentIdToUrl($attachment_id, $size = 'full')
+    {
+        if (filter_var($attachment_id, FILTER_VALIDATE_URL)) {
+            return $attachment_id;
+        }
+
+        if (!($data = $this->get_image($attachment_id, $size))) {
+            return '';
+        }
+
+        return $data['url'];
+    }
+
     public function getSiteLogoId()
     {
         if (!get_theme_support('custom-logo')) {
             return [];
         }
+
         return get_theme_mod('custom_logo');
     }
 
@@ -141,112 +151,6 @@ class Images
     }
 
     /**
-     * Filters a list of variations by (disk) file size.
-     *
-     * @param array $variations The variations to consider.
-     *
-     * @return array The validations that pass the required file size limits.
-     */
-    public function filter_usable_file_size($variations)
-    {
-        foreach ($variations as $variation) {
-            // We return early to prevent measuring the file size of all the variations.
-            if ($this->has_usable_file_size($variation)) {
-                return [$variation];
-            }
-        }
-
-        return [];
-    }
-
-    /**
-     * Checks a size version of an image to see if it's not too heavy.
-     *
-     * @param array $image Image to check the file size of.
-     *
-     * @return bool True when the image is within limits, false if not.
-     */
-    public function has_usable_file_size($image)
-    {
-        if (!is_array($image) || $image === []) {
-            return false;
-        }
-
-        /**
-         * Filter: 'wpfs_image_image_weight_limit' - Determines what the maximum weight
-         * (in bytes) of an image is allowed to be, default is 2 MB.
-         *
-         * @api int - The maximum weight (in bytes) of an image.
-         */
-        $max_size = apply_filters('wpfs_image_image_weight_limit', 2097152);
-
-        // We cannot check without a path, so assume it's fine.
-        if (!isset($image['path'])) {
-            return true;
-        }
-
-        return ($this->get_file_size($image) <= $max_size);
-    }
-
-    /**
-     * Get the image file size.
-     *
-     * @param array $image An image array object.
-     *
-     * @return int The file size in bytes.
-     */
-    public function get_file_size($image)
-    {
-        if (isset($image['filesize'])) {
-            return $image['filesize'];
-        }
-
-        // If the file size for the file is over our limit, we're going to go for a smaller version.
-        // phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged -- If file size doesn't properly return, we'll not fail.
-        return @filesize($this->get_absolute_path($image['path']));
-    }
-
-    /**
-     * Finds the full file path for a given image file.
-     *
-     * @param string $path The relative file path.
-     *
-     * @return string The full file path.
-     */
-    public function get_absolute_path(string $path)
-    {
-        $uploads_base_dir = UtilEnv::wp_upload_dir('basedir');
-
-        // Add the uploads basedir if the path does not start with it.
-        if (empty($uploads_base_dir['error']) and !str_starts_with($path, $uploads_base_dir)) {
-            return $uploads_base_dir . DIRECTORY_SEPARATOR . ltrim($path, DIRECTORY_SEPARATOR);
-        }
-
-        return $path;
-    }
-
-    /**
-     * Get the relative path of the image.
-     *
-     * @param string $img Image URL.
-     *
-     * @return string The expanded image URL.
-     */
-    public function get_relative_path($img)
-    {
-        if ($img[0] !== '/') {
-            return $img;
-        }
-
-        // If it's a relative URL, it's relative to the domain, not necessarily to the WordPress install, we
-        // want to preserve domain name and URL scheme (http / https) though.
-        $parsed_url = wp_parse_url(shzn()->utility->home_url);
-        $img = $parsed_url['scheme'] . '://' . $parsed_url['host'] . $img;
-
-        return $img;
-    }
-
-    /**
      * Returns the different image variations for consideration.
      *
      * @param int $attachment_id The attachment to return the variations for.
@@ -276,126 +180,137 @@ class Images
      */
     public function get_sizes()
     {
-        /**
-         * Filter: 'wpfs_image_sizes' - Determines which image sizes we'll loop through to get an appropriate image.
-         *
-         * @api array - The array of image sizes to loop through.
-         */
-        return apply_filters('wpfs_image_sizes', ['full', 'large', 'medium_large']);
+        return apply_filters('wpfs_image_sizes', ['thumbnail', 'medium', 'medium_large', 'large', 'full']);
     }
 
     /**
      * Find the right version of an image based on size.
      *
      * @param int $attachment_id Attachment ID.
-     * @param string $size Size name.
+     * @param string|array $size Size name.
      *
-     * @return array|false Returns an array with image data on success, false on failure.
-     */
-    public function get_image($attachment_id, string $size = 'large')
-    {
-        $image = false;
-        if ($size === 'full') {
-            $image = $this->get_full_size_image_data($attachment_id);
-        }
-
-        if (!$image) {
-            $image = image_get_intermediate_size($attachment_id, $size);
-            $image['size'] = $size;
-        }
-
-        if (!$image) {
-            return false;
-        }
-
-        return $this->get_data($image, $attachment_id);
-    }
-
-    /**
-     * Returns the image data for the full size image.
-     *
-     * @param int $attachment_id Attachment ID.
-     *
-     * @return array|false Array when there is a full size image. False if not.
-     */
-    private function get_full_size_image_data($attachment_id)
-    {
-        $image = wp_get_attachment_metadata($attachment_id);
-        if (!is_array($image)) {
-            return false;
-        }
-
-        $image['url'] = wp_get_attachment_image_url($attachment_id, 'full');
-        $image['path'] = get_attached_file($attachment_id);
-        $image['size'] = 'full';
-
-        return $image;
-    }
-
-    /**
-     * Retrieves the image data.
-     *
-     * @param array $image Image array with URL and metadata.
-     * @param int $attachment_id Attachment ID.
-     *
-     * @return false|array $image {
+     * * * @return false|array $image {
      *     Array of image data
      *
+     * @type string $id Image's id.
      * @type string $alt Image's alt text.
+     * @type string $caption Image's caption text.
+     * @type string $description Image's description text.
      * @type string $path Path of image.
+     * @type string $file SubPath of image.
      * @type int $width Width of image.
      * @type int $height Height of image.
      * @type string $type Image's MIME type.
      * @type string $size Image's size.
+     * @type array $meta Image's meta.
      * @type string $url Image's URL.
      * @type int $filesize The file size in bytes, if already set.
      * }
      */
-    public function get_data($image, $attachment_id)
+    public function get_image($attachment_id, string|array $size = 'full', $allowExternal = true)
     {
-        if (!is_array($image)) {
+        if (!$attachment_id) {
             return false;
         }
 
-        // Deals with non-set keys and values being null or false.
-        if (empty($image['width']) || empty($image['height'])) {
+        $cacheKey = Cache::generate_key($attachment_id, $size);
+
+        $image = shzn('wpfs')->options->get($cacheKey, 'schema.images.get_image', 'cache');
+
+        if ($image !== false) {
+            return $image;
+        }
+
+        $external = false;
+
+        $attachment = get_post($attachment_id);
+
+        if (!$attachment) {
             return false;
         }
 
-        $image['id'] = $attachment_id;
-        $image['alt'] = $this->get_alt_tag($attachment_id);
-        $image['pixels'] = ((int)$image['width'] * (int)$image['height']);
+        $metadata = wp_get_attachment_metadata($attachment_id, true);
 
-        if (!isset($image['type'])) {
+        if ($metadata) {
+            $file_url = wp_get_attachment_url($attachment_id);
+        }
+        else {
+            $file_url = $attachment->guid;
+            $external = true;
+            $metadata = [
+                'file'       => '',
+                'width'      => 0,
+                'height'     => 0,
+                'image_meta' => []
+            ];
+        }
+
+        if ($external and !$allowExternal) {
+            return false;
+        }
+
+        $image = [
+            'id'          => $attachment_id,
+            'alt'         => $this->get_alt_tag($attachment_id),
+            'caption'     => $attachment->post_excerpt,
+            'description' => $attachment->post_content,
+            'size'        => $size,
+            'url'         => $file_url,
+            'file'        => $metadata['file'],
+            'width'       => $metadata['width'],
+            'height'      => $metadata['height'],
+            'meta'        => $metadata['image_meta']
+        ];
+
+        if ($size === 'full') {
+            $image['path'] = get_attached_file($attachment_id, true);
             $image['type'] = get_post_mime_type($attachment_id);
         }
+        elseif (isset($metadata['sizes'])) {
 
-        /**
-         * Filter: 'wpfs_image_data' - Filter image data.
-         *
-         * Elements with keys not listed in the section will be discarded.
-         *
-         * @api array {
-         *     Array of image data
-         *
-         * @type int    id       Image's ID as an attachment.
-         * @type string alt      Image's alt text.
-         * @type string path     Image's path.
-         * @type int    width    Width of image.
-         * @type int    height   Height of image.
-         * @type int    pixels   Number of pixels in the image.
-         * @type string type     Image's MIME type.
-         * @type string size     Image's size.
-         * @type string url      Image's URL.
-         * @type int    filesize The file size in bytes, if already set.
-         * }
-         * @api int  Attachment ID.
-         */
-        $image = apply_filters('wpfs_image_data', $image, $attachment_id);
+            if (is_array($size)) {
+                foreach ($size as $s) {
+                    if (!empty($metadata['sizes'][$s])) {
+                        $size = $s;
+                        break;
+                    }
+                }
+            }
 
-        // Keep only the keys we need, and nothing else.
-        return array_intersect_key($image, array_flip(['id', 'alt', 'path', 'width', 'height', 'pixels', 'type', 'size', 'url', 'filesize']));
+            if (empty($metadata['sizes'][$size])) {
+                return false;
+            }
+
+            $image['path'] = path_join(dirname($metadata['file']), $metadata['sizes'][$size]['file']);
+            $image['url'] = path_join(dirname($file_url), $metadata['sizes'][$size]['file']);
+
+            $image['file'] = $metadata['sizes'][$size]['file'];
+            $image['width'] = $metadata['sizes'][$size]['width'];
+            $image['height'] = $metadata['sizes'][$size]['height'];
+            $image['type'] = $metadata['sizes'][$size]['mime-type'];
+        }
+
+        if ($external) {
+
+            $image['pixels'] = 0;
+            $image['filesize'] = 0;
+        }
+        else {
+
+            // Deals with non-set keys and values being null or false.
+            if (empty($image['width']) or empty($image['height'])) {
+                return false;
+            }
+
+            $image['pixels'] = ((int)$image['width'] * (int)$image['height']);
+            $image['filesize'] = @filesize(UtilEnv::url_to_path($image['url']));
+        }
+
+        shzn('wpfs')->options->update($cacheKey, 'schema.images.get_image', $image, 'cache', WEEK_IN_SECONDS);
+
+        return $image;
     }
+
 
     /**
      * Grabs an image alt text.
@@ -447,26 +362,6 @@ class Images
         return $snippet_data;
     }
 
-    public function getPostImage($post, $size = 'large', $useContent = true)
-    {
-        $image = '';
-        $post = get_post($post);
-
-        if (has_post_thumbnail($post)) {
-            $image = wp_get_attachment_image_url(get_post_thumbnail_id($post), $size);
-        }
-
-        if ($useContent) {
-            $images = wpfseo()->images->get_images_from_content($post->post_content);
-
-            if ($images) {
-                $image = wpfseo()->images->removeImageDimensions($images[0]);
-            }
-        }
-
-        return $image;
-    }
-
     /**
      * Grabs the images from the content.
      *
@@ -516,12 +411,11 @@ class Images
      *
      * @param string $url The image URL.
      * @return string      The formatted image URL.
-     * @since 1.2.0
      *
      */
     public function removeImageDimensions($url)
     {
-        return $this->isValidAttachment($url) ? preg_replace('#(-[0-9]*x[0-9]*)#', '', $url) : $url;
+        return $this->isValidAttachment($url) ? preg_replace('#(-\d*x\d*)#', '', $url) : $url;
     }
 
     /**
@@ -529,7 +423,6 @@ class Images
      *
      * @param string $url The URL.
      * @return boolean      Whether the URL is a valid attachment.
-     * @since 1.2.0
      *
      */
     public function isValidAttachment($url)

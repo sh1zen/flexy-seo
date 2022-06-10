@@ -7,8 +7,6 @@
 
 namespace FlexySEO\Engine;
 
-use FlexySEO\core\Cache;
-use FlexySEO\core\Settings;
 use FlexySEO\Engine\Helpers\CurrentPage;
 
 class Txt_Replacer

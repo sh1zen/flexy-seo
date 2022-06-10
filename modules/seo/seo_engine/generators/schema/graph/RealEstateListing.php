@@ -7,35 +7,36 @@
 
 namespace FlexySEO\Engine\Generators\Schema\Graphs;
 
+use FlexySEO\Engine\Generators\GraphBuilder;
+use FlexySEO\Engine\Helpers\CurrentPage;
+
 /**
  * RealEstateListing graph class.
- *
- * @since 1.2.0
  */
-class RealEstateListing extends WebPage
+class RealEstateListing extends CollectionPage
 {
     /**
      * The graph type.
-     * @var string
      */
     protected string $type = 'RealEstateListing';
 
     /**
      * Returns the graph data.
-     * @param \WP_Post $post
+     * @param \FlexySEO\Engine\Helpers\CurrentPage $currentPage
      * @param string $type
-     * @return array $data The graph data.
-     * @since 1.2.0
+     * @param mixed ...$args
+     * @return GraphBuilder $data The graph data.
      */
-    public function get($post, string $type = '')
+    public function get(CurrentPage $currentPage, string $type = '', ...$args)
     {
-        $data = parent::get($post, $type);
+        $schema = parent::get($currentPage, $type, $args);
 
-        if (!$post) {
-            return $data;
+        if (!$currentPage->get_queried_object() instanceof \WP_Post) {
+            return $schema;
         }
 
-        $data['datePosted'] = mysql2date(DATE_W3C, $post->post_date_gmt, false);
-        return $data;
+        $schema->set('datePosted', mysql2date(DATE_W3C, $currentPage->get_queried_object()->post_date_gmt, false));
+
+        return $schema;
     }
 }

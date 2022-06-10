@@ -149,7 +149,9 @@ class Options
             $expiration += time();
         }
 
-        $result = $wpdb->query($wpdb->prepare("REPLACE INTO " . $this->table_name() . " (obj_id, context, item, value, expiration) VALUES (%s, %s, %s, %s, %d)", $obj_id, $context, $option, $serialized_value, $expiration));
+        $result = $wpdb->query(
+            $wpdb->prepare("REPLACE INTO " . $this->table_name() . " (obj_id, context, item, value, expiration) VALUES (%s, %s, %s, %s, %d)", $obj_id, $context, $option, $serialized_value, $expiration)
+        );
 
         if (!$result) {
             return false;

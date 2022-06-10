@@ -303,9 +303,30 @@ class Mod_seo extends Module
             $this->setting_field(__('Schema settings:', 'wpfs'), false, 'separator'),
             $this->setting_field(__('Active', 'wpfs'), 'schema.enabled', 'checkbox', ['default_value' => true]),
             $this->setting_field(__('Organization', 'wpfs'), 'schema.organization.is', 'checkbox', ['parent' => 'schema.enabled', 'default_value' => false]),
-            $this->setting_field(__('Organization name', 'wpfs'), 'schema.organization.name', 'text', ['parent' => 'schema.organization.is']),
-            $this->setting_field(__('Organization logo', 'wpfs'), 'schema.organization.logo', 'upload-input', ['parent' => 'schema.organization.is', 'placeholder' => __('Paste your image URL or select a new image', 'wpfs')]),
-            $this->setting_field(__('Organization phone', 'wpfs'), 'schema.organization.phone', 'text', ['parent' => 'schema.organization.is']),
+            $this->setting_field(__('Organization Type', 'wpfs'), 'schema.organization.type', 'dropdown', ['parent' => 'schema.organization.is', 'default_value' => 'Corporation', 'list' => [
+                "Airline",
+                "Consortium",
+                "Corporation",
+                "EducationalOrganization",
+                "FundingScheme",
+                "GovernmentOrganization",
+                "LibrarySystem",
+                "LocalBusiness",
+                "MedicalOrganization",
+                "NewsMediaOrganization",
+                "OnlineBusiness",
+                "PerformingGroup",
+                "Project",
+                "ResearchOrganization",
+                "SearchRescueOrganization",
+                "SportsOrganization",
+                "WorkersUnion"
+            ]]),
+            $this->setting_field(__('Name', 'wpfs'), 'schema.organization.name', 'text', ['parent' => 'schema.organization.is']),
+            $this->setting_field(__('Description', 'wpfs'), 'schema.organization.description', 'text', ['parent' => 'schema.organization.is']),
+            $this->setting_field(__('Address', 'wpfs'), 'schema.organization.address', 'text', ['parent' => 'schema.organization.is']),
+            $this->setting_field(__('Founders (comma separated)', 'wpfs'), 'schema.organization.founder', 'text', ['parent' => 'schema.organization.is']),
+            $this->setting_field(__('Logo', 'wpfs'), 'schema.organization.logo', 'upload-input', ['parent' => 'schema.organization.is', 'placeholder' => __('Paste your image URL or select a new image', 'wpfs')]),
             $this->setting_field(__('Contact Type', 'wpfs'), 'schema.organization.contact_type', 'dropdown', ['parent' => 'schema.organization.is', 'list' => [
                 "Customer Service",
                 "Technical Support",
@@ -319,7 +340,8 @@ class Mod_seo extends Module
                 "Roadside Assistance",
                 "Package Tracking"
             ]]),
-
+            $this->setting_field(__('Phone', 'wpfs'), 'schema.organization.phone', 'text', ['parent' => 'schema.organization.is']),
+            $this->setting_field(__('E-mail', 'wpfs'), 'schema.organization.email', 'text', ['parent' => 'schema.organization.is']),
             $this->setting_field(__('Enable Sitelinks Search Box', 'wpfs'), 'schema.sitelink', 'checkbox', ['parent' => 'schema.enabled', 'default_value' => false])
         );
 
@@ -370,9 +392,9 @@ class Mod_seo extends Module
                 $this->setting_field(__('Title', 'wpfs'), "post_type.{$post_type}.title", 'text', ['default_value' => '%%title%%']),
                 $this->setting_field(__('Meta description', 'wpfs'), "post_type.{$post_type}.meta_desc", 'textarea'),
                 $this->setting_field(__('Keywords', 'wpfs'), "post_type.{$post_type}.keywords"),
-                $this->setting_field(sprintf(__('Predefined %s schema.org page type', 'wpfs'), $post_type_sanitized), "post_type.{$post_type}.schema.pageType", 'dropdown', ['list' => Schema::$webPageGraphs, 'default_value' => 'WebPage']),
-                $this->setting_field(sprintf(__('Predefined %s schema.org article type', 'wpfs'), $post_type_sanitized), "post_type.{$post_type}.schema.articleType", 'dropdown', ['list' => Schema::$webArticleGraphs, 'default_value' => 'Article']),
-
+                $post_type === 'page' ?
+                    $this->setting_field(sprintf(__('Predefined %s schema.org type', 'wpfs'), $post_type_sanitized), "post_type.{$post_type}.schema.pageType", 'dropdown', ['list' => Schema::$webPageGraphs, 'default_value' => 'WebPage']) :
+                    $this->setting_field(sprintf(__('Predefined %s schema.org type', 'wpfs'), $post_type_sanitized), "post_type.{$post_type}.schema.articleType", 'dropdown', ['list' => Schema::$webArticleGraphs, 'default_value' => 'Article']),
             );
         }
 

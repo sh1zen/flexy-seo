@@ -7,31 +7,28 @@
 
 namespace FlexySEO\Engine\Generators\Schema\Graphs;
 
+use FlexySEO\Engine\Generators\GraphBuilder;
+use FlexySEO\Engine\Helpers\CurrentPage;
+
 /**
  * News Article graph class.
- *
- * @since 1.2.0
  */
 class NewsArticle extends Article
 {
     /**
      * Returns the graph data.
-     * @param \WP_Post $post
+     * @param \FlexySEO\Engine\Helpers\CurrentPage $currentPage
      * @param string $type
-     * @return array The graph data.
-     *
-     * @since 1.2.0
+     * @param mixed ...$args
+     * @return GraphBuilder The graph data.
      */
-    public function get($post, string $type = '')
+    public function get(CurrentPage $currentPage, string $type = '', ...$args)
     {
-        $data = parent::get($post, $type);
-
-        if (!$data) {
-            return [];
-        }
+        $schema = parent::get($currentPage, $type, $args);
 
         // Translators: 1 - The date the article was published on.
-        $data['dateline'] = sprintf(__('Published on %1$s.', 'wpfs'), get_the_date('F j, Y'));
-        return $data;
+        $schema->set('dateline', sprintf(__('Published on %1$s.', 'wpfs'), get_post_time('F j, Y', false, $currentPage->get_queried_object(), true)));
+
+        return $schema;
     }
 }

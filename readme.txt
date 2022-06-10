@@ -5,7 +5,7 @@ Donate link: https://www.paypal.com/donate?business=dev.sh1zen%40outlook.it&item
 Requires at least: 4.6.0
 Tested up to: 6.0
 Requires PHP: 7.4
-Stable tag: 1.4.8
+Stable tag: 1.4.9
 License: GNU v3.0 License
 URI: https://github.com/sh1zen/flexy-seo/blob/master/LICENSE
 
@@ -102,6 +102,12 @@ Deactivate the plugin and reactivate it, if this doesn't work try to uninstall a
 work! Otherwise, go to the new added module "Setting" and try a reset.
 
 == Changelog ==
+
+= 1.4.9 =
+
+* improved schema.org Graph generation
+* fixed some bugs
+* improved performances
 
 = 1.4.8 = 
 

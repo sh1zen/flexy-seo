@@ -9,18 +9,12 @@ namespace FlexySEO\Engine;
 
 class Indexable
 {
-    /**
-     * @var int
-     */
-    public $object_id;
+    public int $object_id;
+
+    public string $type;
 
     /**
-     * @var string
-     */
-    public $type;
-
-    /**
-     * @var \WP_User | \WP_Post
+     * @var \WP_Term|\WP_Post_Type|\WP_Post|\WP_User|null
      */
     public $object;
 

@@ -51,7 +51,12 @@ class Cache
 
     public function has($key, $group)
     {
-        return isset($this->cache[$group]) and (isset($this->cache[$group][$key]) or array_key_exists($key, $this->cache[$group]));
+        return isset($this->cache[$group]) and (array_key_exists($key, $this->cache[$group]));
+    }
+
+    public static function generate_key(...$args)
+    {
+        return trim(implode(".", $args));
     }
 
     public function force_set($key, $data, $group)

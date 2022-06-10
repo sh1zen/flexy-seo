@@ -49,7 +49,9 @@ function wpfs_getDescription($post = null, $default = ''): string
 
 function wpfs_getMainImageURL($post = null, $size = 'large'): string
 {
-    return wpfseo('helpers')->images->getPostImage($post, $size, false);
+    list($id, $url) =  wpfseo('helpers')->post->get_first_usable_image($size, false, $post);
+
+    return $url;
 }
 
 /**

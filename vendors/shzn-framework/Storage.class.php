@@ -244,6 +244,12 @@ class Storage
         }
     }
 
+    public function get_path($context = 'default', $blog_id = 0)
+    {
+        $context = $this->filter_context($context, $blog_id);
+        return $this->generate_path($context);
+    }
+
     public function save($args = array(), $blog_id = 0)
     {
         $args = array_merge(array(

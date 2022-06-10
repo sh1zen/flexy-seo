@@ -8,25 +8,18 @@
 namespace FlexySEO\Engine;
 
 use FlexySEO\Engine\Generators\OpenGraph;
-use FlexySEO\Engine\Generators\Schema;
 use FlexySEO\Engine\Generators\TwitterCard;
 use FlexySEO\Engine\Helpers\CurrentPage;
 
 class Generator
 {
-    /**
-     * @var CurrentPage
-     */
-    protected $current_page;
+    protected CurrentPage $current_page;
 
     protected $settings_path;
 
     protected $type;
 
-    /**
-     * @param CurrentPage $current_page
-     */
-    public function __construct($current_page)
+    public function __construct(CurrentPage $current_page)
     {
         $this->current_page = $current_page;
         $this->settings_path = '';
@@ -103,7 +96,7 @@ class Generator
         }
 
         if (is_array($keywords)) {
-            $keywords = implode(', ', $keywords);
+            $keywords = implode(',', $keywords);
         }
 
         $keywords = Txt_Replacer::replace(
@@ -129,15 +122,6 @@ class Generator
         return shzn('wpfs')->cache->set($cacheKey, $data, "generator", true);
     }
 
-    public function schema()
-    {
-        $schema = new Schema($this);
-
-        $schema->build();
-
-        return $schema->export();
-    }
-
     /**
      * Generates the canonical.
      *
@@ -156,14 +140,13 @@ class Generator
 
     public function get_paged_permalink($shift = 0)
     {
-        if ($url = $this->get_cache("permalink-{$shift}"))
+        if ($url = $this->get_cache("permalink-{$shift}")) {
             return $url;
-
-        $url = '';
+        }
 
         $rewriter = Rewriter::get_instance();
 
-        $page = $this->get_page_number() + $shift;
+        $page = $this->current_page->get_page_number() + $shift;
 
         $max_pages = $this->current_page->get_main_query()->max_num_pages;
 
@@ -173,17 +156,13 @@ class Generator
         elseif ($shift == 0) {
             $url = $rewriter->get_pagenum_link();
         }
+        else {
+            $url = '';
+        }
 
         $this->set_cache("permalink-{$shift}", $url);
 
         return $url;
-    }
-
-    public function get_page_number()
-    {
-        $page = get_query_var('page');
-        $paged = get_query_var('paged');
-        return !empty($page) ? $page : (!empty($paged) ? $paged : 1);
     }
 
     /**
@@ -200,7 +179,7 @@ class Generator
         elseif ($this->current_page->is_simple_page()) {
             return get_permalink($this->current_page->get_queried_object_id());
         }
-        elseif ($this->current_page->is_home()) {
+        elseif ($this->current_page->is_homepage()) {
             return home_url('/');
         }
         elseif ($this->current_page->is_term_archive()) {
@@ -263,21 +242,18 @@ class Generator
 
         $og->title($this->generate_title());
 
-        foreach (['medium', 'thumbnail'] as $size) {
+        $image_metadata = $this->get_snippet_image(['medium', 'large'], false);
 
-            $image_metadata = $this->get_snippet_image($size);
+        if ($image_metadata and $image_metadata['url']) {
+            $attributes = [];
 
-            if ($image_metadata and $image_metadata['url']) {
-                $attributes = [];
-
-                if ($image_metadata['width']) {
-                    $attributes = [
-                        'width'  => $image_metadata['width'],
-                        'height' => $image_metadata['height'],
-                    ];
-                }
-                $og->image($image_metadata['url'], $attributes);
+            if ($image_metadata['width']) {
+                $attributes = [
+                    'width'  => $image_metadata['width'],
+                    'height' => $image_metadata['height'],
+                ];
             }
+            $og->image($image_metadata['url'], $attributes);
         }
 
         $og->description($this->get_description());
@@ -317,55 +293,25 @@ class Generator
         return $title;
     }
 
-    protected function get_snippet_image($size = 'thumbnail')
+    public function get_snippet_image($size = 'thumbnail')
     {
+        if (is_array($size)) {
+            foreach ($size as $s) {
+                if ($im = $this->get_snippet_image($s)) {
+                    return $im;
+                }
+            }
+
+            return false;
+        }
+
         if (($_image = $this->get_cache("snippet_image")) !== false) {
             return $_image;
         }
 
         if ($this->current_page->is_simple_page()) {
 
-            $url = shzn('wpfs')->options->get($this->current_page->get_queried_object_id(), "snippet_uri", "cache", '');
-
-            if (empty($url)) {
-
-                $url = get_post_thumbnail_id($this->current_page->get_queried_object());
-
-                if ($url) {
-                    shzn('wpfs')->options->add($this->current_page->get_queried_object_id(), "snippet_uri", $url, "cache", WEEK_IN_SECONDS);
-                }
-                else {
-
-                    $images = new \WP_Query(array(
-                        'post_parent'            => $this->current_page->get_queried_object_id(),
-                        'post_type'              => 'attachment',
-                        'post_mime_type'         => 'image',
-                        'order'                  => 'ASC',
-                        'orderby'                => 'menu_order',
-                        'post_status'            => 'inherit',
-                        'no_found_rows'          => true,
-                        'cache_results'          => false,
-                        'update_post_term_cache' => false,
-                        'update_post_meta_cache' => false,
-                        'posts_per_page'         => 1,
-                        'fields'                 => 'ids'
-                    ));
-
-                    if (!empty($images->posts)) {
-                        $url = $images->posts[0];
-                        shzn('wpfs')->options->add($this->current_page->get_queried_object_id(), "snippet_uri", $url, "cache", WEEK_IN_SECONDS);
-                    }
-                    else {
-                        shzn('wpfs')->options->add($this->current_page->get_queried_object_id(), "snippet_uri", "not_found", "cache", WEEK_IN_SECONDS);
-                    }
-
-                    unset($images);
-                }
-            }
-
-            if ($url === 'not_found') {
-                $url = '';
-            }
+            list($id, $url) = wpfseo('helpers')->post->get_first_usable_image($size);
         }
 
         if (empty($url)) {

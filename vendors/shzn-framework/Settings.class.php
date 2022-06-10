@@ -7,8 +7,6 @@
 
 namespace SHZN\core;
 
-use ParagonIE\Sodium\Core\Util;
-
 class Settings
 {
     /**
@@ -48,9 +46,11 @@ class Settings
 
     /**
      * Access to settings by path -> delimiter: "."
+     *
      * @param string $context
      * @param mixed $default
      * @param bool $update -> if no option were found, update theme, with defaults values
+     *
      * @return array|mixed|object|string
      */
     public function get(string $context = '', $default = [], bool $update = false)
@@ -61,7 +61,12 @@ class Settings
             if ($update) {
                 $this->update($context, $default);
             }
+
             return $default;
+        }
+
+        if (is_array($default) and is_array($res)) {
+            $res = array_merge($default, $res);
         }
 
         return $res;
@@ -141,6 +146,7 @@ class Settings
     public function reset($options = array())
     {
         $this->settings = $options;
+
         return update_option($this->option_name, $options);
     }
 
@@ -175,8 +181,9 @@ class Settings
 
             $object = shzn($this->context)->moduleHandler->get_module_instance($module);
 
-            if (is_null($object))
+            if (is_null($object)) {
                 continue;
+            }
 
             $field = array(
                 'id'          => "settings-{$module['slug']}",
@@ -231,7 +238,7 @@ class Settings
     {
         $options = get_option($this->option_name, array());
 
-        if (!$options or empty($options)) {
+        if (empty($options)) {
 
             /**
              * Load all modules to be allow them to set up their options
@@ -244,13 +251,16 @@ class Settings
 
     public function validate($input)
     {
-        if (!isset($input['change']))
+
+        if (!isset($input['change'])) {
             return $input;
+        }
 
         $object = shzn($this->context)->moduleHandler->get_module_instance($input['change']);
 
-        if (is_null($object))
+        if (is_null($object)) {
             die();
+        }
 
         $valid = $object->validate_settings($input, $object->settings);
 

@@ -463,19 +463,20 @@ class UtilEnv
      */
     public static function site_path()
     {
-        $home    = set_url_scheme( get_option( 'home' ), 'http' );
-        $siteurl = set_url_scheme( get_option( 'siteurl' ), 'http' );
+        $home = set_url_scheme(get_option('home'), 'http');
+        $siteurl = set_url_scheme(get_option('siteurl'), 'http');
 
-        if ( ! empty( $home ) && 0 !== strcasecmp( $home, $siteurl ) ) {
-            $wp_path_rel_to_home = str_ireplace( $home, '', $siteurl ); /* $siteurl - $home */
-            $pos                 = strripos( str_replace( '\\', '/', $_SERVER['SCRIPT_FILENAME'] ), trailingslashit( $wp_path_rel_to_home ) );
-            $home_path           = substr( $_SERVER['SCRIPT_FILENAME'], 0, $pos );
-            $home_path           = trailingslashit( $home_path );
-        } else {
+        if (!empty($home) && 0 !== strcasecmp($home, $siteurl)) {
+            $wp_path_rel_to_home = str_ireplace($home, '', $siteurl); /* $siteurl - $home */
+            $pos = strripos(str_replace('\\', '/', $_SERVER['SCRIPT_FILENAME']), trailingslashit($wp_path_rel_to_home));
+            $home_path = substr($_SERVER['SCRIPT_FILENAME'], 0, $pos);
+            $home_path = trailingslashit($home_path);
+        }
+        else {
             $home_path = ABSPATH;
         }
 
-        return str_replace( '\\', '/', $home_path );
+        return str_replace('\\', '/', $home_path);
     }
 
     /**
@@ -607,34 +608,6 @@ class UtilEnv
         }
 
         return $str;
-    }
-
-    /**
-     * Detects post ID
-     *
-     * @return integer
-     */
-    public static function detect_post_id()
-    {
-        global $posts, $comment_post_ID, $post_ID;
-
-        if ($post_ID) {
-            return $post_ID;
-        }
-        elseif ($comment_post_ID) {
-            return $comment_post_ID;
-        }
-        elseif ((is_single() || is_page()) and is_array($posts) and isset($posts[0]->ID)) {
-            return $posts[0]->ID;
-        }
-        elseif (isset($posts->ID)) {
-            return $posts->ID;
-        }
-        elseif (isset($_REQUEST['p'])) {
-            return (integer)$_REQUEST['p'];
-        }
-
-        return 0;
     }
 
     /**
@@ -854,7 +827,7 @@ class UtilEnv
      */
     public static function sanitize_text_field($str, $keep_newlines = false)
     {
-        if (is_object($str) || is_array($str)) {
+        if (is_object($str) or is_array($str)) {
             return '';
         }
 

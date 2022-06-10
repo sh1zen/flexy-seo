@@ -5,6 +5,20 @@
  * @license   http://www.gnu.org/licenses/gpl.html GNU/GPL
  */
 
+function shzn_get_user($user)
+{
+    if (!is_object($user)) {
+        if (is_email($user)) {
+            $user = get_user_by('email', $user);
+        }
+        else {
+            $user = get_user_by('id', $user);
+        }
+    }
+
+    return $user instanceof WP_User ? $user : null;
+}
+
 function shzn_localize($data = [])
 {
     global $wp_scripts;
@@ -79,8 +93,9 @@ function shzn_setting_panel_url($context, $panel = '')
 
 function shzn_var_dump(...$vars)
 {
-    foreach ($vars as $var => $var_data)
+    foreach ($vars as $var => $var_data) {
         highlight_string("<?php\n$var =\n" . var_export($var_data, true) . ";\n?>");
+    }
     echo '</br></br>';
 }
 

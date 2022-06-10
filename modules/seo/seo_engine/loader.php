@@ -41,10 +41,25 @@ require_once WPFS_SEO_ENGINE_GENERATORS . 'social/opengraph.php';
 require_once WPFS_SEO_ENGINE_GENERATORS . 'social/twittercard.php';
 require_once WPFS_SEO_ENGINE_GENERATORS . 'schema/schema.php';
 
+if(shzn('wpfs')->settings->get('seo.schema.enabled', false)) {
+
+    require_once WPFS_SEO_ENGINE_GENERATORS . 'schema/GraphBuilder.php';
+    require_once WPFS_SEO_ENGINE_GENERATORS . 'schema/GraphUtility.php';
+    require_once WPFS_SEO_ENGINE_GENERATORS . 'schema/CommonGraphs.php';
+
+    require_once WPFS_SEO_ENGINE_GENERATORS . 'schema/graph/Graph.php';
+    require_once WPFS_SEO_ENGINE_GENERATORS . 'schema/graph/Person.php';
+    require_once WPFS_SEO_ENGINE_GENERATORS . 'schema/graph/Article.php';
+    require_once WPFS_SEO_ENGINE_GENERATORS . 'schema/graph/WebPage.php';
+    require_once WPFS_SEO_ENGINE_GENERATORS . 'schema/graph/Organization.php';
+}
+
+
 /**
  * @param string $context
+ * @return \FlexySEO\Engine\Generator|\FlexySEO\Engine\Helpers\Helpers|\FlexySEO\Engine\WPFS_SEO|string|null
  */
-function wpfseo($context = 'helpers')
+function wpfseo(string $context = 'helpers')
 {
     switch ($context) {
         case 'helpers':
@@ -52,6 +67,9 @@ function wpfseo($context = 'helpers')
 
         case 'generator':
             return WPFS_SEO::getInstance()->generator;
+
+        case 'salt':
+            return "SHS16YW89RIF3489F08";
 
         default:
             return WPFS_SEO::getInstance();

@@ -571,9 +571,7 @@ class WPFS_Breadcrumb
                 $compact_url_request = str_contains($rule, "compact");
 
                 if (str_contains($rule, "full")) {
-
-                    $termlink = $wp_rewrite->get_extra_permastruct($deepest_term->taxonomy);
-                    $url = str_replace("%$deepest_term->taxonomy%", '', $termlink);
+                    $url = str_replace("%$deepest_term->taxonomy%", '', $wp_rewrite->get_extra_permastruct($deepest_term->taxonomy));
                 }
 
                 foreach ($parent_terms as $parent_term) {
@@ -602,6 +600,7 @@ class WPFS_Breadcrumb
         }
 
         if (empty($replaces) and str_starts_with($rule, "meta")) {
+
             $meta = str_replace("meta_", "", $rule);
 
             $_meta = get_metadata_raw(

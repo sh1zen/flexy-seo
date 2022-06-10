@@ -12,10 +12,8 @@ define('SHZN_DEBUG', $_SERVER["SERVER_ADDR"] === '127.0.0.1');
 
 const SHZN_VERSION = "1.1.5";
 
-if(did_action( 'wp_loaded' )) {
-    require_once SHZN_FRAMEWORK . 'environment/php_polyfill/loader.php';
-    require_once SHZN_FRAMEWORK . 'environment/wp_polyfill.php';
-}
+require_once SHZN_FRAMEWORK . 'environment/php_polyfill/loader.php';
+require_once SHZN_FRAMEWORK . 'environment/wp_polyfill.php';
 
 require_once SHZN_FRAMEWORK . 'functions.php';
 
@@ -68,7 +66,7 @@ function shzn($context = 'common', $args = false, $components = [])
      */
     if (empty($cached) and did_action('init')) {
 
-        Rewriter::getInstance();
+        \SHZN\core\Rewriter::getInstance();
     }
 
     if (!is_string($context)) {

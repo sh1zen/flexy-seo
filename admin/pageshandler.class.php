@@ -206,6 +206,14 @@ class PagesHandler
      */
     public function render_main()
     {
+        global $wpdb;
+
+        if (isset($_POST['wpfs-clear-cache'])) {
+
+            if (UtilEnv::verify_nonce('wpfs-nonce')) {
+                $wpdb->delete("{$wpdb->prefix}flexy_seo", ['context' => 'cache']);
+            }
+        }
         $this->enqueue_scripts();
 
         settings_errors();
@@ -230,6 +238,15 @@ class PagesHandler
                         echo '<div class="shzn-highlighted">' . sprintf(__('Configure Breadcrumbs options: <a href="%s">here</a>.', 'wpfs'), admin_url('admin.php?page=breadcrumbs')) . '</div>';
                         ?>
                     </p>
+                </block>
+                <block class="shzn">
+                    <h2><?php _e('Options:', 'wpfs'); ?></h2>
+                    <form method="POST">
+                        <?php wp_nonce_field('wpfs-nonce'); ?>
+                        <input name="wpfs-clear-cache" type="submit"
+                               value="<?php _e('Reset Flexy SEO cache', 'wpfs') ?>"
+                               class="button button-primary button-large">
+                    </form>
                 </block>
                 <?php
                 if (!is_plugin_active('wp-optimizer/wp-optimizer.php')) {

@@ -5,6 +5,8 @@
  * @license   http://www.gnu.org/licenses/gpl.html GNU/GPL
  */
 
+namespace SHZN\core;
+
 class Rewriter
 {
     private static Rewriter $_instance;
@@ -57,7 +59,7 @@ class Rewriter
         $this->request_args = [];
 
         if (!empty($req_args)) {
-            parse_str($_SERVER['QUERY_STRING'],  $this->request_args);
+            parse_str($_SERVER['QUERY_STRING'], $this->request_args);
         }
     }
 
@@ -68,6 +70,11 @@ class Rewriter
         }
 
         return self::$_instance;
+    }
+
+    public function get_base($extension = '')
+    {
+        return basename($this->request_path, $extension);
     }
 
     /**
@@ -104,7 +111,7 @@ class Rewriter
         return $default;
     }
 
-    public function query_matcher($bool, $wp)
+    public function query_matcher($do_parse, $wp)
     {
         global $paged;
 
@@ -132,7 +139,7 @@ class Rewriter
             }
         }
 
-        return $bool;
+        return $do_parse;
     }
 
     /**

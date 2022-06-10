@@ -10,7 +10,7 @@ if (!function_exists('str_contains')) {
     function str_contains(string $haystack, string $needle): bool
     {
         if (function_exists('mb_strpos')) {
-            return '' === $needle || false !== mb_strpos($haystack, $needle, get_option('blog_charset'));
+            return '' === $needle || false !== mb_strpos($haystack, $needle, 0, get_option('blog_charset'));
         }
 
         return '' === $needle || false !== strpos($haystack, $needle);

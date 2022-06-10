@@ -7,17 +7,13 @@
 
 namespace FlexySEO\Engine\Generators;
 
+use FlexySEO\Engine\Generator;
 use FlexySEO\Engine\Helpers\CurrentPage;
-use SHZN\core\UtilEnv;
 
 class Schema
 {
     /**
      * All existing page graphs.
-     *
-     * @since 1.2.0
-     *
-     * @var array
      */
     public static array $webPageGraphs = [
         'WebPage',
@@ -36,10 +32,6 @@ class Schema
 
     /**
      * All existing article graphs.
-     *
-     * @since 1.2.0
-     *
-     * @var array
      */
     public static array $webArticleGraphs = [
         'Article',
@@ -58,121 +50,131 @@ class Schema
         'price' // Needs to be 0 if free for Software Application.
     ];
 
-    /**
-     * @type String[]
-     */
     private array $schema;
 
-    /**
-     * @var String[]
-     */
-    private array $graphTypes;
-
-    /**
-     * @var String[]
-     */
     private array $graphs;
 
-    /**
-     * @var CurrentPage
-     */
-    private CurrentPage $current_page;
+    private CurrentPage $context;
 
-    /**
-     * @var \FlexySEO\Engine\Generator
-     */
-    private $generator;
+    private Generator $generator;
 
-    public function __construct($generator = null)
+    public function __construct(Generator $generator)
     {
-        $this->current_page = wpfseo()->currentPage;
+        $this->generator = $generator;
+
+        $this->context = wpfseo()->currentPage;
 
         $this->schema = [
             "@context" => "https://schema.org",
             "@graph"   => []
         ];
 
-        $this->graphTypes = [];
-
         $this->graphs = [];
-
-        if (!$generator) {
-            UtilEnv::write_log('Generator not valid in schema.org');
-            $generator = wpfseo('core')->load_generator($this->current_page);
-        }
-
-        $this->generator = $generator;
     }
 
     public function build()
     {
-        $cPage = $this->current_page;
+        $this->load_graphs();
 
-        $this->load_graphs($cPage);
-
-        $this->graphs2schema($cPage);
+        $this->parse_graphs();
     }
 
-    private function load_graphs($cPage)
+    private function load_graphs()
     {
-        $this->graphTypes = [
-            'WebSite'
-        ];
-
-        if (shzn('wpfs')->settings->get("seo.schema.organization.is", false)) {
-            $this->graphTypes[] = 'Organization';
-        }
-
-        $this->graphTypes[] = 'BreadcrumbList';
-
-        if ($cPage->is_static_posts_page() or $cPage->is_home_posts_page() or wpfseo()->ecommerce->isWooCommerceShopPage()) {
-            $this->graphTypes[] = 'CollectionPage';
+        if ($this->context->is_404()) {
             return;
         }
 
-        if ($cPage->is_home_static_page() or $cPage->is_front_page()) {
-            $this->graphTypes[] = 'posts' === get_option('show_on_front') ? 'CollectionPage' : 'WebPage';
-            return;
-        }
+        $this->add('WebSite');
 
-        if ($cPage->is_simple_page()) {
+        if ($this->context->is_homepage()) {
 
-            // Check if we're on a BuddyPress member page.
-            if (function_exists('bp_is_user') and bp_is_user()) {
-                array_push($this->graphTypes, 'ProfilePage', 'PersonAuthor');
-                return;
+            if (shzn('wpfs')->settings->get("seo.schema.organization.is", false)) {
+                $this->add('Organization');
             }
 
-            $postGraphs = $this->getPostGraphs($cPage->get_post());
-
-            if (is_array($postGraphs)) {
-                $this->graphTypes = array_merge($this->graphTypes, $postGraphs);
+            if ($this->context->is_home_posts_page()) {
+                $this->add('CollectionPage');
             }
             else {
-                $this->graphTypes[] = $postGraphs;
+                $this->add('WebPage');
+            }
+        }
+        elseif ($this->context->is_posts_page() or $this->context->is_home_posts_page() or wpfseo()->ecommerce->isWooCommerceShopPage()) {
+
+            $this->add('CollectionPage');
+        }
+        elseif ($this->context->is_simple_page()) {
+
+            $this->add($this->getPostGraphs($this->context->get_queried_object()), 'page');
+        }
+        elseif ($this->context->is_author_archive()) {
+
+            $this->add(['ProfilePage', 'Person']);
+        }
+        elseif ($this->context->is_search()) {
+
+            $this->add('SearchResultsPage');
+        }
+        elseif ($this->context->is_post_type_archive() or $this->context->is_date_archive() or $this->context->is_term_archive()) {
+
+            $this->add('CollectionPage');
+        }
+
+        $this->add('BreadcrumbList');
+    }
+
+    public function add($graphType)
+    {
+        if (is_array($graphType)) {
+            foreach ($graphType as $graph) {
+                $this->add($graph);
+            }
+            return;
+        }
+
+        $namespace = $this->get_graph_generator($graphType);
+
+        if ($namespace) {
+
+            //if graph is actually a fully qualified class name lets use it
+            if (class_exists($graphType)) {
+                $namespace = $graphType;
             }
 
-            return;
+            $graphBuild = (new $namespace($this->generator))->get($this->context, $graphType);
+
+            $graphBuild = apply_filters("wpfs_schema_" . $this->context->get_page_type(), $graphBuild, $graphType, $this->context);
+
+            $graphBuild = apply_filters("wpfs_schema_type_" . strtolower($graphType), $graphBuild, $this->context);
+
+            $this->graphs[] = $graphBuild->export();
+        }
+    }
+
+    private function get_graph_generator($graphType)
+    {
+        $namespace = false;
+
+        if (file_exists(WPFS_SEO_ENGINE . 'generators/schema/graph/' . $graphType . '.php')) {
+
+            require_once WPFS_SEO_ENGINE . "generators/schema/graph/{$graphType}.php";
+
+            if (class_exists("FlexySEO\Engine\Generators\Schema\Graphs\\$graphType")) {
+                $namespace = "FlexySEO\Engine\Generators\Schema\Graphs\\$graphType";
+            }
+        }
+        elseif (in_array($graphType, self::$webPageGraphs)) {
+
+            $namespace = "FlexySEO\Engine\Generators\Schema\Graphs\WebPage";
+
+        }
+        elseif (in_array($graphType, self::$webArticleGraphs)) {
+
+            $namespace = "FlexySEO\Engine\Generators\Schema\Graphs\Article";
         }
 
-        if ($cPage->is_author_archive()) {
-            array_push($this->graphTypes, 'CollectionPage', 'Person');
-            return;
-        }
-
-        if ($cPage->is_post_type_archive() or $cPage->is_date_archive() or $cPage->is_term_archive()) {
-            $this->graphTypes[] = 'CollectionPage';
-            return;
-        }
-
-        if ($cPage->is_search()) {
-            $this->graphTypes[] = 'SearchResultsPage';
-            return;
-        }
-
-        if ($cPage->is_404()) {
-            //$this->graphTypes[] = '404';
-        }
+        return $namespace;
     }
 
     /**
@@ -180,30 +182,14 @@ class Schema
      *
      * @param  $post \WP_Post  The post object.
      * @return string[] The graph name(s).
-     * @since 1.2.0
      */
     public function getPostGraphs($post)
     {
         $postGraphs = [];
 
-        if ($post) {
+        if ($post instanceof \WP_Post) {
 
-            $postGraphs[] = self::get_post_graphType($post, 'page');
-
-            if ('page' !== $post->post_type) {
-                $this->graphTypes[] = 'PersonAuthor';
-            }
-
-            if (wpfseo()->post->get_main_image()) {
-                $postGraphs[] = "ImageObject";
-            }
-
-            $articleGraphType = ucfirst(self::get_post_graphType($post, 'article'));
-
-            if (!($post->post_type === 'page' and $articleGraphType === 'Article')) {
-                $postGraphs[] = $articleGraphType;
-            }
-
+            $postGraphs[] = ucfirst(self::get_post_graphType($post));
         }
         else {
             $postGraphs[] = 'WebPage';
@@ -216,78 +202,27 @@ class Schema
      * requires for page / article
      * return graphArticleType or graphPageType
      */
-    public static function get_post_graphType($post, $for = 'page')
+    public static function get_post_graphType($post)
     {
-        $selector = "graph" . ucfirst($for) . "Type";
-
-        //graphArticleType or graphPageType
+        $for = $post->post_type === 'page' ? 'Page' : 'Article';
 
         return shzn('wpfs')->options->get(
             $post->ID,
-            $selector,
+            "graph{$for}Type",  //graphArticleType or graphPageType
             "customMeta",
-            shzn('wpfs')->settings->get("seo.post_type.{$post->post_type}.schema.{$for}Type", $for === 'page' ? "WebPage" : "Article")
+            shzn('wpfs')->settings->get("seo.post_type.{$post->post_type}.schema.{$for}Type", $post->post_type === 'page' ? "WebPage" : "Article")
         );
-
     }
 
-    private function graphs2schema($cPage)
+    private function parse_graphs()
     {
-        require_once WPFS_SEO_ENGINE_GENERATORS . 'schema/graph/Graph.php';
-        require_once WPFS_SEO_ENGINE_GENERATORS . 'schema/graph/Person.php';
-        require_once WPFS_SEO_ENGINE_GENERATORS . 'schema/graph/Article.php';
-        require_once WPFS_SEO_ENGINE_GENERATORS . 'schema/graph/WebPage.php';
-        require_once WPFS_SEO_ENGINE_GENERATORS . 'schema/graph/Organization.php';
-
-        $graphTypes = apply_filters('wpfs_schema_graphs', array_unique(array_filter($this->graphTypes)), $this->current_page);
-
-        foreach ($graphTypes as $graphType) {
-
-            $namespace = false;
-
-            if (file_exists(WPFS_SEO_ENGINE . 'generators/schema/graph/' . $graphType . '.php')) {
-
-                require_once WPFS_SEO_ENGINE . "generators/schema/graph/{$graphType}.php";
-
-                if (class_exists("FlexySEO\Engine\Generators\Schema\Graphs\\$graphType")) {
-                    $namespace = "FlexySEO\Engine\Generators\Schema\Graphs\\$graphType";
-                }
-            }
-            elseif (in_array($graphType, self::$webPageGraphs)) {
-
-                $namespace = "FlexySEO\Engine\Generators\Schema\Graphs\WebPage";
-
-            }
-            elseif (in_array($graphType, self::$webArticleGraphs)) {
-
-                $namespace = "FlexySEO\Engine\Generators\Schema\Graphs\Article";
-            }
-
-            if ($namespace) {
-
-                //if graph is actually a fully qualified class name lets use it
-                if (class_exists($graphType)) {
-                    $namespace = $graphType;
-                }
-
-                $graph = (new $namespace($this->generator))->get($cPage->get_post(), $graphType);
-
-                $this->add(apply_filters("wpfs_schema_type_" . strtolower($graphType), $graph, $graphType));
-            }
-        }
-
-        $graphs = apply_filters('wpfs_schema_build', $this->graphs, $graphTypes);
+        $graphs = apply_filters('wpfs_schema_parse_' . $this->context->get_page_type(), $this->graphs, $this->context);
 
         $graphs = $this->validate_type($graphs);
 
         $graphs = array_values($this->cleanData($graphs));
 
         $this->schema['@graph'] = $graphs;
-    }
-
-    public function add($property)
-    {
-        $this->graphs[] = $property;
     }
 
     /**
@@ -326,17 +261,18 @@ class Schema
      *
      * @param array $data The graph data.
      * @return array       The cleaned graph data.
-     * @since 1.2.0
-     *
      */
     private function cleanData($data)
     {
-        foreach ($data as $k => &$v) {
+        foreach ($data as $k => $v) {
+
             if (is_array($v)) {
                 $v = $this->cleanData($v);
             }
             else {
-                $v = trim(wp_strip_all_tags($v));
+                $v = preg_replace('@<(script|style)[^>]*?>.*?</\\1>@si', '', $v);
+                $v = strip_tags($v);
+                $v = trim($v);
             }
 
             if (empty($v) and !in_array($k, $this->nullableFields, true)) {
@@ -346,6 +282,7 @@ class Schema
                 $data[$k] = $v;
             }
         }
+
         return $data;
     }
 
@@ -358,7 +295,6 @@ class Schema
      * Returns the JSON schema for the requested page.
      *
      * @return \string The JSON schema.
-     * @since 1.2.0
      *
      */
     public function export()

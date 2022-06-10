@@ -7,6 +7,7 @@
 
 namespace FlexySEO\Engine;
 
+use FlexySEO\Engine\Generators\Schema;
 use FlexySEO\Engine\Helpers\SEOScriptTag;
 use FlexySEO\Engine\Helpers\SEOTag;
 
@@ -86,7 +87,9 @@ class Presenter
         $this->social_presenter();
         $this->verification_codes_presenter();
 
-        $this->schema_presenter();
+        if (shzn('wpfs')->settings->get('seo.schema.enabled', false)) {
+            $this->schema_presenter();
+        }
 
         add_action('wp_head', array($this, 'wp_head'), 1);
     }
@@ -214,6 +217,24 @@ class Presenter
         }
     }
 
+    private function schema_presenter()
+    {
+        $schema = new Schema($this->generator);
+
+        $schema->build();
+
+        $schemaGraph = $schema->export();
+
+        $schemaGraph = apply_filters('wpfs_schema', $schemaGraph, $this->indexable);
+
+        $this->add_script(new SEOScriptTag($schemaGraph, "application/ld+json"));
+    }
+
+    private function add_script($script)
+    {
+        $this->scripts[] = $script;
+    }
+
     public function wp_head()
     {
         echo $this->render_tags(true);
@@ -256,19 +277,5 @@ class Presenter
         $title = apply_filters("wpfs_title", $_title, $title);
 
         return wptexturize($title);
-    }
-
-    private function schema_presenter()
-    {
-        $schema = $this->generator->schema();
-
-        $schema = apply_filters('wpfs_schema', $schema, $this->indexable);
-
-        $this->add_script(new SEOScriptTag($schema, "application/ld+json"));
-    }
-
-    private function add_script($script)
-    {
-        $this->scripts[] = $script;
     }
 }

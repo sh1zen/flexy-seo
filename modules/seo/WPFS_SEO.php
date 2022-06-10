@@ -112,10 +112,10 @@ class WPFS_SEO
         elseif ($current_page->is_date_archive()):
             include_once WPFS_SEO_ENGINE . 'generators/template/date-archive-generator.php';
             $generator = new \FlexySEO\Engine\Generators\Templates\DateArchive_Generator($current_page);
-        elseif ($current_page->is_home()):
+        elseif ($current_page->is_homepage()):
             include_once WPFS_SEO_ENGINE . 'generators/template/home-generator.php';
             $generator = new \FlexySEO\Engine\Generators\Templates\Home_Generator($current_page);
-        elseif ($current_page->is_simple_page() or $current_page->is_static_posts_page() or $current_page->is_attachment()):
+        elseif ($current_page->is_simple_page() or $current_page->is_posts_page() or $current_page->is_attachment()):
             include_once WPFS_SEO_ENGINE . 'generators/template/post-type-generator.php';
             $generator = new \FlexySEO\Engine\Generators\Templates\PostType_Generator($current_page);
         elseif ($current_page->is_term_archive()):

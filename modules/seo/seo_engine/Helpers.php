@@ -115,8 +115,6 @@ class Helpers
      * Checks whether the current request is an AJAX, CRON or REST request.
      *
      * @return bool Wether the request is an AJAX, CRON or REST request.
-     * @since 1.2.0
-     *
      */
     public function isAjaxCronRest()
     {
@@ -128,7 +126,6 @@ class Helpers
      * This function was copied from WooCommerce and improved.
      *
      * @return bool True if this is a REST API request.
-     * @since 1.2.0
      *
      */
     public function isRestApiRequest()
@@ -141,5 +138,27 @@ class Helpers
         $restUrl = $restUrl['path'] . (!empty($restUrl['query']) ? '?' . $restUrl['query'] : '');
 
         return (str_starts_with($_SERVER['REQUEST_URI'], $restUrl));
+    }
+
+    public function get_user_snippet_image($userID, $size)
+    {
+        $url = get_avatar_url($userID);
+
+        if (empty($url)) {
+            $url = "https://secure.gravatar.com/avatar/cb5febbf69fa9e85698bac992b2a4433?s=500&d=mm&r=g";
+        }
+
+        $url = apply_filters("wpfs_author_avatar", $url, $userID);
+
+        $snippet_data = shzn('wpfs')->options->get($url, "snippet_data", "cache", false);
+
+        if (!$snippet_data) {
+
+            $snippet_data = wpfseo()->images->get_snippet_data($url, $size);
+
+            shzn('wpfs')->options->add($url, "snippet_data", $snippet_data, "cache", WEEK_IN_SECONDS);
+        }
+
+        return $snippet_data;
     }
 }

@@ -88,7 +88,7 @@ class Rewriter
          *
          * @param string $result The page number link.
          * @param int $pagenum The page number.
-         * @since 1.2.0
+
          *
          */
         $result = apply_filters('get_pagenum_link', $result, $pagenum);
