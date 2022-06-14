@@ -96,7 +96,9 @@ class Graphic
 
             $row_class = $padding_left !== 0 ? 'shzn-child' : '';
 
-            $_oBefore = "<tr class='{$row_class}'><td class='option' style='padding-left: {$padding_left}px'><strong>{$args['name']}:</strong></td><td class='value'><label for='{$args['id']}'></label>";
+            $_style = $padding_left ? "style='padding-left: {$padding_left}px'" : '';
+
+            $_oBefore = "<tr class='{$row_class}'><td class='option' {$_style}><strong>{$args['name']}:</strong></td><td class='value'><label for='{$args['id']}'></label>";
             $_oAfter = "</td></tr>";
         }
         else {
@@ -146,7 +148,7 @@ class Graphic
             case "button":
             case "submit":
 
-                $args['classes'][] = 'shzn-input';
+                $args['classes'][] = 'shzn';
                 $args['classes'][] = 'shzn-' . strtolower($args['type']);
 
                 $_oInner .= "<input " . self::buildProps([
@@ -198,7 +200,7 @@ class Graphic
 
             case "textarea":
 
-                $args['classes'][] = "shzn-textarea";
+                $args['classes'][] = "shzn";
 
                 $_oInner .= "<textarea " . self::buildProps([
                         'class' => self::classes($args['classes']),

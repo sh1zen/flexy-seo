@@ -524,4 +524,9 @@ class CurrentPage
         $paged = get_query_var('paged');
         return !empty($page) ? $page : (!empty($paged) ? $paged : 1);
     }
+
+    public function is_feed()
+    {
+        return $this->get_main_query()->is_feed();
+    }
 }

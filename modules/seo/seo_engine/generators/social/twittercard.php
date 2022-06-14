@@ -63,8 +63,23 @@ class TwitterCard
         return $this->add_tag('site', $site);
     }
 
+    public function add_title($title)
+    {
+        return $this->add_tag('title', $title);
+    }
+
     public function get_tags()
     {
         return $this->tags;
+    }
+
+    public function add_description($description)
+    {
+        return $this->add_tag('description', $description);
+    }
+
+    public function add_image($image_url)
+    {
+        return $this->add_tag('image', $image_url);
     }
 }

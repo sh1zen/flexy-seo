@@ -9,7 +9,7 @@ Welcome to the Flexy SEO repository on GitHub.
 
 Here you can browse the source, look at open issues and keep track of development.
 
-If you are not a developer, please use the [WP Optimizer plugin page](https://wordpress.org/plugins/flexy-seo/) on WordPress.org.
+If you are not a developer, please use the [Flexy SEO plugin page](https://wordpress.org/plugins/flexy-seo/) on WordPress.org.
 
 ## Description
 

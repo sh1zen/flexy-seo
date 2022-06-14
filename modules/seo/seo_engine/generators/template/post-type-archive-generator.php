@@ -55,7 +55,7 @@ class PostTypeArchive_Generator extends Generator
      * Generates the meta keywords.
      *
      * @param string $keywords
-     * @return string The meta keywords.
+     * @return string[] The meta keywords.
      */
     public function get_keywords(string $keywords = '')
     {

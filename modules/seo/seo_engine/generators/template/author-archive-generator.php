@@ -54,7 +54,7 @@ class AuthorArchive_Generator extends Generator
             'max-image-preview' => 'max-image-preview:large',
         ];
 
-        if (shzn('wpfs')->settings->get($this->settings_path . 'show', true) and count_user_posts($this->current_page->get_queried_object_id(), 'post', true) > 0) {
+        if (shzn('wpfs')->settings->get($this->settings_path . 'show', true)) {
             $robots['index'] = 'index';
         }
 
@@ -65,7 +65,7 @@ class AuthorArchive_Generator extends Generator
      * Generates the meta keywords.
      *
      * @param string $keywords
-     * @return string The meta keywords.
+     * @return string[] The meta keywords.
      */
     public function get_keywords(string $keywords = '')
     {
@@ -136,7 +136,7 @@ class AuthorArchive_Generator extends Generator
         return parent::get_description(shzn('wpfs')->settings->get($this->settings_path . 'meta_desc', ''));
     }
 
-    public function get_snippet_image($size = 'thumbnail')
+    public function get_snippet_image($size = 'thumbnail', $use_default = true)
     {
         return wpfseo('helpers')->get_user_snippet_image($this->current_page->get_queried_object_id(), $size);
     }

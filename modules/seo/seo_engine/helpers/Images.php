@@ -207,9 +207,20 @@ class Images
      * @type int $filesize The file size in bytes, if already set.
      * }
      */
-    public function get_image($attachment_id, string|array $size = 'full', $allowExternal = true)
+    public function get_image($attachment_id, $size = 'full', $allowExternal = true)
     {
         if (!$attachment_id) {
+            return false;
+        }
+
+        if (is_array($size)) {
+
+            foreach ($size as $s) {
+                if ($image = $this->get_image($attachment_id, $s, $allowExternal)) {
+                    return $image;
+                }
+            }
+
             return false;
         }
 
@@ -267,15 +278,6 @@ class Images
             $image['type'] = get_post_mime_type($attachment_id);
         }
         elseif (isset($metadata['sizes'])) {
-
-            if (is_array($size)) {
-                foreach ($size as $s) {
-                    if (!empty($metadata['sizes'][$s])) {
-                        $size = $s;
-                        break;
-                    }
-                }
-            }
 
             if (empty($metadata['sizes'][$size])) {
                 return false;

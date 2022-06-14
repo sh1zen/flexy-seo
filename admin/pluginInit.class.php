@@ -66,7 +66,7 @@ class PluginInit
      */
     private function load_textdomain($domain)
     {
-        $locale = apply_filters('plugin_locale', get_locale(), $domain);
+        $locale = apply_filters('wpfs_plugin_locale', get_locale(), $domain);
 
         $mo_file = $domain . '-' . $locale . '.mo';
 

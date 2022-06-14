@@ -225,10 +225,10 @@ class PagesHandler
         ?>
         <section class="shzn-wrap-flex shzn-wrap shzn-home">
             <section class="shzn">
-                <block class="shzn-header">
-                    <h1>Flexy SEO</h1>
-                </block>
                 <block class="shzn">
+                    <block class="shzn-header">
+                        <h1>Flexy SEO</h1>
+                    </block>
                     <h2><?php _e('Configuration:', 'wpfs'); ?></h2>
                     <p>
                         <?php

@@ -22,16 +22,47 @@ function wpfs_breadcrumb(string $before, string $after, bool $display = true, ar
 }
 
 /**
- *
+ * @param null|\WP_Post $post
+ * @param int $length
+ * @param string $more
+ * @return string
  */
-function wpfs_getDescription($post = null, $default = ''): string
+function wpfs_get_post_excerpt($post = null, $length = 32, $more = '...')
+{
+    $post = get_post($post);
+
+    $post_excerpt = empty($post->post_excerpt) ? $post->post_content : $post->post_excerpt;
+
+    if ($length) {
+        $post_excerpt = wp_trim_words($post_excerpt, $length, $more);
+    }
+
+    return $post_excerpt;
+}
+
+/**
+ * @param null|\WP_Post $post
+ * @param string $default
+ * @return string
+ */
+function wpfs_get_the_description($post = null, $default = ''): string
 {
     if ($post) {
 
         $post = get_post($post);
 
+        $_description = shzn('wpfs')->options->get($post->ID, "description", "customMeta", "");
+
+        if (!empty($_description)) {
+            $description = $_description;
+        }
+
+        if (empty($description)) {
+            $description = '%%description%%';
+        }
+
         $description = Txt_Replacer::replace(
-            shzn('wpfs')->options->get($post->ID, "description", "customMeta", ""),
+            $description,
             $post,
             'post'
         );
@@ -47,9 +78,9 @@ function wpfs_getDescription($post = null, $default = ''): string
     return $description;
 }
 
-function wpfs_getMainImageURL($post = null, $size = 'large'): string
+function wpfs_get_mainImageURL($post = null, $size = 'large'): string
 {
-    list($id, $url) =  wpfseo('helpers')->post->get_first_usable_image($size, false, $post);
+    list($id, $url) = wpfseo('helpers')->post->get_first_usable_image($size, false, $post);
 
     return $url;
 }
@@ -81,68 +112,111 @@ function wpfs_add_replacement_rule(string $rule, $replacement, $type = [])
     }
 }
 
-function wpfs_document_title()
+/**
+ * todo remove - trailing.it if requested
+ */
+function wpfs_the_title($filtered = true, $trailingBlogName = true)
 {
-    // If it's a 404 page, use a "Page not found" title.
-    if (is_404()) {
-        $title = __('Page not found');
+    $title = '';
+    $generator = wpfseo('generator');
 
-        // If it's a search, use a dynamic search results title.
+    if ($generator) {
+        $title = wpfseo('generator')->generate_title();
+    }
+
+    if (!$trailingBlogName) {
+        $title = trim(str_replace(get_bloginfo('name', 'display'), "", $title), " " . shzn('wpfs')->settings->get('seo.title.separator', '-'));
+    }
+
+    return $filtered ? apply_filters('wpfs_title', $title) : $title;
+}
+
+function wpfs_document_title($separator = '-', $blogName = true)
+{
+    global $page, $paged;
+
+    $titleFragments = [];
+
+    if (is_feed()) {
+
+        $post = get_post();
+
+        $titleFragments['title'] = isset($post->post_title) ? $post->post_title : '';
+
+        if (!empty($post->post_password)) {
+
+            $protected_title_format = apply_filters('protected_title_format', __('Protected: %s', 'wpfs'), $post);
+            $titleFragments['title'] = sprintf($protected_title_format, $titleFragments);
+        }
+        elseif (isset($post->post_status) && 'private' === $post->post_status) {
+
+            $private_title_format = apply_filters('private_title_format', __('Private: %s', 'wpfs'), $post);
+            $titleFragments['title'] = sprintf($private_title_format, $titleFragments);
+        }
+    }
+    elseif (is_404()) {
+
+        $titleFragments['title'] = __('Page not found', 'wpfs');
     }
     elseif (is_search()) {
-        /* translators: %s: Search query. */
-        $title = sprintf(__('Search Results for &#8220;%s&#8221;'), get_search_query());
 
-        // If on the front page, use the site title.
+        $titleFragments['title'] = sprintf(__('Search Results for &#8220;%s&#8221;', 'wpfs'), get_search_query());
     }
     elseif (is_front_page()) {
-        $title = get_bloginfo('name', 'display');
 
-        // If on a post type archive, use the post type archive title.
+        $titleFragments['title'] = get_bloginfo('description', 'display');;
     }
     elseif (is_post_type_archive()) {
-        $title = post_type_archive_title('', false);
 
-        // If on a taxonomy archive, use the term title.
+        $titleFragments['title'] = post_type_archive_title('', false);
     }
     elseif (is_tax()) {
-        $title = single_term_title('', false);
 
-        /*
-        * If we're on the blog page that is not the homepage
-        * or a single post of any post type, use the post title.
-        */
+        $titleFragments['title'] = single_term_title('', false);
     }
     elseif (is_home() || is_singular()) {
-        $title = single_post_title('', false);
 
-        // If on a category or tag archive, use the term title.
+        $titleFragments['title'] = single_post_title('', false);
     }
     elseif (is_category() || is_tag()) {
-        $title = single_term_title('', false);
 
-        // If on an author archive, use the author's display name.
+        $titleFragments['title'] = single_term_title('', false);
     }
     elseif (is_author() and get_queried_object()) {
-        $author = get_queried_object();
-        $title = $author->display_name;
 
-        // If it's a date archive, use the date as the title.
+        $titleFragments['title'] = get_queried_object()->display_name;
     }
     elseif (is_year()) {
-        $title = get_the_date(_x('Y', 'yearly archives date format'));
+        $titleFragments['title'] = get_the_date(_x('Y', 'yearly archives date format', 'wpfs'));
 
     }
     elseif (is_month()) {
-        $title = get_the_date(_x('F Y', 'monthly archives date format'));
 
+        $titleFragments['title'] = get_the_date(_x('F Y', 'monthly archives date format', 'wpfs'));
     }
     elseif (is_day()) {
-        $title = get_the_date();
-    }
-    else {
-        $title = '';
+
+        $titleFragments['title'] = get_the_date();
     }
 
-    return $title;
+    // Add a page number if necessary.
+    if (($paged >= 2 || $page >= 2) && !is_404()) {
+        $titleFragments['page'] = sprintf(__('Page %s', 'wpfs'), max($paged, $page));
+    }
+
+    if ($blogName) {
+        $titleFragments['site'] = get_bloginfo('name', 'display');
+    }
+
+    $title = implode(" {$separator} ", array_filter($titleFragments));
+
+    $title = trim($title);
+
+    $title = preg_replace('#\s+#', ' ', $title);
+
+    if (str_contains($title, '&')) {
+        $title = preg_replace('/&(?!#(?:\d+|x[a-f\d]+);|[a-z1-4]{1,8};)/i', '&#038;', $title);
+    }
+
+    return esc_html($title);
 }

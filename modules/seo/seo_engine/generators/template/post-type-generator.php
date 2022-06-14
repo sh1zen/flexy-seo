@@ -91,7 +91,7 @@ class PostType_Generator extends Generator
      * Generates the meta keywords.
      *
      * @param string $keywords
-     * @return string The meta keywords.
+     * @return string[] The meta keywords.
      */
     public function get_keywords(string $keywords = '')
     {
@@ -138,6 +138,4 @@ class PostType_Generator extends Generator
     {
         return parent::get_description(shzn('wpfs')->settings->get($this->settings_path . 'meta_desc', ''));
     }
-
-
 }

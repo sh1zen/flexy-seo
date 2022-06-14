@@ -65,16 +65,11 @@ class Txt_Replacer
             elseif ($replace = self::replace_static($rule, $object, $type)) {
                 $replacement = $replace;
             }
-            else {
 
-                $replace = apply_filters("wpfs_custom_replace_{$type}", $rule, $object, $type);
-
-                if (!empty($replace) and $replace !== $rule) {
-                    $replacement = $replace;
-                }
-            }
-
-            $replacement = apply_filters("wpfs_replacement", $replacement, $string, $rule, $object, $type);
+            /**
+             * fallback for custom replace also
+             */
+            $replacement = apply_filters("wpfs_replacement_{$rule}_{$type}", $replacement, $string, $object);
 
             $string = str_replace("%%{$rule}%%", $replacement, $string);
         }
@@ -169,22 +164,25 @@ class Txt_Replacer
                 $res = get_bloginfo('name');
                 break;
 
+            case 'search':
+                $res = get_search_query();
+                break;
+
             case 'resume':
-                if ($object->ID) {
-                    $post = get_post($object->ID);
-                    $res = wp_trim_words(empty($post->post_excerpt) ? $post->post_content : $post->post_excerpt, 32, '...');
+            case 'description':
+                if ($object instanceof \WP_Post) {
+                    $res = wpfs_get_post_excerpt($object, 32, '...');
                 }
                 break;
 
             case 'excerpt':
-                if ($object->ID) {
-                    $post = get_post($object->ID);
-                    $res = $post->post_content;
+                if ($object instanceof \WP_Post) {
+                    $res = $object->post_excerpt;
                 }
                 break;
 
             case 'title':
-                $res = wp_get_document_title();
+                $res = wpfs_document_title(shzn('wpfs')->settings->get('seo.title.separator', '-'));
                 break;
 
             case 'sitedesc':
@@ -199,14 +197,18 @@ class Txt_Replacer
                 $res = wp_date('Y-m-d');
                 break;
 
+            case 'time':
+                $res = wp_date('H:i:s');
+                break;
+
             case 'modified':
-                if ($type === 'post') {
+                if ($object instanceof \WP_Post) {
                     $res = $object->post_modified;
                 }
                 break;
 
             case 'created':
-                if ($type === 'post') {
+                if ($object instanceof \WP_Post) {
                     $res = $object->post_date;
                 }
                 break;
@@ -216,7 +218,7 @@ class Txt_Replacer
                 break;
 
             case 'pagenumber':
-                if ($type === 'post') {
+                if ($object instanceof \WP_Post) {
                     $res = $wp_query->get('paged', 0);
                 }
                 break;

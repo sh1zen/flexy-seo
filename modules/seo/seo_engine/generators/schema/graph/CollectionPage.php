@@ -28,7 +28,10 @@ class CollectionPage extends WebPage
         $schema = parent::get($currentPage, $type, $args);
 
         $schema->set('primaryImageOfPage', CommonGraphs::imageObject($this->generator->get_snippet_image('full'), 'full', $schema->get('url') . '#primaryimage'));
-        $schema->set('lastReviewed', mysql2date(DATE_W3C, $currentPage->get_queried_object()->post_date_gmt, false));
+
+        if ($currentPage->get_queried_object()) {
+            $schema->set('lastReviewed', mysql2date(DATE_W3C, $currentPage->get_queried_object()->post_date_gmt, false));
+        }
 
         if (!$currentPage->is_homepage()) {
 
