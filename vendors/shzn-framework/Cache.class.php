@@ -56,7 +56,7 @@ class Cache
 
     public static function generate_key(...$args)
     {
-        return trim(implode(".", $args));
+        return md5(serialize($args));
     }
 
     public function force_set($key, $data, $group)

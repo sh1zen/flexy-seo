@@ -32,30 +32,4 @@ abstract class Graph
      * @param ...$args
      */
     abstract public function get(CurrentPage $currentPage, string $type = '', ...$args);
-
-    /**
-     * Returns the graph data for the avatar of a given user.
-     *
-     * @param int $userId The user ID.
-     * @param string $graphId The graph ID.
-     * @return array           The graph data.
-     *
-     */
-    protected function avatar($userId, $graphId)
-    {
-        if (!get_option('show_avatars')) {
-            return [];
-        }
-
-        $avatar = get_avatar_data($userId);
-
-        if (!$avatar['found_avatar']) {
-            return [];
-        }
-
-        return array_filter([
-
-        ]);
-    }
-
 }

@@ -18,10 +18,6 @@
     background-color: #F3F4F5;
 }
 
-#wpbody-content {
-    margin-top: 70px
-}
-
 .hidden {
     display: none
 }
@@ -166,7 +162,7 @@ input.shzn-apple-switch {
     box-sizing: border-box;
     background-color: #ffeae6;
     border-radius: 15px;
-    border: none;
+    border: none !important;
     box-shadow: inset 0 0 2px 1px rgba(0, 0, 0, .1);
     transition: background-color .4s cubic-bezier(.275, -.45, .725, 1.45);
 }
@@ -185,7 +181,7 @@ input.shzn-apple-switch:after {
 }
 
 input.shzn-apple-switch:checked {
-    background: #cffdeb;
+    background: #cffdeb !important;
 }
 
 input.shzn-apple-switch:checked:after {
@@ -358,26 +354,6 @@ input.shzn-apple-switch:checked:after {
     }
 }
 
-.shzn-input[type=numeric] {
-    max-width: 80px;
-    text-align: center;
-    outline: 0
-}
-
-.shzn-textarea {
-    border-radius: 2px;
-    padding: .5em 1em;
-    transition: all ease-in-out .25s;
-    box-shadow: none;
-    -webkit-box-sizing: border-box;
-    -moz-box-sizing: border-box;
-    box-sizing: border-box;
-}
-
-.shzn-textarea:focus {
-    box-shadow: none;
-    outline: none;
-}
 
 ul.shzn {
     list-style: inside
@@ -432,31 +408,31 @@ aside.shzn {
 }
 
 aside.shzn .shzn-box {
-    padding: 20px;
+    padding: 15px 20px;
     margin: 0;
-    background: #fff;
-    box-shadow: 0 0 3px rgba(0, 0, 0, .2);
-    border: 1px solid #dcdcdc;
+    background: rgb(255 255 255 / 70%);
+    box-shadow: 0 0 4px 1px rgb(0 0 0 / 20%);
     width: 100%;
-    border-radius: 3px;
+    border-radius: 8px;
 }
 
 aside.shzn .shzn-box:not(:last-child) {
-    margin-bottom: 25px
+    margin-bottom: 32px;
 }
 
 .shzn-header {
-    position: fixed;
-    left: 0;
+    position: relative;
+    display: block;
     width: 100%;
-    top: 0;
     background: var(--main-dark-color);
     color: var(--header-text-color);
     display: block;
-    padding: 2.5em 1.5em 0.4em 1.5em;
+    padding: 1em 1.5em;
     overflow: hidden;
     box-sizing: border-box;
-    z-index: 1;
+    margin: 0 auto 25px auto;
+    border-radius: 3px;
+    box-shadow: 0 0 3px 1px #686868;
 }
 
 .shzn-header h1 {
@@ -469,8 +445,8 @@ aside.shzn .shzn-box:not(:last-child) {
 }
 
 .shzn h2 {
-    padding: 10px 0 10px 0;
-    border-bottom: 3px solid #f1f1f1;
+    padding: 12px 0 8px 0;
+    border-bottom: 2px solid rgb(0 0 0 / 26%);
 }
 
 block.shzn {
@@ -480,12 +456,22 @@ block.shzn {
     display: block;
     margin: 0 auto 2em auto;
     padding: 1.5em;
-    background: #fff;
-    -webkit-border-radius: 3px;
-    -moz-border-radius: 3px;
-    border-radius: 3px;
-    border: 1px solid #dcdcdc;
-    box-shadow: 0 0 2px rgba(0, 0, 0, .2);
+    background: rgb(255 255 255 / 70%);
+    border-radius: 8px;
+    box-shadow: 0 0 8px 2px rgb(0 0 0 / 20%);
+    overflow: hidden;
+    box-sizing: border-box;
+}
+
+notice.shzn {
+    max-width: 100%;
+    height: auto;
+    width: auto;
+    display: block;
+    margin: 0 auto 2em auto;
+    padding: 20px;
+    border-radius: 4px;
+    box-shadow: inset 0 0 4px 1px rgb(0 0 0 / 20%);
     overflow: hidden;
     box-sizing: border-box;
 }
@@ -589,20 +575,33 @@ table.shzn tbody td.value {
     width: 60%;
 }
 
-.shzn-textarea:focus, .shzn-input:focus {
-    border: 1px solid var(--border-color) !important;
-    outline: none !important;
-    box-shadow: 0 0 0 1px var(--border-color) !important;
+textarea.shzn:focus, input.shzn:focus {
+    border: 2px solid var(--border-color);
+    box-shadow: inset 0 0 4px 1px #a3a3a3;
+    outline: none;
 }
 
-.shzn-textarea, .shzn-input {
-    border: 1px solid #989898
+textarea.shzn, input.shzn {
+    box-shadow: 0 0 0 0 transparent;
+    border-radius: 2px;
+    border: 2px solid #8c8f94;
+    background-color: rgb(255 255 255 / 28%);
+    color: #525252;
+    padding: 4px 12px;
+    box-sizing: border-box;
+    transition: all 250ms 50ms ease-in-out;
+}
+
+textarea.shzn {
+    border-radius: 2px;
+    padding: 12px 14px;
+    box-shadow: none;
+    box-sizing: border-box;
 }
 
 table.shzn textarea, table.shzn input[type=text] {
     max-width: 100%;
     width: 100%;
-    padding: 5px 15px;
 }
 
 .shzn-thead, table.shzn thead {
@@ -628,16 +627,17 @@ table.shzn .shzn-actions :not(:last-child) {
 
 table.shzn-settings tr {
     border-bottom: 2px solid #e0e0e0;
-    -webkit-transition: all .5s ease-in-out;
-    -moz-transition: all .5s ease-in-out;
-    -ms-transition: all .5s ease-in-out;
-    -o-transition: all .5s ease-in-out;
-    transition: all .5s ease-in-out;
+    transition: all 300ms 150ms ease-in-out;
     height: 50px;
 }
 
 table.shzn td {
-    padding: 8px 10px
+    padding: 12px 10px;
+}
+
+table.shzn tr:hover{
+    background: #b7b7b717;
+    box-shadow: 0 0 4px #c3c3c3;
 }
 
 table.shzn tr.blank-row {

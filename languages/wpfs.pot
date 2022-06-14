@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: wpfs-translation\n"
 "Report-Msgid-Bugs-To: https://github.com/sh1zen/flexy-seo/issues\n"
-"POT-Creation-Date: 2022-06-11 18:16+0200\n"
+"POT-Creation-Date: 2022-08-09 17:32+0200\n"
 "PO-Revision-Date: 2020-05-13 02:34+0200\n"
 "Last-Translator: sh1zen\n"
 "Language-Team: sh1zen\n"
@@ -12,7 +12,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"X-Generator: Poedit 3.1\n"
+"X-Generator: Poedit 3.1.1\n"
 "X-Poedit-Basepath: ..\n"
 "X-Poedit-SourceCharset: UTF-8\n"
 "X-Poedit-KeywfsrdsList: __;_e;_ex;_x;_n;_nx;_n_noop;_nx_noop;esc_html__;"
@@ -26,8 +26,8 @@ msgstr ""
 msgid "WPFS Settings"
 msgstr ""
 
-#: admin/PagesHandler.class.php:45 admin/PluginInit.class.php:249
-#: modules/seo.class.php:47
+#: admin/PagesHandler.class.php:45 admin/PluginInit.class.php:248
+#: modules/seo.class.php:63
 msgid "Settings"
 msgstr ""
 
@@ -39,7 +39,7 @@ msgstr ""
 msgid "FAQ"
 msgstr ""
 
-#: admin/PagesHandler.class.php:103 vendors/shzn-framework/UtilEnv.php:664
+#: admin/PagesHandler.class.php:103 vendors/shzn-framework/UtilEnv.php:668
 msgid "N/A"
 msgstr ""
 
@@ -245,37 +245,52 @@ msgstr ""
 msgid "About me"
 msgstr ""
 
-#: admin/PluginInit.class.php:230
+#: admin/PluginInit.class.php:231
 msgid "Buy me a beer"
 msgstr ""
 
-#: ext_interface/wpfs_functions.php:88
+#: ext_interface/wpfs_functions.php:148
+#, php-format
+msgid "Protected: %s"
+msgstr ""
+
+#: ext_interface/wpfs_functions.php:153
+#, php-format
+msgid "Private: %s"
+msgstr ""
+
+#: ext_interface/wpfs_functions.php:159
 msgid "Page not found"
 msgstr ""
 
-#: ext_interface/wpfs_functions.php:94
+#: ext_interface/wpfs_functions.php:163
 #, php-format
 msgid "Search Results for &#8220;%s&#8221;"
 msgstr ""
 
-#: ext_interface/wpfs_functions.php:133
+#: ext_interface/wpfs_functions.php:190
 msgid "Y"
 msgstr ""
 
-#: ext_interface/wpfs_functions.php:137
+#: ext_interface/wpfs_functions.php:195
 msgid "F Y"
+msgstr ""
+
+#: ext_interface/wpfs_functions.php:204
+#, php-format
+msgid "Page %s"
 msgstr ""
 
 #: modules/breadcrumbs.class.php:78
 msgid "Status:"
 msgstr ""
 
-#: modules/breadcrumbs.class.php:79 modules/seo.class.php:230
-#: modules/seo.class.php:235 modules/seo.class.php:240
-#: modules/seo.class.php:244 modules/seo.class.php:249
-#: modules/seo.class.php:253 modules/seo.class.php:257
-#: modules/seo.class.php:261 modules/seo.class.php:265
-#: modules/seo.class.php:269 modules/seo.class.php:304
+#: modules/breadcrumbs.class.php:79 modules/seo.class.php:228
+#: modules/seo.class.php:233 modules/seo.class.php:238
+#: modules/seo.class.php:242 modules/seo.class.php:247
+#: modules/seo.class.php:251 modules/seo.class.php:255
+#: modules/seo.class.php:259 modules/seo.class.php:263
+#: modules/seo.class.php:267 modules/seo.class.php:302
 msgid "Active"
 msgstr ""
 
@@ -336,13 +351,13 @@ msgstr ""
 msgid "Breadcrumb Taxonomies Archive format:"
 msgstr ""
 
-#: modules/breadcrumbs/WPFS_Breadcrumb.php:134
+#: modules/breadcrumbs/WPFS_Breadcrumb.php:137
 msgid ""
 "Conditional query tags do not work before the query is run. Before "
 "then, they always return false."
 msgstr ""
 
-#: modules/seo.class.php:75 modules/seo.class.php:225
+#: modules/seo.class.php:75 modules/seo.class.php:223
 msgid "General"
 msgstr ""
 
@@ -378,7 +393,7 @@ msgstr ""
 msgid "Replacers"
 msgstr ""
 
-#: modules/seo.class.php:169 vendors/shzn-framework/Module.class.php:277
+#: modules/seo.class.php:169 vendors/shzn-framework/Module.class.php:276
 msgid "Save Changes"
 msgstr ""
 
@@ -411,7 +426,7 @@ msgid "Default snippet image url (wide)"
 msgstr ""
 
 #: modules/seo.class.php:199 modules/seo.class.php:200
-#: modules/seo.class.php:204 modules/seo.class.php:329
+#: modules/seo.class.php:204 modules/seo.class.php:327
 msgid "Paste your image URL or select a new image"
 msgstr ""
 
@@ -440,9 +455,9 @@ msgid "SEO title"
 msgstr ""
 
 #: modules/seo.class.php:210 modules/seo.class.php:215
-#: modules/seo.class.php:220 modules/seo.class.php:291
-#: modules/seo.class.php:298 modules/seo.class.php:357
-#: modules/seo.class.php:383 modules/seo.class.php:393
+#: modules/seo.class.php:289 modules/seo.class.php:296
+#: modules/seo.class.php:355 modules/seo.class.php:381
+#: modules/seo.class.php:391
 msgid "Meta description"
 msgstr ""
 
@@ -455,16 +470,15 @@ msgid "Search page:"
 msgstr ""
 
 #: modules/seo.class.php:214 modules/seo.class.php:219
-#: modules/seo.class.php:290 modules/seo.class.php:297
-#: modules/seo.class.php:356 modules/seo.class.php:382
-#: modules/seo.class.php:392
+#: modules/seo.class.php:288 modules/seo.class.php:295
+#: modules/seo.class.php:354 modules/seo.class.php:380
+#: modules/seo.class.php:390
 msgid "Title"
 msgstr ""
 
-#: modules/seo.class.php:216 modules/seo.class.php:221
-#: modules/seo.class.php:292 modules/seo.class.php:299
-#: modules/seo.class.php:358 modules/seo.class.php:384
-#: modules/seo.class.php:394
+#: modules/seo.class.php:216 modules/seo.class.php:290
+#: modules/seo.class.php:297 modules/seo.class.php:356
+#: modules/seo.class.php:382 modules/seo.class.php:392
 msgid "Keywords"
 msgstr ""
 
@@ -472,245 +486,269 @@ msgstr ""
 msgid "404 page:"
 msgstr ""
 
-#: modules/seo.class.php:226
+#: modules/seo.class.php:224
 msgid "Use same username"
 msgstr ""
 
-#: modules/seo.class.php:227
+#: modules/seo.class.php:225
 msgid "Username"
 msgstr ""
 
-#: modules/seo.class.php:229
+#: modules/seo.class.php:227
 msgid "Facebook:"
 msgstr ""
 
-#: modules/seo.class.php:231 modules/seo.class.php:236
-#: modules/seo.class.php:241 modules/seo.class.php:245
-#: modules/seo.class.php:250 modules/seo.class.php:254
-#: modules/seo.class.php:258 modules/seo.class.php:262
-#: modules/seo.class.php:266 modules/seo.class.php:270
+#: modules/seo.class.php:229 modules/seo.class.php:234
+#: modules/seo.class.php:239 modules/seo.class.php:243
+#: modules/seo.class.php:248 modules/seo.class.php:252
+#: modules/seo.class.php:256 modules/seo.class.php:260
+#: modules/seo.class.php:264 modules/seo.class.php:268
 msgid "Profile name or url"
 msgstr ""
 
-#: modules/seo.class.php:232 modules/seo.class.php:237
-#: modules/seo.class.php:246
+#: modules/seo.class.php:230 modules/seo.class.php:235
+#: modules/seo.class.php:244
 msgid "Confirmation code"
 msgstr ""
 
-#: modules/seo.class.php:234
+#: modules/seo.class.php:232
 msgid "Twitter:"
 msgstr ""
 
-#: modules/seo.class.php:239
+#: modules/seo.class.php:237
 msgid "Linkedin:"
 msgstr ""
 
-#: modules/seo.class.php:243
+#: modules/seo.class.php:241
 msgid "Pinterest:"
 msgstr ""
 
-#: modules/seo.class.php:248
+#: modules/seo.class.php:246
 msgid "Instagram:"
 msgstr ""
 
-#: modules/seo.class.php:252
+#: modules/seo.class.php:250
 msgid "YouTube:"
 msgstr ""
 
-#: modules/seo.class.php:256
+#: modules/seo.class.php:254
 msgid "Tumblr:"
 msgstr ""
 
-#: modules/seo.class.php:260
+#: modules/seo.class.php:258
 msgid "Yelp:"
 msgstr ""
 
-#: modules/seo.class.php:264
+#: modules/seo.class.php:262
 msgid "SoundCloud:"
 msgstr ""
 
-#: modules/seo.class.php:268
+#: modules/seo.class.php:266
 msgid "WikiPedia:"
 msgstr ""
 
-#: modules/seo.class.php:274
+#: modules/seo.class.php:272
 msgid "Google:"
 msgstr ""
 
-#: modules/seo.class.php:275 modules/seo.class.php:278
-#: modules/seo.class.php:281 modules/seo.class.php:284
+#: modules/seo.class.php:273 modules/seo.class.php:276
+#: modules/seo.class.php:279 modules/seo.class.php:282
 msgid "Verification code"
 msgstr ""
 
-#: modules/seo.class.php:277
+#: modules/seo.class.php:275
 msgid "Bing:"
 msgstr ""
 
-#: modules/seo.class.php:280
+#: modules/seo.class.php:278
 msgid "Yandex:"
 msgstr ""
 
-#: modules/seo.class.php:283
+#: modules/seo.class.php:281
 msgid "Baidu:"
 msgstr ""
 
-#: modules/seo.class.php:288
+#: modules/seo.class.php:286
 msgid "Date archive:"
 msgstr ""
 
-#: modules/seo.class.php:289
+#: modules/seo.class.php:287
 msgid "Show date archive in search results"
 msgstr ""
 
-#: modules/seo.class.php:294
+#: modules/seo.class.php:292
 msgid "Author archive:"
 msgstr ""
 
-#: modules/seo.class.php:295 modules/seo.class.php:380
+#: modules/seo.class.php:293 modules/seo.class.php:378
 msgid "Status"
 msgstr ""
 
-#: modules/seo.class.php:296
+#: modules/seo.class.php:294
 msgid "Show author archive in search results"
 msgstr ""
 
-#: modules/seo.class.php:303
+#: modules/seo.class.php:301
 msgid "Schema settings:"
 msgstr ""
 
-#: modules/seo.class.php:305
+#: modules/seo.class.php:303
 msgid "Organization"
 msgstr ""
 
-#: modules/seo.class.php:306
+#: modules/seo.class.php:304
 msgid "Organization Type"
 msgstr ""
 
-#: modules/seo.class.php:325
+#: modules/seo.class.php:323
 msgid "Name"
 msgstr ""
 
-#: modules/seo.class.php:326 modules/seo.class.php:417
-#: modules/seo/seo_engine/extensions/XRE_MetaBox.php:111
+#: modules/seo.class.php:324 modules/seo.class.php:415
+#: modules/seo/seo_engine/extensions/XRE_MetaBox.php:109
 msgid "Description"
 msgstr ""
 
-#: modules/seo.class.php:327
+#: modules/seo.class.php:325
 msgid "Address"
 msgstr ""
 
-#: modules/seo.class.php:328
+#: modules/seo.class.php:326
 msgid "Founders (comma separated)"
 msgstr ""
 
-#: modules/seo.class.php:329
+#: modules/seo.class.php:327
 msgid "Logo"
 msgstr ""
 
-#: modules/seo.class.php:330
+#: modules/seo.class.php:328
 msgid "Contact Type"
 msgstr ""
 
-#: modules/seo.class.php:343
+#: modules/seo.class.php:341
 msgid "Phone"
 msgstr ""
 
-#: modules/seo.class.php:344
+#: modules/seo.class.php:342
 msgid "E-mail"
 msgstr ""
 
-#: modules/seo.class.php:345
+#: modules/seo.class.php:343
 msgid "Enable Sitelinks Search Box"
 msgstr ""
 
-#: modules/seo.class.php:355
+#: modules/seo.class.php:353
 #, php-format
 msgid "Show \"%s\" in search results"
 msgstr ""
 
-#: modules/seo.class.php:359
+#: modules/seo.class.php:357
 msgid "Remove type prefix"
 msgstr ""
 
-#: modules/seo.class.php:379
+#: modules/seo.class.php:377
 #, php-format
 msgid "%s archive:"
 msgstr ""
 
-#: modules/seo.class.php:381
+#: modules/seo.class.php:379
 #, php-format
 msgid "Show %s archive in search results"
 msgstr ""
 
-#: modules/seo.class.php:390
+#: modules/seo.class.php:388
 #, php-format
 msgid "Show <i>\"%s\"</i> in search results"
 msgstr ""
 
-#: modules/seo.class.php:391
+#: modules/seo.class.php:389
 msgid "Follow link directive"
 msgstr ""
 
-#: modules/seo.class.php:396 modules/seo.class.php:397
+#: modules/seo.class.php:394 modules/seo.class.php:395
 #, php-format
 msgid "Predefined %s schema.org type"
 msgstr ""
 
-#: modules/seo.class.php:416
+#: modules/seo.class.php:414
 msgid "Replacer"
 msgstr ""
 
-#: modules/seo.class.php:423
+#: modules/seo.class.php:421
 msgid "Will replace the specified query var."
 msgstr ""
 
-#: modules/seo.class.php:427
+#: modules/seo.class.php:425
 msgid "Will replace the specified meta of the queried object."
 msgstr ""
 
-#: modules/seo.class.php:431
+#: modules/seo.class.php:429
 msgid ""
 "Will replace the WordPress queried object property if it's available "
 "(display_name, ID, post_modified...) ."
 msgstr ""
 
-#: modules/seo.class.php:435
+#: modules/seo.class.php:433
 msgid "Default separator."
 msgstr ""
 
-#: modules/seo.class.php:439
+#: modules/seo.class.php:437
+msgid "The search query."
+msgstr ""
+
+#: modules/seo.class.php:441
 msgid "The site name."
 msgstr ""
 
-#: modules/seo.class.php:443
+#: modules/seo.class.php:445
 msgid "The resume of the current queried post."
 msgstr ""
 
-#: modules/seo.class.php:447
+#: modules/seo.class.php:449
+msgid "The excerpt of the current queried post."
+msgstr ""
+
+#: modules/seo.class.php:453
 msgid "The default WordPress title of the current queried object."
 msgstr ""
 
-#: modules/seo.class.php:451
+#: modules/seo.class.php:457
+msgid "The number of found posts."
+msgstr ""
+
+#: modules/seo.class.php:461
+msgid "The total number of pages for the current query."
+msgstr ""
+
+#: modules/seo.class.php:465
+msgid "The current page number for the current query."
+msgstr ""
+
+#: modules/seo.class.php:469
 msgid "The site language."
 msgstr ""
 
-#: modules/seo.class.php:455
-msgid "Current date."
+#: modules/seo.class.php:473
+msgid "Current date in Y-m-d format."
 msgstr ""
 
-#: modules/seo.class.php:459
+#: modules/seo.class.php:477
+msgid "Current time in H:i:s format."
+msgstr ""
+
+#: modules/seo.class.php:481
 msgid "The site description."
 msgstr ""
 
-#: modules/seo/seo_engine/extensions/XRE_MetaBox.php:104
+#: modules/seo/seo_engine/extensions/XRE_MetaBox.php:102
 msgid "Keyword phrase"
 msgstr ""
 
-#: modules/seo/seo_engine/extensions/XRE_MetaBox.php:118
+#: modules/seo/seo_engine/extensions/XRE_MetaBox.php:116
 msgid "Page type for Schema.org"
 msgstr ""
 
-#: modules/seo/seo_engine/extensions/XRE_MetaBox.php:126
+#: modules/seo/seo_engine/extensions/XRE_MetaBox.php:124
 msgid "Article type for Schema.org"
 msgstr ""
 
@@ -747,7 +785,7 @@ msgstr ""
 msgid "Wrong ajax request."
 msgstr ""
 
-#: vendors/shzn-framework/Graphic.class.php:309
+#: vendors/shzn-framework/Graphic.class.php:336
 msgid "Choose a type or enter one manually."
 msgstr ""
 
@@ -764,23 +802,23 @@ msgstr ""
 msgid "Wrong ajax request for %s"
 msgstr ""
 
-#: vendors/shzn-framework/Module.class.php:316
+#: vendors/shzn-framework/Module.class.php:317
 msgid "This Module is disabled for you or for your settings."
 msgstr ""
 
-#: vendors/shzn-framework/Settings.class.php:163
+#: vendors/shzn-framework/Settings.class.php:162
 msgid "Core Settings"
 msgstr ""
 
-#: vendors/shzn-framework/Settings.class.php:221
+#: vendors/shzn-framework/Settings.class.php:220
 msgid "Modules Settings"
 msgstr ""
 
-#: vendors/shzn-framework/Settings.class.php:229
+#: vendors/shzn-framework/Settings.class.php:227
 #, php-format
 msgid "No modules enabled. To enable them go <a href='%s'>here</a>."
 msgstr ""
 
-#: vendors/shzn-framework/loader.php:56
+#: vendors/shzn-framework/loader.php:58
 msgid "Are you sure you want to leave?"
 msgstr ""

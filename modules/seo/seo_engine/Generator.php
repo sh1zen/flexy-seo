@@ -10,6 +10,7 @@ namespace FlexySEO\Engine;
 use FlexySEO\Engine\Generators\OpenGraph;
 use FlexySEO\Engine\Generators\TwitterCard;
 use FlexySEO\Engine\Helpers\CurrentPage;
+use SHZN\core\Cache;
 
 class Generator
 {
@@ -79,7 +80,7 @@ class Generator
      * Generates the meta keywords.
      *
      * @param string $keywords
-     * @return string The meta keywords.
+     * @return string[] The meta keywords.
      */
     public function get_keywords(string $keywords = '')
     {
@@ -105,7 +106,9 @@ class Generator
             $this->current_page->get_query_type()
         );
 
-        $keywords = preg_split("/[\s,]+/", $keywords);
+        $keywords = preg_split("/[\s,]+/", trim($keywords, " ,\t\n\r\0\x0B"));
+
+        $keywords = array_filter((array)$keywords);
 
         $this->set_cache("keywords", maybe_serialize($keywords));
 
@@ -242,7 +245,7 @@ class Generator
 
         $og->title($this->generate_title());
 
-        $image_metadata = $this->get_snippet_image(['medium', 'large'], false);
+        $image_metadata = $this->get_snippet_image(['medium', 'large', 'full'], true);
 
         if ($image_metadata and $image_metadata['url']) {
             $attributes = [];
@@ -280,31 +283,13 @@ class Generator
             $this->current_page->get_query_type()
         );
 
-        $title = trim($title);
-
-        if (str_contains($title, '&')) {
-            $title = preg_replace('/&([^#])(?![a-z1-4]{1,8};)/Ui', '&#038;$1', $title);
-        }
-
-        $title = esc_html($title);
-
         $this->set_cache("title", $title);
 
         return $title;
     }
 
-    public function get_snippet_image($size = 'thumbnail')
+    public function get_snippet_image($size = 'thumbnail', $use_default = true)
     {
-        if (is_array($size)) {
-            foreach ($size as $s) {
-                if ($im = $this->get_snippet_image($s)) {
-                    return $im;
-                }
-            }
-
-            return false;
-        }
-
         if (($_image = $this->get_cache("snippet_image")) !== false) {
             return $_image;
         }
@@ -314,7 +299,7 @@ class Generator
             list($id, $url) = wpfseo('helpers')->post->get_first_usable_image($size);
         }
 
-        if (empty($url)) {
+        if (empty($url) and $use_default) {
 
             if ($size === 'thumbnail') {
                 $url = shzn('wpfs')->settings->get('seo.org.logo_url.small', '');
@@ -322,10 +307,10 @@ class Generator
             else {
                 $url = shzn('wpfs')->settings->get('seo.org.logo_url.wide', '');
             }
+        }
 
-            if (empty($url)) {
-                return false;
-            }
+        if (empty($url)) {
+            return false;
         }
 
         $snippet_data = shzn('wpfs')->options->get($url, "snippet_data", "cache", false);
@@ -359,6 +344,7 @@ class Generator
         }
 
         if ($this->current_page->is_simple_page()) {
+
             $_description = shzn('wpfs')->options->get($this->current_page->get_queried_object_id(), "description", "customMeta", "");
 
             if (!empty($_description)) {
@@ -366,11 +352,19 @@ class Generator
             }
         }
 
+        if (empty($description)) {
+            $description = '%%description%%';
+        }
+
         $description = Txt_Replacer::replace(
             $description,
             $this->current_page->get_queried_object(),
             $this->current_page->get_query_type()
         );
+
+        $description = strip_tags($description);
+
+        $description = strip_shortcodes($description);
 
         $this->set_cache("description", $description);
 
@@ -382,7 +376,18 @@ class Generator
         $tc = new TwitterCard();
 
         if (shzn('wpfs')->settings->get("seo.social.twitter.card", false)) {
+
             $tc->add_card(shzn('wpfs')->settings->get("seo.social.twitter.large_images", true) ? 'summary_large_image' : 'summary');
+
+            $image_metadata = $this->get_snippet_image(['medium', 'large', 'full'], true);
+
+            if ($image_metadata and $image_metadata['url']) {
+                $tc->add_image($image_metadata['url']);
+            }
+
+            $tc->add_title($this->generate_title());
+
+            $tc->add_description($this->get_description());
 
             preg_match('#(https?://twitter\.com/)?(?<name>[^?]+)(\??.*)#i', shzn('wpfs')->settings->get("seo.social.twitter.url", ''), $m);
 

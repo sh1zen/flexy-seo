@@ -40,9 +40,9 @@ class PluginInit
         if (is_admin()) {
 
             $this->register_actions();
-
-            $this->load_textdomain('flexy-seo');
         }
+
+        $this->load_textdomain('wpfs');
 
         $this->maybe_upgrade();
     }
@@ -66,12 +66,13 @@ class PluginInit
      */
     private function load_textdomain($domain)
     {
-        $locale = apply_filters('plugin_locale', get_locale(), $domain);
+        $locale = apply_filters('wpfs_plugin_locale', get_locale(), $domain);
 
         $mo_file = $domain . '-' . $locale . '.mo';
 
-        if (load_textdomain($domain, WP_LANG_DIR . '/plugins/flexy-seo/' . $mo_file))
+        if (load_textdomain($domain, WP_LANG_DIR . '/plugins/flexy-seo/' . $mo_file)) {
             return true;
+        }
 
         return load_textdomain($domain, WPFS_ABSPATH . 'languages/' . $mo_file);
     }
@@ -226,8 +227,9 @@ class PluginInit
      */
     public function donate_link($plugin_meta, $plugin_file, $plugin_data, $status)
     {
-        if ($plugin_file == $this->plugin_basename)
-            $plugin_meta[] = '&hearts; <a target="_blank" href="https://www.paypal.com/donate/?business=dev.sh1zen%40outlook.it&item_name=Thank+you+in+advanced+for+the+kind+donations.+You+will+sustain+me+building+better+software.&currency_code=EUR">' . __('Buy me a beer', 'wpfs') . ' :o)</a>';
+        if ($plugin_file == $this->plugin_basename) {
+            $plugin_meta[] = '&hearts; <a target="_blank" href="https://www.paypal.com/donate/?business=dev.sh1zen%40outlook.it&item_name=Thank+you+in+advanced+for+the+kind+donations.+You+will+sustain+me+developing+FlexySEO.&currency_code=EUR">' . __('Buy me a beer', 'wpfs') . ' :o)</a>';
+        }
 
         return $plugin_meta;
     }
@@ -243,11 +245,7 @@ class PluginInit
      */
     public function extra_plugin_link($links, $file)
     {
-        $links[] = sprintf(
-            '<a href="%s">%s</a>',
-            admin_url('admin.php?page=seo'),
-            __('Settings', 'wpopt')
-        );
+        $links[] = sprintf('<a href="%s">%s</a>', admin_url('admin.php?page=seo'), __('Settings', 'wpfs'));
 
         return $links;
     }

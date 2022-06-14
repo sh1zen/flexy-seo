@@ -1,4 +1,7 @@
 <?php
+
+use SHZN\core\StringHelper;
+
 /**
  * @author    sh1zen
  * @copyright Copyright (C)  2022
@@ -1059,7 +1062,7 @@ class WPFS_Breadcrumb
         }
         elseif (!empty($link['text']) and is_string($link['text'])) {
 
-            $link['text'] = trim($link['text']);
+            $link['text'] = ucfirst(trim($link['text']));
 
             if (!isset($link['allow_html']) or !$link['allow_html']) {
                 $link['text'] = esc_html($link['text']);
@@ -1074,7 +1077,7 @@ class WPFS_Breadcrumb
 
                 $url = esc_url($url);
 
-                $url = mb_strtolower($url);
+                $url = StringHelper::strtolower($url);
 
                 $alternative = "href='" . $url . "'";
             else :
@@ -1103,7 +1106,9 @@ class WPFS_Breadcrumb
 
         if (!empty($links)) {
 
-            $output = implode(' ' . $this->get_option('separator', '>') . ' ', $links);
+            $separator = trim($this->get_option('separator', '>'));
+
+            $output = implode("{$separator}", $links);
 
             if (!empty($output)) {
                 $this->output = "<{$this->wrapper} class='wpfs-breadcrumb' itemscope='' itemtype='http://schema.org/BreadcrumbList'>{$output}</{$this->wrapper}>";

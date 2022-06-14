@@ -23,7 +23,10 @@ class Post
 
     /**
      * Gets the post's first usable content image. Null if none is available.
-     * @return array
+     * @param string|array $size
+     * @param bool $useContent
+     * @param null $post
+     * @return array|mixed|string
      */
     public function get_first_usable_image($size = 'large', $useContent = true, $post = null)
     {
@@ -64,7 +67,7 @@ class Post
                 $mediaID = 0;
             }
             else {
-                $mediaID = $images->posts[0]->ID;
+                $mediaID = $images->posts[0];
             }
 
             unset($images);

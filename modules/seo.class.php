@@ -44,7 +44,6 @@ class Mod_seo extends Module
             set_time_limit(60);
         ?>
         <section class="shzn-wrap">
-            <section class='shzn-header'><h1>SEO / <?php echo __('Settings', 'wpfs'); ?></h1></section>
             <div id="shzn-ajax-message" class="shzn-notice"></div>
             <?php
             if (!empty($this->performer_response)) {
@@ -61,6 +60,7 @@ class Mod_seo extends Module
             }
             ?>
             <block class="shzn">
+                <section class='shzn-header'><h1>SEO / <?php echo __('Settings', 'wpfs'); ?></h1></section>
                 <form id="shzn-uoptions" action="options.php" method="post">
                     <input type="hidden" name="<?php echo shzn('wpfs')->settings->option_name . "[change]" ?>"
                            value="<?php echo $this->slug; ?>">
@@ -216,9 +216,7 @@ class Mod_seo extends Module
             $this->setting_field(__('Keywords', 'wpfs'), 'search.keywords'),
 
             $this->setting_field(__('404 page:', 'wpfs'), false, 'separator'),
-            $this->setting_field(__('Title', 'wpfs'), 'E404.title'),
-            $this->setting_field(__('Meta description', 'wpfs'), 'E404.meta_desc', 'textarea'),
-            $this->setting_field(__('Keywords', 'wpfs'), 'E404.keywords')
+            $this->setting_field(__('Title', 'wpfs'), 'E404.title')
         );
 
         $fields['social'] = $this->group_setting_fields(
@@ -294,9 +292,9 @@ class Mod_seo extends Module
             $this->setting_field(__('Author archive:', 'wpfs'), false, 'separator'),
             $this->setting_field(__('Status', 'wpfs'), 'archives.author.active', 'checkbox', ['default_value' => true]),
             $this->setting_field(__('Show author archive in search results', 'wpfs'), 'archives.author.show', 'checkbox', ['default_value' => true, 'parent' => 'archives.author.active']),
-            $this->setting_field(__('Title', 'wpfs'), 'archives.date.title', 'text', ['parent' => 'archives.author.active']),
-            $this->setting_field(__('Meta description', 'wpfs'), 'archives.date.meta_desc', 'textarea', ['parent' => 'archives.author.active']),
-            $this->setting_field(__('Keywords', 'wpfs'), 'archives.date.keywords', 'text', ['parent' => 'archives.author.active'])
+            $this->setting_field(__('Title', 'wpfs'), 'archives.author.title', 'text', ['parent' => 'archives.author.active']),
+            $this->setting_field(__('Meta description', 'wpfs'), 'archives.author.meta_desc', 'textarea', ['parent' => 'archives.author.active']),
+            $this->setting_field(__('Keywords', 'wpfs'), 'archives.author.keywords', 'text', ['parent' => 'archives.author.active'])
         );
 
         $fields['schema.org'] = $this->group_setting_fields(
@@ -435,6 +433,10 @@ class Mod_seo extends Module
                 <td><?php echo __('Default separator.', 'wpfs'); ?></td>
             </tr>
             <tr>
+                <td><strong>%%search%%</strong></td>
+                <td><?php echo __('The search query.', 'wpfs'); ?></td>
+            </tr>
+            <tr>
                 <td><strong>%%sitename%%</strong></td>
                 <td><?php echo __('The site name.', 'wpfs'); ?></td>
             </tr>
@@ -443,8 +445,24 @@ class Mod_seo extends Module
                 <td><?php echo __('The resume of the current queried post.', 'wpfs'); ?></td>
             </tr>
             <tr>
+                <td><strong>%%excerpt%%</strong></td>
+                <td><?php echo __('The excerpt of the current queried post.', 'wpfs'); ?></td>
+            </tr>
+            <tr>
                 <td><strong>%%title%%</strong></td>
                 <td><?php echo __('The default WordPress title of the current queried object.', 'wpfs'); ?></td>
+            </tr>
+            <tr>
+                <td><strong>%%found_post%%</strong></td>
+                <td><?php echo __('The number of found posts.', 'wpfs'); ?></td>
+            </tr>
+            <tr>
+                <td><strong>%%pagetotal%%</strong></td>
+                <td><?php echo __('The total number of pages for the current query.', 'wpfs'); ?></td>
+            </tr>
+            <tr>
+                <td><strong>%%pagenumber%%</strong></td>
+                <td><?php echo __('The current page number for the current query.', 'wpfs'); ?></td>
             </tr>
             <tr>
                 <td><strong>%%language%%</strong></td>
@@ -452,7 +470,11 @@ class Mod_seo extends Module
             </tr>
             <tr>
                 <td><strong>%%date%%</strong></td>
-                <td><?php echo __('Current date.', 'wpfs'); ?></td>
+                <td><?php echo __('Current date in Y-m-d format.', 'wpfs'); ?></td>
+            </tr>
+            <tr>
+                <td><strong>%%time%%</strong></td>
+                <td><?php echo __('Current time in H:i:s format.', 'wpfs'); ?></td>
             </tr>
             <tr>
                 <td><strong>%%sitedesc%%</strong></td>

@@ -13,10 +13,10 @@
  * Author URI: https://sh1zen.github.io/
  * Text Domain: wpfs
  * Domain Path: /languages
- * Version: 1.4.9
+ * Version: 1.5.3
  */
 
-const WPFS_VERSION = '1.4.9';
+const WPFS_VERSION = '1.5.3';
 
 const WPFS_FILE = __FILE__;
 define('WPFS_ABSPATH', dirname(__FILE__) . '/');
@@ -27,6 +27,9 @@ const WPFS_VENDORS = WPFS_ABSPATH . 'vendors/';
 
 // shzn-framework commons
 if (!defined('SHZN_FRAMEWORK')) {
+    if (!file_exists(WPFS_VENDORS . 'shzn-framework/loader.php')) {
+        return;
+    }
     require_once WPFS_VENDORS . 'shzn-framework/loader.php';
 }
 

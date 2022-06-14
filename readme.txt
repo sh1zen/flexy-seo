@@ -1,11 +1,11 @@
 === Flexy SEO === 
 Contributors: sh1zen 
-Tags: SEO, Breadcrumbs, Content analysis, Readability, Schema, Ranking
-Donate link: https://www.paypal.com/donate?business=dev.sh1zen%40outlook.it&item_name=Thank+you+in+advanced+for+the+kind+donations.+You+will+sustain+me+building+better+software.&currency_code=EUR
+Tags: SEO, Breadcrumbs, Content analysis, Readability, Schema, Ranking; SERP
+Donate link: https://www.paypal.com/donate?business=dev.sh1zen%40outlook.it&item_name=Thank+you+in+advanced+for+the+kind+donations.+You+will+sustain+me+developing+FlexySEO.&currency_code=EUR
 Requires at least: 4.6.0
 Tested up to: 6.0
 Requires PHP: 7.4
-Stable tag: 1.4.9
+Stable tag: 1.5.3
 License: GNU v3.0 License
 URI: https://github.com/sh1zen/flexy-seo/blob/master/LICENSE
 
@@ -16,16 +16,14 @@ Search Engine (SEO) &amp; Performance Optimization plugin.
 Flexy SEO contains most requested features for your website seo, carrying many options to optimize and analyze it.
 All customizable in few and easy steps.
 
-**WHY USING Flexy SEO?**
+**WHY USING Flexy SEO (WPFS)?**
   
 * **All In One:** WPFS carries many features to bring you a full control on the SEO.
 * **Easy to use:** WPFS was designed to be intuitive, allowing also non experts to be able to make that changes to have a great website. 
-* **Performances:** WPFS is built to speed up your site, every single module is optimized to ensure the best performance.
-* **Multisite support.**
-* **Free.**  
+* **Performances oriented:** WPFS is built to speed up your site, every single module is optimized to ensure the best performance.
 * **Privacy:** WPFS does not collect nor send any data.
-  **No subscription email is asked or required.**
-  
+* **No subscription email is asked or required.**
+* **Free.**
 
 **BENEFITS**
 
@@ -34,16 +32,18 @@ All customizable in few and easy steps.
 
 **FEATURES**
 
-* ***SEO:*** offers many features to improve SEO.
-* ***Site validator:*** allow some site verification by code (like facebook, google...).
-* ***Adaptive:*** easy adapts to custom post types or custom taxonomies
-* ***Standard Breadcrumbs*** .
+* ***Full control over SEO***.
+* ***Webmaster tools:*** allow site verification (Google, Bing, Yandex, Baidu).
+* ***Social support:*** support open graph by facebook and metacard data for Twitter, furthermore allow site verification and profile connection in schema.org info (Facebook, Linkedin, Twitter, ...).
+* ***Adaptive:*** easy adapts to custom post types or custom taxonomies.
+* ***Knowledge Graph***.
+* ***Standard Breadcrumbs***.
 * ***Flexed Breadcrumbs:*** a powerful tool to help you create personalized breadcrumb structure.
 
 **DONATIONS**
 
 This plugin is free and always will be, but if you are feeling generous and want to show your support, you can buy me a
-beer or coffee [here](https://www.paypal.com/donate/?business=dev.sh1zen%40outlook.it&item_name=Thank+you+in+advanced+for+the+kind+donations.+You+will+sustain+me+building+better+software.&currency_code=EUR), I will really appreciate it.
+beer or coffee [here](https://www.paypal.com/donate/?business=dev.sh1zen%40outlook.it&item_name=Thank+you+in+advanced+for+the+kind+donations.+You+will+sustain+me+developing+FlexySEO.&currency_code=EUR), I will really appreciate it.
 
 == Installation ==
 
@@ -102,6 +102,28 @@ Deactivate the plugin and reactivate it, if this doesn't work try to uninstall a
 work! Otherwise, go to the new added module "Setting" and try a reset.
 
 == Changelog ==
+
+= 1.5.3 = 
+
+* fixed some bugs
+
+= 1.5.1 = 
+
+* improved breadcrumbs view
+* updated translations
+* improved graphic generation
+* fixed author archive SEO
+
+= 1.5.0 =
+
+* added theme dev function wpfs_the_title($filtered = true, $trailingBlogName = true)
+* added theme dev function wpfs_get_the_description($post = null, $default = '')
+* added theme dev function wpfs_get_mainImageURL($post = null, $size = 'large')
+* added theme dev function wpfs_get_post_excerpt($post = null, $length = 32, $more = '...')
+* improved title generation corner cases
+* updated core
+* updated user interface
+* fixed some bugs in Graph generation process
 
 = 1.4.9 =
 
@@ -183,7 +205,7 @@ work! Otherwise, go to the new added module "Setting" and try a reset.
 = 1.1.0 =
 
 * added a filter for pages title "wpfs_title"
-* added a filter for replacements rules "wpfs_custom_replace_{$type}", where $type is one of (search|post_archive|home|post|term|user|date|404)
+* added a filter for replacements rules "wpfs_replacement_{$rule}_{$type}", where $type is one of (search|post_archive|home|post|term|user|date|404)
 
 = 1.0.2 =
 

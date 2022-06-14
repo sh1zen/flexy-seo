@@ -272,10 +272,8 @@ class Presenter
 
     public function filter_title($title = '')
     {
-        $_title = $this->generator->generate_title();
+        $title = $this->generator->generate_title();
 
-        $title = apply_filters("wpfs_title", $_title, $title);
-
-        return wptexturize($title);
+        return apply_filters("wpfs_title", $title);
     }
 }

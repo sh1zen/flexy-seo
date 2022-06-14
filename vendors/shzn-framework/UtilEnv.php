@@ -256,7 +256,7 @@ class UtilEnv
      * @param mixed $value
      * @return boolean
      */
-    public static function to_boolean($value)
+    public static function to_boolean($value, $strict = false)
     {
         if (is_string($value)) {
             switch (strtolower($value)) {
@@ -278,6 +278,10 @@ class UtilEnv
                 case 'disabled':
                     return false;
             }
+        }
+
+        if ($strict) {
+            return $value === true;
         }
 
         return (boolean)$value;
@@ -816,41 +820,6 @@ class UtilEnv
         return ($total > 0 ? round(($current / $total) * 100, 2) : 0) . '%';
     }
 
-    /**
-     * Internal helper function to sanitize a string from user input or from the db
-     *
-     * @param string $str String to sanitize.
-     * @param bool $keep_newlines Optional. Whether to keep newlines. Default: false.
-     * @return string Sanitized string.
-     * @since 1.0.0
-     *
-     */
-    public static function sanitize_text_field($str, $keep_newlines = false)
-    {
-        if (is_object($str) or is_array($str)) {
-            return '';
-        }
-
-        $str = (string)$str;
-
-        $filtered = wp_check_invalid_utf8($str);
-
-        if (str_contains($filtered, '<')) {
-            $filtered = wp_pre_kses_less_than($filtered);
-            // This will strip extra whitespace for us.
-            $filtered = wp_strip_all_tags($filtered, false);
-
-            // Use HTML entities in a special case to make sure no later
-            // newline stripping stage could lead to a functional tag.
-            $filtered = str_replace("<\n", "&lt;\n", $filtered);
-        }
-
-        if (!$keep_newlines) {
-            $filtered = preg_replace('/[\r\n\t ]+/', ' ', $filtered);
-        }
-
-        return trim($filtered);
-    }
 
     /**
      * check if time left is more than a margin otherwise try to rise it
@@ -889,5 +858,44 @@ class UtilEnv
         }
 
         return wp_verify_nonce($nonce, $name);
+    }
+
+    public static function is_safe_buffering()
+    {
+        $noOptimize = false;
+
+        // Checking for DONOTMINIFY constant as used by e.g. WooCommerce POS.
+        if (defined('DONOTMINIFY') and UtilEnv::to_boolean(constant('DONOTMINIFY'), true)) {
+            $noOptimize = true;
+        }
+
+        // And make sure pagebuilder previews don't get optimized HTML/ JS/ CSS/ ...
+        if (false === $noOptimize) {
+            $_qs_pageBuilders = array('tve', 'elementor-preview', 'fl_builder', 'vc_action', 'et_fb', 'bt-beaverbuildertheme', 'ct_builder', 'fb-edit', 'siteorigin_panels_live_editor');
+            foreach ($_qs_pageBuilders as $pageBuilder) {
+                if (isset($_GET[$pageBuilder])) {
+                    $noOptimize = true;
+                    break;
+                }
+            }
+        }
+
+        // Also honor PageSpeed=off parameter as used by mod_pagespeed, in use by some pagebuilders,
+        // see https://www.modpagespeed.com/doc/experiment#ModPagespeed for info on that.
+        if (false === $noOptimize and array_key_exists('PageSpeed', $_GET) and 'off' === $_GET['PageSpeed']) {
+            $noOptimize = true;
+        }
+
+        // Check for site being previewed in the Customizer (available since WP 4.0).
+        $is_customize_preview = false;
+        if (function_exists('is_customize_preview') and is_customize_preview()) {
+            $is_customize_preview = is_customize_preview();
+        }
+
+        /**
+         * We only buffer the frontend requests (and then only if not a feed
+         * and not turned off explicitly and not when being previewed in Customizer)!
+         */
+        return (!is_admin() and !is_feed() and !is_embed() and !$noOptimize and !$is_customize_preview);
     }
 }

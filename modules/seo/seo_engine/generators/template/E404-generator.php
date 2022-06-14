@@ -43,11 +43,11 @@ class E404_Generator extends Generator
      * Generates the meta keywords.
      *
      * @param string $keywords
-     * @return string The meta keywords.
+     * @return array The meta keywords.
      */
     public function get_keywords(string $keywords = '')
     {
-        return parent::get_keywords(shzn('wpfs')->settings->get($this->settings_path . 'keywords', ''));
+        return [];
     }
 
     /**
@@ -81,7 +81,7 @@ class E404_Generator extends Generator
      */
     public function get_description(string $description = '')
     {
-        return parent::get_description(shzn('wpfs')->settings->get($this->settings_path . 'meta_desc', ''));
+        return '';
     }
 
 }

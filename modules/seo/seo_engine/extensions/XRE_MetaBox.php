@@ -15,8 +15,6 @@ class XRE_MetaBox
     {
         add_action('add_meta_boxes', [$this, 'add']);
         add_action('save_post', [$this, 'save'], 10, 3);
-
-        //add_action('admin_enqueue_scripts', [$this, 'enqueue_scripts']);
     }
 
     public static function get_value($id, $item, $context, $default = false)
@@ -84,7 +82,7 @@ class XRE_MetaBox
         $keyword = $description = "";
         $post_id = 0;
 
-        if (isset($post->ID) and $post->ID) {
+        if (!empty($post) and $post->ID) {
             $post_id = $post->ID;
             $keyword = shzn('wpfs')->options->get($post_id, "keywords", "customMeta", "");
             $description = shzn('wpfs')->options->get($post_id, "description", "customMeta", "");
@@ -103,21 +101,21 @@ class XRE_MetaBox
                 'name'              => 'keywords',
                 'label'             => __('Keyword phrase', 'wpfs'),
                 'type'              => 'textarea',
-                'sanitize_callback' => 'sanitize_text_field',
+                'sanitize_callback' => [$this, 'sanitize_text'],
                 'values'            => [['value' => $keyword]]
             ],
             [
                 'name'              => 'description',
                 'label'             => __('Description', 'wpfs'),
                 'type'              => 'textarea',
-                'sanitize_callback' => 'sanitize_text_field',
+                'sanitize_callback' => [$this, 'sanitize_text'],
                 'values'            => [['value' => $description]]
             ],
             [
                 'name'              => 'graphPageType',
                 'label'             => __('Page type for Schema.org', 'wpfs'),
                 'type'              => 'select',
-                'sanitize_callback' => 'sanitize_text_field',
+                'sanitize_callback' => [$this, 'sanitize_text'],
                 'values'            => $supportedPageGraphs,
                 'value'             => shzn('wpfs')->options->get($post_id, "graphPageType", "customMeta")
             ],
@@ -130,6 +128,17 @@ class XRE_MetaBox
                 'value'             => shzn('wpfs')->options->get($post_id, "graphArticleType", "customMeta")
             ],
         ];
+    }
+
+    public function sanitize_text($str)
+    {
+        $str = (string)$str;
+
+        $filtered = wp_check_invalid_utf8($str);
+
+        $filtered = htmlspecialchars($filtered, ENT_QUOTES);
+
+        return trim($filtered);
     }
 
     /**
@@ -187,11 +196,12 @@ class XRE_MetaBox
 
                     case 'textarea':
                         foreach ($values as $index => $value) {
+
                             if ($value['text']) {
                                 echo "<label class='wpfs_label' for='{$field['name']}_{$index}}'>{$value['text']}</label>";
                             }
 
-                            echo "<textarea autocomplete='off' class='wpfs_input' name='wpfs_metabox[{$field['name']}]' value='{$value['value']}' id='{$field['name']}_{$index}'></textarea>";
+                            echo "<textarea autocomplete='off' class='wpfs_input' name='wpfs_metabox[{$field['name']}]' value='{$value['value']}' id='{$field['name']}_{$index}'>{$value['value']}</textarea>";
                         }
                         break;
 

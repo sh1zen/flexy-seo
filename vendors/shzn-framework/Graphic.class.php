@@ -96,7 +96,9 @@ class Graphic
 
             $row_class = $padding_left !== 0 ? 'shzn-child' : '';
 
-            $_oBefore = "<tr class='{$row_class}'><td class='option' style='padding-left: {$padding_left}px'><strong>{$args['name']}:</strong></td><td class='value'><label for='{$args['id']}'></label>";
+            $_style = $padding_left ? "style='padding-left: {$padding_left}px'" : '';
+
+            $_oBefore = "<tr class='{$row_class}'><td class='option' {$_style}><strong>{$args['name']}:</strong></td><td class='value'><label for='{$args['id']}'></label>";
             $_oAfter = "</td></tr>";
         }
         else {
@@ -146,7 +148,7 @@ class Graphic
             case "button":
             case "submit":
 
-                $args['classes'][] = 'shzn-input';
+                $args['classes'][] = 'shzn';
                 $args['classes'][] = 'shzn-' . strtolower($args['type']);
 
                 $_oInner .= "<input " . self::buildProps([
@@ -198,7 +200,7 @@ class Graphic
 
             case "textarea":
 
-                $args['classes'][] = "shzn-textarea";
+                $args['classes'][] = "shzn";
 
                 $_oInner .= "<textarea " . self::buildProps([
                         'class' => self::classes($args['classes']),
@@ -268,7 +270,7 @@ class Graphic
     public static function buildProps($props = [], $strip_empty = false)
     {
         $_props = '';
-
+/*
         foreach ($props as $key => $value) {
 
             if (is_array($value))
@@ -281,6 +283,31 @@ class Graphic
                         $_props .= $key . ' ';
                     else if (!$strip_empty)
                         $_props .= $key . ' ';
+                }
+            }
+        }
+*/
+        foreach ($props as $key => $value) {
+
+            if (is_array($value))
+            {
+                $_props .= self::buildProps($value, $strip_empty);
+            }
+            else {
+                if (is_string($value)) {
+                    if(!$strip_empty or !empty($value)) {
+                        $_props .= $key . '="' . $value . '" ';
+                    }
+                }
+                else {
+                    if ($strip_empty) {
+                        if(empty($value) and $value !== 0) {
+                            $_props .= $key . ' ';
+                        }
+                    }
+                    else {
+                        $_props .= $key . ' ';
+                    }
                 }
             }
         }
@@ -328,9 +355,9 @@ class Graphic
         return ob_get_clean();
     }
 
-    public static function buildField($type, $props = [])
+    public static function buildField($type, $props = [], $content = '')
     {
-        return "<{$type} " . self::buildProps($props) . "></{$type}>";
+        return "<{$type} " . self::buildProps($props) . ">{$content}</{$type}>";
     }
 
 

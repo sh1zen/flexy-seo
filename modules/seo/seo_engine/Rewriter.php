@@ -30,7 +30,6 @@ class Rewriter
 
     public function get_pagenum_link($pagenum = 1, $escape = true)
     {
-
         global $wp_rewrite;
 
         $pagenum = (int)$pagenum;
@@ -82,16 +81,6 @@ class Rewriter
 
             $result = $base . $request . $query_string;
         }
-
-        /**
-         * Filters the page number link for the current request.
-         *
-         * @param string $result The page number link.
-         * @param int $pagenum The page number.
-
-         *
-         */
-        $result = apply_filters('get_pagenum_link', $result, $pagenum);
 
         if ($escape) {
             return esc_url($result);
@@ -211,8 +200,6 @@ class Rewriter
     /**
      * Retrieves the attachment url for the current page.
      *
-     * @codeCoverageIgnore It wraps WordPress functions.
-     *
      * @return string The attachment url.
      */
     private function get_attachment_url()
@@ -222,13 +209,7 @@ class Rewriter
          *
          * @api string $attachment_url The attachment URL for the queried object.
          * @api object $queried_object The queried object.
-         *
-         * @since 1.0.0
          */
-        return \apply_filters(
-            'flexyseo_template_redirect_url',
-            \wp_get_attachment_url(\get_queried_object_id()),
-            \get_queried_object()
-        );
+        return \apply_filters('wpfs_template_redirect_url', wp_get_attachment_url($this->current_page->get_queried_object_id()), $this->current_page->get_queried_object());
     }
 }

@@ -37,11 +37,9 @@ class Settings
 
     public static function check($settings, $key, $default = false)
     {
-        if (isset($settings[$key])) {
-            return $settings[$key];
-        }
+        $res = self::get_option($settings, $key, null);
 
-        return $default;
+        return $res === null ? $default : $res;
     }
 
     /**
@@ -160,8 +158,8 @@ class Settings
         settings_errors();
         ?>
         <section class="shzn-wrap shzn">
-            <section class='shzn-header'><h1><?php _e('Core Settings', $this->context); ?></h1></section>
             <block class="shzn">
+                <section class='shzn-header'><h1><?php _e('Core Settings', $this->context); ?></h1></section>
                 <?php
 
                 if (!empty($modules)) {
@@ -218,8 +216,8 @@ class Settings
         settings_errors();
         ?>
         <section class="shzn-wrap shzn">
-            <section class='shzn-header'><h1><?php _e('Modules Settings', $this->context); ?></h1></section>
             <block class="shzn">
+                <section class='shzn-header'><h1><?php _e('Modules Settings', $this->context); ?></h1></section>
                 <?php
 
                 if (!empty($modules)) {

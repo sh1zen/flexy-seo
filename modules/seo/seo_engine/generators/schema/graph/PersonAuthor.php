@@ -7,6 +7,7 @@
 
 namespace FlexySEO\Engine\Generators\Schema\Graphs;
 
+use FlexySEO\Engine\Generators\GraphBuilder;
 use FlexySEO\Engine\Helpers\CurrentPage;
 
 /**
@@ -21,12 +22,12 @@ class PersonAuthor extends Person
      * @param \FlexySEO\Engine\Helpers\CurrentPage $currentPage
      * @param string $type
      * @param ...$args
-     * @return array $data The graph data.
+     * @return \FlexySEO\Engine\Generators\GraphBuilder $data The graph data.
      */
     public function get(CurrentPage $currentPage, string $type = '', ...$args)
     {
         if (!$currentPage->get_queried_object()->post_author) {
-            return [];
+            return new GraphBuilder();
         }
 
         return Person::build($currentPage->get_queried_object()->post_author);

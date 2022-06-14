@@ -8,7 +8,7 @@
 namespace SHZN\modules;
 
 use SHZN\core\Ajax;
-use SHZN\core\UtilEnv;
+use SHZN\core\StringHelper;
 use SHZN\core\Graphic;
 use SHZN\core\Settings;
 
@@ -184,7 +184,7 @@ class Module
                 case 'dropdown':
                 case 'textarea':
                 case 'upload-input':
-                    $value = UtilEnv::sanitize_text_field($input[$field['id']]);
+                    $value = StringHelper::sanitize_text_field($input[$field['id']]);
                     break;
 
                 case 'number':
@@ -243,7 +243,6 @@ class Module
         }
 
         $_header = $this->setting_form_templates('header');
-        $_footer = $this->setting_form_templates('footer');
 
         $_divider = false;
 
@@ -279,6 +278,8 @@ class Module
             </form>
             <?php
         }
+
+        $_footer = $this->setting_form_templates('footer');
 
         if (!empty($_footer)) {
 

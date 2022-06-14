@@ -225,10 +225,10 @@ class PagesHandler
         ?>
         <section class="shzn-wrap-flex shzn-wrap shzn-home">
             <section class="shzn">
-                <block class="shzn-header">
-                    <h1>Flexy SEO</h1>
-                </block>
                 <block class="shzn">
+                    <block class="shzn-header">
+                        <h1>Flexy SEO</h1>
+                    </block>
                     <h2><?php _e('Configuration:', 'wpfs'); ?></h2>
                     <p>
                         <?php
@@ -268,7 +268,7 @@ class PagesHandler
                     <div class="shzn-donation-wrap">
                         <div class="shzn-donation-title"><?php _e('Support this project, buy me a coffee.', 'wpfs'); ?></div>
                         <br>
-                        <a href="https://www.paypal.com/donate/?business=dev.sh1zen%40outlook.it&item_name=Thank+you+in+advanced+for+the+kind+donations.+You+will+sustain+me+building+better+software.&currency_code=EUR">
+                        <a href="https://www.paypal.com/donate/?business=dev.sh1zen%40outlook.it&item_name=Thank+you+in+advanced+for+the+kind+donations.+You+will+sustain+me+developing+FlexySEO.&currency_code=EUR">
                             <img src="https://www.paypalobjects.com/en_US/IT/i/btn/btn_donateCC_LG.gif"
                                  title="PayPal - The safer, easier way to pay online!" alt="Donate with PayPal button"/>
                         </a>

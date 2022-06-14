@@ -521,7 +521,12 @@ class CurrentPage
     public function get_page_number()
     {
         $page = get_query_var('page');
-        $paged = get_query_var('paged');
-        return !empty($page) ? $page : (!empty($paged) ? $paged : 1);
+        $page_n = get_query_var('paged');
+        return !empty($page) ? $page : (!empty($page_n) ? $page_n : 1);
+    }
+
+    public function is_feed()
+    {
+        return $this->get_main_query()->is_feed();
     }
 }
