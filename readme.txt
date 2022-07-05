@@ -1,11 +1,11 @@
 === Flexy SEO === 
 Contributors: sh1zen 
 Tags: SEO, Breadcrumbs, Content analysis, Readability, Schema, Ranking; SERP
-Donate link: https://www.paypal.com/donate?business=dev.sh1zen%40outlook.it&item_name=Thank+you+in+advanced+for+the+kind+donations.+You+will+sustain+me+building+better+software.&currency_code=EUR
+Donate link: https://www.paypal.com/donate?business=dev.sh1zen%40outlook.it&item_name=Thank+you+in+advanced+for+the+kind+donations.+You+will+sustain+me+developing+FlexySEO.&currency_code=EUR
 Requires at least: 4.6.0
 Tested up to: 6.0
 Requires PHP: 7.4
-Stable tag: 1.5.0
+Stable tag: 1.5.1
 License: GNU v3.0 License
 URI: https://github.com/sh1zen/flexy-seo/blob/master/LICENSE
 
@@ -43,7 +43,7 @@ All customizable in few and easy steps.
 **DONATIONS**
 
 This plugin is free and always will be, but if you are feeling generous and want to show your support, you can buy me a
-beer or coffee [here](https://www.paypal.com/donate/?business=dev.sh1zen%40outlook.it&item_name=Thank+you+in+advanced+for+the+kind+donations.+You+will+sustain+me+building+better+software.&currency_code=EUR), I will really appreciate it.
+beer or coffee [here](https://www.paypal.com/donate/?business=dev.sh1zen%40outlook.it&item_name=Thank+you+in+advanced+for+the+kind+donations.+You+will+sustain+me+developing+FlexySEO.&currency_code=EUR), I will really appreciate it.
 
 == Installation ==
 
@@ -103,6 +103,13 @@ work! Otherwise, go to the new added module "Setting" and try a reset.
 
 == Changelog ==
 
+= 1.5.1 = 
+
+* improved breadcrumbs view
+* updated translations
+* improved graphic generation
+* fixed author archive SEO
+
 = 1.5.0 =
 
 * added theme dev function wpfs_the_title($filtered = true, $trailingBlogName = true)
@@ -112,7 +119,6 @@ work! Otherwise, go to the new added module "Setting" and try a reset.
 * improved title generation corner cases
 * updated core
 * updated user interface
-* updated translations
 * fixed some bugs in Graph generation process
 
 = 1.4.9 =

@@ -292,9 +292,9 @@ class Mod_seo extends Module
             $this->setting_field(__('Author archive:', 'wpfs'), false, 'separator'),
             $this->setting_field(__('Status', 'wpfs'), 'archives.author.active', 'checkbox', ['default_value' => true]),
             $this->setting_field(__('Show author archive in search results', 'wpfs'), 'archives.author.show', 'checkbox', ['default_value' => true, 'parent' => 'archives.author.active']),
-            $this->setting_field(__('Title', 'wpfs'), 'archives.date.title', 'text', ['parent' => 'archives.author.active']),
-            $this->setting_field(__('Meta description', 'wpfs'), 'archives.date.meta_desc', 'textarea', ['parent' => 'archives.author.active']),
-            $this->setting_field(__('Keywords', 'wpfs'), 'archives.date.keywords', 'text', ['parent' => 'archives.author.active'])
+            $this->setting_field(__('Title', 'wpfs'), 'archives.author.title', 'text', ['parent' => 'archives.author.active']),
+            $this->setting_field(__('Meta description', 'wpfs'), 'archives.author.meta_desc', 'textarea', ['parent' => 'archives.author.active']),
+            $this->setting_field(__('Keywords', 'wpfs'), 'archives.author.keywords', 'text', ['parent' => 'archives.author.active'])
         );
 
         $fields['schema.org'] = $this->group_setting_fields(

@@ -270,7 +270,7 @@ class Graphic
     public static function buildProps($props = [], $strip_empty = false)
     {
         $_props = '';
-
+/*
         foreach ($props as $key => $value) {
 
             if (is_array($value))
@@ -283,6 +283,31 @@ class Graphic
                         $_props .= $key . ' ';
                     else if (!$strip_empty)
                         $_props .= $key . ' ';
+                }
+            }
+        }
+*/
+        foreach ($props as $key => $value) {
+
+            if (is_array($value))
+            {
+                $_props .= self::buildProps($value, $strip_empty);
+            }
+            else {
+                if (is_string($value)) {
+                    if(!$strip_empty or !empty($value)) {
+                        $_props .= $key . '="' . $value . '" ';
+                    }
+                }
+                else {
+                    if ($strip_empty) {
+                        if(empty($value) and $value !== 0) {
+                            $_props .= $key . ' ';
+                        }
+                    }
+                    else {
+                        $_props .= $key . ' ';
+                    }
                 }
             }
         }
@@ -330,9 +355,9 @@ class Graphic
         return ob_get_clean();
     }
 
-    public static function buildField($type, $props = [])
+    public static function buildField($type, $props = [], $content = '')
     {
-        return "<{$type} " . self::buildProps($props) . "></{$type}>";
+        return "<{$type} " . self::buildProps($props) . ">{$content}</{$type}>";
     }
 
 

@@ -85,7 +85,8 @@ class StringHelper
 
     public static function str_is_valid_regex(string $string)
     {
-        set_error_handler(function () {}, E_WARNING);
+        set_error_handler(function () {
+        }, E_WARNING);
         $is_regex = (false !== preg_match($string, ''));
         restore_error_handler();
 
@@ -222,6 +223,16 @@ class StringHelper
         }
 
         return $available;
+    }
+
+    public static function strtolower(string $string)
+    {
+        if (self::mbstring_available()) {
+            //mb_strtolower($string, mb_detect_encoding($string));
+            return mb_strtolower($string);
+        }
+
+        return strtolower($string);
     }
 
     /**
