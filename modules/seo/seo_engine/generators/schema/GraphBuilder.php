@@ -11,7 +11,7 @@ class GraphBuilder
 {
     private array $graph = [];
 
-    public function __construct($type, $id = '')
+    public function __construct($type = [], $id = '')
     {
         if (is_array($type)) {
             $this->graph = $type;

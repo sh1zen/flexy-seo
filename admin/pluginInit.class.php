@@ -40,9 +40,9 @@ class PluginInit
         if (is_admin()) {
 
             $this->register_actions();
-
-            $this->load_textdomain('flexy-seo');
         }
+
+        $this->load_textdomain('wpfs');
 
         $this->maybe_upgrade();
     }
@@ -70,8 +70,9 @@ class PluginInit
 
         $mo_file = $domain . '-' . $locale . '.mo';
 
-        if (load_textdomain($domain, WP_LANG_DIR . '/plugins/flexy-seo/' . $mo_file))
+        if (load_textdomain($domain, WP_LANG_DIR . '/plugins/flexy-seo/' . $mo_file)) {
             return true;
+        }
 
         return load_textdomain($domain, WPFS_ABSPATH . 'languages/' . $mo_file);
     }
@@ -244,11 +245,7 @@ class PluginInit
      */
     public function extra_plugin_link($links, $file)
     {
-        $links[] = sprintf(
-            '<a href="%s">%s</a>',
-            admin_url('admin.php?page=seo'),
-            __('Settings', 'wpopt')
-        );
+        $links[] = sprintf('<a href="%s">%s</a>', admin_url('admin.php?page=seo'), __('Settings', 'wpfs'));
 
         return $links;
     }

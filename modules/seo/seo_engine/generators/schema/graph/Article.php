@@ -29,7 +29,7 @@ class Article extends Graph
         $post = $currentPage->get_queried_object();
 
         if (!$post->post_author or $post->post_type === 'page') {
-            return new GraphBuilder([]);
+            return new GraphBuilder();
         }
 
         // Get all terms that the post is assigned to.

@@ -27,7 +27,7 @@ class BreadcrumbList extends Graph
         $breadcrumbs = \WPFS_Breadcrumb::export();
 
         if (empty($breadcrumbs)) {
-            return new GraphBuilder([]);
+            return new GraphBuilder();
         }
 
         $graph = new GraphBuilder(

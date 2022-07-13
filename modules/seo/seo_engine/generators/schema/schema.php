@@ -144,9 +144,7 @@ class Schema
 
             $graphBuild = (new $namespace($this->generator))->get($this->context, $graphType);
 
-            $graphBuild = apply_filters("wpfs_schema_" . $this->context->get_page_type(), $graphBuild, $graphType, $this->context);
-
-            $graphBuild = apply_filters("wpfs_schema_type_" . strtolower($graphType), $graphBuild, $this->context);
+            $graphBuild = apply_filters("wpfs_schema_" . strtolower($graphType), $graphBuild, $this->context);
 
             $this->graphs[] = $graphBuild->export();
         }
