@@ -7,6 +7,8 @@
 
 namespace FlexySEO\Engine;
 
+use FlexySEO\Engine\Helpers\CurrentPage;
+
 class Indexable
 {
     public int $object_id;
@@ -18,13 +20,13 @@ class Indexable
      */
     public $object;
 
-    public function __construct()
+    public function __construct(CurrentPage $currentPage)
     {
-        $this->type = wpfseo()->currentPage->get_page_type();
+        $this->type = $currentPage->get_page_type();
 
-        $this->object_id = wpfseo()->currentPage->get_queried_object_id();
+        $this->object_id = $currentPage->get_queried_object_id();
 
-        $this->object = wpfseo()->currentPage->get_queried_object();
+        $this->object = $currentPage->get_queried_object();
     }
 
 }

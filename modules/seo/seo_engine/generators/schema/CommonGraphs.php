@@ -7,6 +7,8 @@
 
 namespace FlexySEO\Engine\Generators;
 
+use FlexySEO\Engine\Helpers\Images;
+
 class CommonGraphs
 {
     /**
@@ -33,7 +35,7 @@ class CommonGraphs
         }
         else {
             $attachmentId = wpfseo()->images->attachmentUrlToPostId($imageUrlId);
-            $imageData = wpfseo()->images->get_image($attachmentId, $size);
+            $imageData = Images::get_image($attachmentId, $size);
 
             if (!$imageData) {
 
@@ -57,7 +59,6 @@ class CommonGraphs
             [
                 '@id'         => strtolower($graphId),
                 'url'         => $imageData['url'],
-                'contentUrl ' => $imageData['url'],
                 'inLanguage'  => wpfseo()->language->currentLanguageCodeBCP47()
             ]
         );

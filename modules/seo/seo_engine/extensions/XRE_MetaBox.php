@@ -11,10 +11,15 @@ use FlexySEO\Engine\Generators\Schema;
 
 class XRE_MetaBox
 {
+    public $loaded = false;
+
     public function __construct()
     {
-        add_action('add_meta_boxes', [$this, 'add']);
-        add_action('save_post', [$this, 'save'], 10, 3);
+        if (shzn('wpfs')->settings->get("seo.addon.xre_metaboxe", true)) {
+            add_action('add_meta_boxes', [$this, 'add']);
+            add_action('save_post', [$this, 'save'], 10, 3);
+            $this->loaded = true;
+        }
     }
 
     public static function get_value($id, $item, $context, $default = false)

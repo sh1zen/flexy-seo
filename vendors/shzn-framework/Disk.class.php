@@ -40,21 +40,20 @@ class Disk
         return self::$wp_filesystem;
     }
 
-    public static function write($path, $data)
+    public static function write($path, $data, $flag = FILE_APPEND)
     {
         if (self::$suspended)
             return false;
 
+        if (!file_exists($path)) {
+            self::make_path(dirname($path));
+        }
+
         // writing to system rules file, may be potentially write-protected
-        if (@file_put_contents($path, $data))
+        if (@file_put_contents($path, $data, $flag))
             return true;
 
         return self::wp_filesystem()->put_contents($path, $data);
-    }
-
-    public static function count_files($path, $filters = array())
-    {
-
     }
 
     public static function delete_files($target, $identifier = '')
@@ -116,43 +115,66 @@ class Disk
         return $bytesTotal;
     }
 
-
-    public static function make_path($path, $private = true)
+    public static function make_path($target, $private = false, $dir_perms = 0777)
     {
         global $is_IIS;
 
-        $plugin_path = __DIR__ . "/utils/";
-
-        $path = UtilEnv::realpath($path);
-
-        if (!$path)
+        if (!$target = UtilEnv::realpath($target)) {
             return false;
+        }
 
-        // Create Backup Folder
-        $res = wp_mkdir_p($path);
+        if (file_exists($target)) {
+            $res = @is_dir($target) and @chmod($target, $dir_perms);
+        }
+        else {
+            $res = @mkdir($target, $dir_perms, true);
+        }
 
-        if ($private and is_dir($path) and wp_is_writable($path)) {
+        if ($private) {
+            $dir_perms = 0750;
+        }
 
-            if ($is_IIS) {
-                if (!is_file($path . '/Web.config')) {
-                    copy($plugin_path . '/Web.config', $path . '/Web.config');
+        if ($res) {
+
+            /*
+            * If an umask is set that modifies $dir_perms, we'll have to re-set
+            * the $dir_perms correctly with chmod()
+            */
+            if (($dir_perms & ~umask()) != $dir_perms) {
+
+                $target_parent = dirname($target);
+                while ('.' !== $target_parent && !is_dir($target_parent) && dirname($target_parent) !== $target_parent) {
+                    $target_parent = dirname($target_parent);
+                }
+
+                $folder_parts = explode('/', substr($target, strlen($target_parent) + 1));
+                for ($i = 1, $c = count($folder_parts); $i <= $c; $i++) {
+                    chmod($target_parent . '/' . implode('/', array_slice($folder_parts, 0, $i)), $dir_perms);
                 }
             }
-            else {
-                if (!is_file($path . '/.htaccess')) {
-                    copy($plugin_path . '/.htaccess', $path . '/.htaccess');
+
+            if ($private and wp_is_writable($target)) {
+
+                $plugin_path = __DIR__ . "/utils/";
+
+                if ($is_IIS) {
+                    if (!is_file($target . '/Web.config')) {
+                        @copy($plugin_path . '/Web.config', $target . '/Web.config');
+                    }
+                }
+                else {
+                    if (!is_file($target . '/.htaccess')) {
+                        @copy($plugin_path . '/.htaccess', $target . '/.htaccess');
+                    }
+                }
+                if (!is_file($target . '/index.php')) {
+                    file_put_contents($target . '/index.php', '<?php');
                 }
             }
-            if (!is_file($path . '/index.php')) {
-                file_put_contents($path . '/index.php', '<?php');
-            }
-
-            chmod($path, 0750);
         }
 
         return $res;
     }
-
 
     public static function autocomplete($path = '')
     {

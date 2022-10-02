@@ -10,26 +10,66 @@ namespace FlexySEO\Engine;
 use FlexySEO\Engine\Generators\OpenGraph;
 use FlexySEO\Engine\Generators\TwitterCard;
 use FlexySEO\Engine\Helpers\CurrentPage;
-use SHZN\core\Cache;
 
 class Generator
 {
     protected CurrentPage $current_page;
 
-    protected $settings_path;
-
-    protected $type;
+    /**
+     * @var \FlexySEO\Engine\Default_Generator
+     */
+    private $template;
 
     public function __construct(CurrentPage $current_page)
     {
         $this->current_page = $current_page;
-        $this->settings_path = '';
-        $this->type = '';
+    }
+
+    public function getContext()
+    {
+        return $this->current_page;
     }
 
     public function redirect()
     {
-        return array(false, 301);
+        return $this->template->redirect();
+    }
+
+    public function load_template()
+    {
+        $current_page = $this->current_page;
+
+        include_once WPFS_SEO_ENGINE . 'generators/template/default-generator.php';
+
+        if ($current_page->is_search()):
+            include_once WPFS_SEO_ENGINE . 'generators/template/search-generator.php';
+            $generator = new \FlexySEO\Engine\Generators\Templates\Search_Generator($current_page);
+        elseif ($current_page->is_404()):
+            include_once WPFS_SEO_ENGINE . 'generators/template/E404-generator.php';
+            $generator = new \FlexySEO\Engine\Generators\Templates\E404_Generator($current_page);
+        elseif ($current_page->is_author_archive()):
+            include_once WPFS_SEO_ENGINE . 'generators/template/author-archive-generator.php';
+            $generator = new \FlexySEO\Engine\Generators\Templates\AuthorArchive_Generator($current_page);
+        elseif ($current_page->is_date_archive()):
+            include_once WPFS_SEO_ENGINE . 'generators/template/date-archive-generator.php';
+            $generator = new \FlexySEO\Engine\Generators\Templates\DateArchive_Generator($current_page);
+        elseif ($current_page->is_homepage()):
+            include_once WPFS_SEO_ENGINE . 'generators/template/home-generator.php';
+            $generator = new \FlexySEO\Engine\Generators\Templates\Home_Generator($current_page);
+        elseif ($current_page->is_simple_page() or $current_page->is_posts_page() or $current_page->is_attachment()):
+            include_once WPFS_SEO_ENGINE . 'generators/template/post-type-generator.php';
+            $generator = new \FlexySEO\Engine\Generators\Templates\PostType_Generator($current_page);
+        elseif ($current_page->is_term_archive()):
+            include_once WPFS_SEO_ENGINE . 'generators/template/term-archive-generator.php';
+            $generator = new \FlexySEO\Engine\Generators\Templates\TermArchive_Generator($current_page);
+        elseif ($current_page->is_post_type_archive()):
+            include_once WPFS_SEO_ENGINE . 'generators/template/post-type-archive-generator.php';
+            $generator = new \FlexySEO\Engine\Generators\Templates\PostTypeArchive_Generator($current_page);
+        else:
+            $generator = new Default_Generator($current_page);
+        endif;
+
+        $this->template = $generator;
     }
 
     public function site_verification_codes()
@@ -63,17 +103,7 @@ class Generator
      */
     public function get_robots($robots = array())
     {
-        //$indexable = shzn('wpfs')->options->get($this->current_page->get_queried_object_id(), "indexable", "customMeta", true);
-
-        $valid = [
-            'index'             => 'index', //$indexable ? 'index' : 'noindex',
-            'follow'            => 'follow', // 'nofollow'
-            'max-snippet'       => 'max-snippet:-1',
-            'max-image-preview' => 'max-image-preview:large',
-            'max-video-preview' => 'max-video-preview:-1',
-        ];
-
-        return array_merge($valid, $robots);
+        return $this->template->get_robots($robots);
     }
 
     /**
@@ -88,23 +118,11 @@ class Generator
             return maybe_unserialize($keys);
         }
 
-        if ($this->current_page->is_simple_page()) {
-            $_keywords = shzn('wpfs')->options->get($this->current_page->get_queried_object_id(), "keywords", "customMeta", "");
-
-            if (!empty($_keywords)) {
-                $keywords = $_keywords;
-            }
-        }
+        $keywords = $this->template->get_keywords($keywords);
 
         if (is_array($keywords)) {
             $keywords = implode(',', $keywords);
         }
-
-        $keywords = Txt_Replacer::replace(
-            $keywords,
-            $this->current_page->get_queried_object(),
-            $this->current_page->get_query_type()
-        );
 
         $keywords = preg_split("/[\s,]+/", trim($keywords, " ,\t\n\r\0\x0B"));
 
@@ -132,40 +150,19 @@ class Generator
      */
     public function generate_canonical()
     {
-        $permalink = $this->get_paged_permalink();
+        if (($permalink = $this->get_cache("permalink")) !== false) {
+            return $permalink;
+        }
+
+        $permalink = $this->template->generate_canonical();
+
+        $this->set_cache("permalink", $permalink);
 
         if ($permalink) {
             return $permalink;
         }
 
         return '';
-    }
-
-    public function get_paged_permalink($shift = 0)
-    {
-        if ($url = $this->get_cache("permalink-{$shift}")) {
-            return $url;
-        }
-
-        $rewriter = Rewriter::get_instance();
-
-        $page = $this->current_page->get_page_number() + $shift;
-
-        $max_pages = $this->current_page->get_main_query()->max_num_pages;
-
-        if ($max_pages and $page <= $max_pages and $page > 0) {
-            $url = $rewriter->get_pagenum_link($page);
-        }
-        elseif ($shift == 0) {
-            $url = $rewriter->get_pagenum_link();
-        }
-        else {
-            $url = '';
-        }
-
-        $this->set_cache("permalink-{$shift}", $url);
-
-        return $url;
     }
 
     /**
@@ -176,36 +173,7 @@ class Generator
      */
     public function get_permalink($shift = 0)
     {
-        if ($this->current_page->is_attachment()) {
-            return wp_get_attachment_url($this->current_page->get_queried_object_id());
-        }
-        elseif ($this->current_page->is_simple_page()) {
-            return get_permalink($this->current_page->get_queried_object_id());
-        }
-        elseif ($this->current_page->is_homepage()) {
-            return home_url('/');
-        }
-        elseif ($this->current_page->is_term_archive()) {
-            $term = get_term($this->current_page->get_queried_object_id());
-
-            if ($term === null || is_wp_error($term)) {
-                return null;
-            }
-
-            return get_term_link($term, $term->taxonomy);
-        }
-        elseif ($this->current_page->is_search()) {
-            return get_search_link();
-        }
-
-        elseif ($this->current_page->is_post_type_archive()) {
-            return get_post_type_archive_link($this->current_page->get_queried_post_type());
-        }
-        elseif ($this->current_page->is_author_archive()) {
-            return get_author_posts_url($this->current_page->get_queried_object_id());
-        }
-
-        return '';
+        return $this->template->get_permalink($shift);
     }
 
     /**
@@ -215,11 +183,7 @@ class Generator
      */
     public function generate_rel_prev()
     {
-        if ($this->current_page->is_paged() or $this->current_page->get_main_query()->max_num_pages) {
-            return $this->get_paged_permalink(-1);
-        }
-
-        return '';
+        return $this->template->generate_rel_prev();
     }
 
     /**
@@ -229,11 +193,7 @@ class Generator
      */
     public function generate_rel_next()
     {
-        if ($this->current_page->is_paged() or $this->current_page->get_main_query()->max_num_pages) {
-            return $this->get_paged_permalink(1);
-        }
-
-        return '';
+        return $this->template->generate_rel_next();
     }
 
     /**
@@ -260,11 +220,11 @@ class Generator
         }
 
         $og->description($this->get_description());
-        $og->url($this->get_paged_permalink());
+        $og->url($this->template->get_paged_permalink());
         $og->locale();
         $og->siteName(get_bloginfo('name'));
 
-        return $og;
+        return $this->template->openGraph($og);
     }
 
     public function generate_title($title = '')
@@ -273,15 +233,7 @@ class Generator
             return $_title;
         }
 
-        if (empty($title)) {
-            $title = "%%title%%";
-        }
-
-        $title = Txt_Replacer::replace(
-            $title,
-            $this->current_page->get_queried_object(),
-            $this->current_page->get_query_type()
-        );
+        $title = $this->template->generate_title($title);
 
         $this->set_cache("title", $title);
 
@@ -294,37 +246,7 @@ class Generator
             return $_image;
         }
 
-        if ($this->current_page->is_simple_page()) {
-
-            list($id, $url) = wpfseo('helpers')->post->get_first_usable_image($size);
-        }
-
-        if (empty($url) and $use_default) {
-
-            if ($size === 'thumbnail') {
-                $url = shzn('wpfs')->settings->get('seo.org.logo_url.small', '');
-            }
-            else {
-                $url = shzn('wpfs')->settings->get('seo.org.logo_url.wide', '');
-            }
-        }
-
-        if (empty($url)) {
-            return false;
-        }
-
-        $snippet_data = shzn('wpfs')->options->get($url, "snippet_data", "cache", false);
-
-        if (!$snippet_data) {
-
-            $snippet_data = wpfseo()->images->get_snippet_data($url, $size);
-
-            if (!$snippet_data) {
-                return false;
-            }
-
-            shzn('wpfs')->options->add($url, "snippet_data", $snippet_data, "cache", WEEK_IN_SECONDS);
-        }
+        $snippet_data = $this->template->get_snippet_image($size, $use_default);
 
         $this->set_cache("snippet_image", $snippet_data);
 
@@ -343,28 +265,15 @@ class Generator
             return $dsc;
         }
 
-        if ($this->current_page->is_simple_page()) {
-
-            $_description = shzn('wpfs')->options->get($this->current_page->get_queried_object_id(), "description", "customMeta", "");
-
-            if (!empty($_description)) {
-                $description = $_description;
-            }
-        }
-
-        if (empty($description)) {
-            $description = '%%description%%';
-        }
-
-        $description = Txt_Replacer::replace(
-            $description,
-            $this->current_page->get_queried_object(),
-            $this->current_page->get_query_type()
-        );
+        $description = $this->template->get_description($description);
 
         $description = strip_tags($description);
 
         $description = strip_shortcodes($description);
+
+        $description = esc_attr($description);
+
+        $description = trim($description);
 
         $this->set_cache("description", $description);
 
@@ -401,6 +310,6 @@ class Generator
             $tc->add_site($twitterName);
         }
 
-        return $tc;
+        return $this->template->twitterCard($tc);
     }
 }

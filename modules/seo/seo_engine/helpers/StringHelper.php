@@ -68,9 +68,7 @@ class StringHelper
      * @param \string $string The string.
      * @param int $maxCharacters The max. amount of characters.
      * @param boolean $shouldHaveEllipsis Whether the string should have a trailing ellipsis (defaults to true).
-     * @return \string  $string             The string.
-
-     *
+     * @return \string
      */
     public function truncate($string, $maxCharacters, $shouldHaveEllipsis = true)
     {
@@ -175,7 +173,7 @@ class StringHelper
 
         json_decode($string);
 
-        // Return a boolean whether or not the last error matches.
+        // Return a boolean whether the last error matches.
         return json_last_error() === JSON_ERROR_NONE;
     }
 

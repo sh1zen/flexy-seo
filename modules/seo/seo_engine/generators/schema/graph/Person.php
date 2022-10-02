@@ -35,7 +35,7 @@ class Person extends Graph
         $user = shzn_get_user($user);
 
         if (!$user) {
-            return [];
+            return new GraphBuilder();
         }
 
         $schema = new GraphBuilder([
@@ -52,7 +52,6 @@ class Person extends Graph
                 [
                     '@type'      => 'ImageObject',
                     'url'        => $snippet_data['url'],
-                    'contentUrl' => $snippet_data['url'],
                     'width'      => $snippet_data['width'],
                     'height'     => $snippet_data['height'],
                     'caption'    => $user->display_name,

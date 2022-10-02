@@ -19,6 +19,30 @@ function shzn_get_user($user)
     return $user instanceof WP_User ? $user : null;
 }
 
+function shzn_get_post($post)
+{
+    if (is_numeric($post)) {
+        $post = WP_Post::get_instance($post);
+    }
+    elseif (!$post instanceof WP_Post) {
+        $post = get_post($post);
+    }
+
+    return $post instanceof WP_Post ? $post : null;
+}
+
+function shzn_get_term($term, $taxonomy = '', $output = OBJECT, $filter = 'raw')
+{
+    if (is_numeric($term)) {
+        $term = WP_Term::get_instance($term, $taxonomy);
+    }
+    elseif (!$term instanceof WP_Term) {
+        $term = get_term($term, $taxonomy, $output, $filter);
+    }
+
+    return $term instanceof WP_Term ? $term : null;
+}
+
 function shzn_localize($data = [])
 {
     global $wp_scripts;

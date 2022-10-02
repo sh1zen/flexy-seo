@@ -22,12 +22,9 @@ class Mod_seo extends Module
     {
         parent::__construct('wpfs');
 
-        if (!(wp_doing_cron() or wp_doing_ajax())) {
+        require_once WPFS_MODULES . 'seo/WPFS_SEO.php';
 
-            require_once WPFS_MODULES . 'seo/WPFS_SEO.php';
-
-            WPFS_SEO::Init();
-        }
+        WPFS_SEO::Init();
     }
 
     public function enqueue_scripts()
@@ -38,10 +35,6 @@ class Mod_seo extends Module
 
     public function render_admin_page()
     {
-        if (WPFS_DEBUG)
-            set_time_limit(0);
-        else
-            set_time_limit(60);
         ?>
         <section class="shzn-wrap">
             <div id="shzn-ajax-message" class="shzn-notice"></div>
@@ -128,6 +121,15 @@ class Mod_seo extends Module
                 </form>
             </block>
         </section>
+        <script type="application/javascript">
+            jQuery('textarea.shzn').TextBoxHighlighter({
+                highlight: [/(%%\w+%%)+/gi]
+            });
+
+            jQuery('input[type="text"].shzn').TextBoxHighlighter({
+                highlight: [/(%%\w+%%)+/gi]
+            });
+        </script>
         <?php
     }
 
@@ -190,7 +192,11 @@ class Mod_seo extends Module
         $fields['general'] = $this->group_setting_fields(
             $this->setting_field(__('Titles:', 'wpfs'), false, 'separator'),
             $this->setting_field(__('Rewrite titles', 'wpfs'), 'title.rewrite', 'checkbox', ['default_value' => true]),
-            $this->setting_field(__('Title separator', 'wpfs'), 'title.separator', 'text', ['default_value' => ' << ']),
+            $this->setting_field(__('Title separator', 'wpfs'), 'title.separator', 'dropdown', ['default_value' => '-', 'list' => ["-", ">", "<", ">>", "<<", "~", "•"]]),
+
+            $this->setting_field(__('Addon:', 'wpfs'), false, 'separator'),
+            $this->setting_field(__('Custom Term Description', 'wpfs'), 'addon.term_extra_fields', 'checkbox', ['default_value' => true]),
+            $this->setting_field(__('Edit page meta-boxes', 'wpfs'), 'addon.xre_metaboxe', 'checkbox', ['default_value' => true]),
 
             $this->setting_field(__('Media:', 'wpfs'), false, 'separator'),
             $this->setting_field(__('Rewrite media url to attachment', 'wpfs'), 'media.rewrite_url', 'checkbox', ['default_value' => true]),
@@ -350,7 +356,7 @@ class Mod_seo extends Module
 
             $fields[$tax_type] = $this->group_setting_fields(
                 $this->setting_field(ucwords($tax_type_object->label) . ($tax_type_object->_builtin ? "" : " ({$tax_type_object->name})"), false, 'separator'),
-                $this->setting_field(sprintf(__("Show \"%s\" in search results", 'wpfs'), $tax_type_object->label), "tax.{$tax_type}.show", 'checkbox', ['default_value' => true]),
+                $this->setting_field(sprintf(__("Show \"<i>%s</i>\" in search results", 'wpfs'), $tax_type_object->label), "tax.{$tax_type}.show", 'checkbox', ['default_value' => true]),
                 $this->setting_field(__('Title', 'wpfs'), "tax.{$tax_type}.title", 'text', ['default_value' => '%%title%%']),
                 $this->setting_field(__('Meta description', 'wpfs'), "tax.{$tax_type}.meta_desc", 'textarea'),
                 $this->setting_field(__('Keywords', 'wpfs'), "tax.{$tax_type}.keywords"),

@@ -7,11 +7,11 @@
 
 namespace FlexySEO\Engine\Generators\Templates;
 
-use FlexySEO\Engine\Generator;
+use FlexySEO\Engine\Default_Generator;
 use FlexySEO\Engine\Generators\OpenGraph;
 use FlexySEO\Engine\Helpers\CurrentPage;
 
-class TermArchive_Generator extends Generator
+class TermArchive_Generator extends Default_Generator
 {
     /**
      * @param CurrentPage $current_page
@@ -70,21 +70,16 @@ class TermArchive_Generator extends Generator
      */
     public function generate_title($title = '')
     {
+        $value = get_metadata_raw('term', wpfseo('helpers')->term->term->term_id, 'wpfs_metaterm_title', true);
+
+        $value = apply_filters('wpfs_term_meta_title', $value, $title);
+
+        if (!empty($value)) {
+            return $value;
+        }
+
         return parent::generate_title(shzn('wpfs')->settings->get($this->settings_path . 'title', '%%title%%'));
     }
-
-    /**
-     * @return OpenGraph
-     */
-    public function openGraph()
-    {
-        $og = parent::openGraph();
-
-        $og->type('website');
-
-        return $og;
-    }
-
 
     /**
      * Generates the title structure.
@@ -94,7 +89,14 @@ class TermArchive_Generator extends Generator
      */
     public function get_description(string $description = '')
     {
-        return parent::get_description(shzn('wpfs')->settings->get($this->settings_path . 'meta_desc', ''));
-    }
+        $value = get_metadata_raw('term', wpfseo('helpers')->term->term->term_id, 'wpfs_metaterm_description', true);
 
+        $value = apply_filters('wpfs_term_meta_description', $value, $description);
+
+        if (!empty($value)) {
+            return $value;
+        }
+
+        return parent::get_description(shzn('wpfs')->settings->get($this->settings_path . 'meta_desc', $description));
+    }
 }

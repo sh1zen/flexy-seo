@@ -7,11 +7,11 @@
 
 namespace FlexySEO\Engine\Generators\Templates;
 
-use FlexySEO\Engine\Generator;
+use FlexySEO\Engine\Default_Generator;
 use FlexySEO\Engine\Generators\OpenGraph;
 use FlexySEO\Engine\Helpers\CurrentPage;
 
-class DateArchive_Generator extends Generator
+class DateArchive_Generator extends Default_Generator
 {
     /**
      * @param CurrentPage $current_page
@@ -81,18 +81,6 @@ class DateArchive_Generator extends Generator
     public function generate_title($title = '')
     {
         return parent::generate_title(shzn('wpfs')->settings->get($this->settings_path . 'title', '%%title%%'));
-    }
-
-    /**
-     * @return OpenGraph
-     */
-    public function openGraph()
-    {
-        $og = parent::openGraph();
-
-        $og->type('website');
-
-        return $og;
     }
 
     /**

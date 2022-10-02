@@ -1,11 +1,11 @@
 === Flexy SEO === 
 Contributors: sh1zen 
-Tags: SEO, Breadcrumbs, Content analysis, Readability, Schema, Ranking; SERP
+Tags: SEO, Breadcrumbs, Content analysis, Readability, Schema, Ranking, SERP
 Donate link: https://www.paypal.com/donate?business=dev.sh1zen%40outlook.it&item_name=Thank+you+in+advanced+for+the+kind+donations.+You+will+sustain+me+developing+FlexySEO.&currency_code=EUR
 Requires at least: 4.6.0
-Tested up to: 6.0
+Tested up to: 6.3
 Requires PHP: 7.4
-Stable tag: 1.5.3
+Stable tag: 1.7.0
 License: GNU v3.0 License
 URI: https://github.com/sh1zen/flexy-seo/blob/master/LICENSE
 
@@ -102,6 +102,29 @@ Deactivate the plugin and reactivate it, if this doesn't work try to uninstall a
 work! Otherwise, go to the new added module "Setting" and try a reset.
 
 == Changelog ==
+
+= 1.7.0 =
+
+* improved schema.org
+* improved performances
+* tested up to WordPress 6.3
+
+= 1.6.6 =
+
+* added support notice
+* fixed some bugs
+* improved some core performances
+* updated shzn core
+* extended support to php 8.2
+
+= 1.6.0 =
+
+* added custom meta term description
+* added custom meta term title
+* improved admin UI/UX
+* improved performances
+* tested up to WordPress 6.1
+* updated translations
 
 = 1.5.3 = 
 

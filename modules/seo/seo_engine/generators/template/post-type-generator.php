@@ -7,11 +7,11 @@
 
 namespace FlexySEO\Engine\Generators\Templates;
 
-use FlexySEO\Engine\Generator;
+use FlexySEO\Engine\Default_Generator;
 use FlexySEO\Engine\Generators\OpenGraph;
 use FlexySEO\Engine\Helpers\CurrentPage;
 
-class PostType_Generator extends Generator
+class PostType_Generator extends Default_Generator
 {
     /**
      * @param CurrentPage $current_page
@@ -112,10 +112,9 @@ class PostType_Generator extends Generator
     /**
      * @return OpenGraph
      */
-    public function openGraph()
+    public function openGraph(OpenGraph $og)
     {
         $object = $this->current_page->get_queried_object();
-        $og = parent::openGraph();
 
         $og->type('article');
 

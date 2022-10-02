@@ -5,6 +5,8 @@
  * @license   http://www.gnu.org/licenses/gpl.html GNU/GPL
  */
 
+use FlexySEO\Engine\Helpers\Images;
+use FlexySEO\Engine\Helpers\Post;
 use FlexySEO\Engine\Txt_Replacer;
 
 /**
@@ -29,7 +31,7 @@ function wpfs_breadcrumb(string $before, string $after, bool $display = true, ar
  */
 function wpfs_get_post_excerpt($post = null, $length = 32, $more = '...')
 {
-    $post = get_post($post);
+    $post = shzn_get_post($post);
 
     $post_excerpt = empty($post->post_excerpt) ? $post->post_content : $post->post_excerpt;
 
@@ -49,7 +51,7 @@ function wpfs_get_the_description($post = null, $default = ''): string
 {
     if ($post) {
 
-        $post = get_post($post);
+        $post = shzn_get_post($post);
 
         $_description = shzn('wpfs')->options->get($post->ID, "description", "customMeta", "");
 
@@ -80,9 +82,14 @@ function wpfs_get_the_description($post = null, $default = ''): string
 
 function wpfs_get_mainImageURL($post = null, $size = 'large'): string
 {
-    list($id, $url) = wpfseo('helpers')->post->get_first_usable_image($size, false, $post);
+    list($id, $url) = Post::mainImage($post, $size, false);
 
     return $url;
+}
+
+function wpfs_image_details($attachment, $size = 'thumbnail')
+{
+    return Images::get_image($attachment, $size);
 }
 
 /**
@@ -95,7 +102,7 @@ function wpfs_get_mainImageURL($post = null, $size = 'large'): string
  */
 function wpfs_replace_vars(string $string, int $object_id = 0, string $type = 'post'): string
 {
-    return FlexySEO\Engine\Txt_Replacer::replace($string, $object_id, $type);
+    return Txt_Replacer::replace($string, $object_id, $type);
 }
 
 /**
@@ -112,9 +119,11 @@ function wpfs_add_replacement_rule(string $rule, $replacement, $type = [])
     }
 }
 
-/**
- * todo remove - trailing.it if requested
- */
+function wpfs_term_description($term = 0)
+{
+    return html_entity_decode(stripslashes(wpfseo('helpers')->term->get_description($term)));
+}
+
 function wpfs_the_title($filtered = true, $trailingBlogName = true)
 {
     $title = '';
@@ -141,7 +150,7 @@ function wpfs_document_title($separator = '-', $blogName = true)
 
         $post = get_post();
 
-        $titleFragments['title'] = isset($post->post_title) ? $post->post_title : '';
+        $titleFragments['title'] = $post->post_title ?? '';
 
         if (!empty($post->post_password)) {
 

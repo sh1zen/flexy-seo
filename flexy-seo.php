@@ -13,13 +13,13 @@
  * Author URI: https://sh1zen.github.io/
  * Text Domain: wpfs
  * Domain Path: /languages
- * Version: 1.5.3
+ * Version: 1.7.0
  */
 
-const WPFS_VERSION = '1.5.3';
+const WPFS_VERSION = '1.7.0';
 
 const WPFS_FILE = __FILE__;
-define('WPFS_ABSPATH', dirname(__FILE__) . '/');
+const WPFS_ABSPATH = __DIR__ . '/';
 const WPFS_MODULES = WPFS_ABSPATH . 'modules/';
 const WPFS_ADMIN = WPFS_ABSPATH . 'admin/';
 const WPFS_ASSETS = WPFS_ABSPATH . 'assets/';
@@ -54,4 +54,4 @@ require_once WPFS_ADMIN . 'PluginInit.class.php';
 FlexySEO\core\PluginInit::Initialize();
 
 require_once WPFS_ABSPATH . 'ext_interface/wpfs_functions.php';
-
+require_once WPFS_ABSPATH . 'ext_interface/wp-hooks.php';

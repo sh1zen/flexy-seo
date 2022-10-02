@@ -102,7 +102,7 @@ class RuleUtil
     }
 
     /**
-     * Returns path of pagecache core rules file
+     * Returns path of core rules file
      *
      * @return string
      */
@@ -111,10 +111,10 @@ class RuleUtil
         switch (true) {
             case UtilEnv::is_apache():
             case UtilEnv::is_litespeed():
-                return UtilEnv::site_path() . '.htaccess';
+                return UtilEnv::normalize_path(ABSPATH, true) . '.htaccess';
 
             case UtilEnv::is_nginx():
-                return UtilEnv::site_path() . 'nginx.conf';
+                return UtilEnv::normalize_path(ABSPATH, true) . 'nginx.conf';
         }
 
         return false;

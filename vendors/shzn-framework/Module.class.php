@@ -72,7 +72,7 @@ class Module
 
         $this->slug = shzn($this->context)->moduleHandler->module_slug(get_class($this), true);
 
-        $default_setting = isset($args['settings']) ? $args['settings'] : array();
+        $default_setting = $args['settings'] ?? array();
 
         $this->settings = shzn($this->context)->settings->get($this->slug, $default_setting, true);
 
@@ -81,7 +81,7 @@ class Module
 
             if (in_array('cron', $this->scopes)) {
 
-                $cron_defaults = isset($args['cron_settings']) ? $args['cron_settings'] : array();
+                $cron_defaults = $args['cron_settings'] ?? array();
 
                 $this->cron_settings = shzn($this->context)->cron->get_settings($this->slug, $cron_defaults);
 

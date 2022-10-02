@@ -158,6 +158,7 @@ class Graphic
                         'name'         => $args['input_name'],
                         'id'           => $args['id'],
                         'placeholder'  => $args['placeholder'],
+                        'spellcheck'   => 'false',
                         'value'        => (string)$args['value']
                     ]) . " {$dataValues}/>";
                 break;
@@ -203,12 +204,13 @@ class Graphic
                 $args['classes'][] = "shzn";
 
                 $_oInner .= "<textarea " . self::buildProps([
-                        'class' => self::classes($args['classes']),
-                        'rows'  => '4',
-                        'cols'  => '80',
-                        'type'  => 'textarea',
-                        'name'  => $args['input_name'],
-                        'id'    => $args['id'],
+                        'class'      => self::classes($args['classes']),
+                        'rows'       => '4',
+                        'cols'       => '80',
+                        'type'       => 'textarea',
+                        'name'       => $args['input_name'],
+                        'id'         => $args['id'],
+                        'spellcheck' => 'false'
                     ]) . " {$dataValues}/>{$args['value']}</textarea>";
                 break;
 
@@ -270,38 +272,37 @@ class Graphic
     public static function buildProps($props = [], $strip_empty = false)
     {
         $_props = '';
-/*
-        foreach ($props as $key => $value) {
+        /*
+                foreach ($props as $key => $value) {
 
-            if (is_array($value))
-                $_props .= self::buildProps($value, $strip_empty);
-            else {
-                if (is_string($value))
-                    $_props .= $key . '="' . $value . '" ';
-                else {
-                    if ($strip_empty and $value)
-                        $_props .= $key . ' ';
-                    else if (!$strip_empty)
-                        $_props .= $key . ' ';
+                    if (is_array($value))
+                        $_props .= self::buildProps($value, $strip_empty);
+                    else {
+                        if (is_string($value))
+                            $_props .= $key . '="' . $value . '" ';
+                        else {
+                            if ($strip_empty and $value)
+                                $_props .= $key . ' ';
+                            else if (!$strip_empty)
+                                $_props .= $key . ' ';
+                        }
+                    }
                 }
-            }
-        }
-*/
+        */
         foreach ($props as $key => $value) {
 
-            if (is_array($value))
-            {
+            if (is_array($value)) {
                 $_props .= self::buildProps($value, $strip_empty);
             }
             else {
                 if (is_string($value)) {
-                    if(!$strip_empty or !empty($value)) {
+                    if (!$strip_empty or !empty($value)) {
                         $_props .= $key . '="' . $value . '" ';
                     }
                 }
                 else {
                     if ($strip_empty) {
-                        if(empty($value) and $value !== 0) {
+                        if (empty($value) and $value !== 0) {
                             $_props .= $key . ' ';
                         }
                     }
@@ -386,37 +387,34 @@ class Graphic
         ob_start();
 
         ?>
-        <div class="shzn-ar-tabs" id="ar-tabs">
-            <ul class="shzn-ar-tablist" aria-label="shzn-menu">
+        <section class="shzn-ar-tabs" id="ar-tabs">
+            <ul class="shzn-ar-tablist">
                 <?php
+                $panels = '';
                 foreach ($fields as $field) {
                     $tab_title = empty($field['tab-title']) ? $field['panel-title'] : $field['tab-title'];
                     ?>
                     <li class="shzn-ar-tab">
-                        <a id="lbl_<?php echo $field['id']; ?>" class="shzn-ar-tab_link"
-                           href="#<?php echo $field['id']; ?>"><?php echo $tab_title; ?></a>
+                        <a class="shzn-ar-tab_link" aria-controls="<?php echo $field['id']; ?>"
+                           aria-selected="false"><?php echo $tab_title; ?></a>
                     </li>
                     <?php
-                }
-                ?>
-            </ul><?php
 
-            foreach ($fields as $field) {
-                /**
-                 * Support for limiting the rendering to only specific tab
-                 */
-                if ($limit_ids) {
-                    if (!in_array($field['id'], $limit_ids))
-                        continue;
+
+                    // Support for limiting the rendering to only specific tab
+                    if ($limit_ids) {
+                        if (!in_array($field['id'], $limit_ids))
+                            continue;
+                    }
+
+                    $aria_ajax = isset($field['ajax-callback']) ? "aria-ajax='" . json_encode($field['ajax-callback']) . "'" : '';
+
+                    $panels .= "<panel id='{$field['id']}' class='shzn-ar-tabcontent' aria-hidden='true' {$aria_ajax}>" . self::generatePanelContent($field) . "</panel>";
                 }
                 ?>
-                <panel id="<?php echo $field['id']; ?>" class="shzn-ar-tabcontent" aria-hidden="true"
-                    <?php echo isset($field['ajax-callback']) ? "aria-ajax='" . json_encode($field['ajax-callback']) . "'" : '' ?>>
-                    <?php echo self::generatePanelContent($field); ?>
-                </panel>
-                <?php
-            }
-            ?></div>
+            </ul>
+            <?php echo $panels; ?>
+        </section>
         <?php
         return ob_get_clean();
     }

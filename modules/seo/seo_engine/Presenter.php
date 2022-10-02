@@ -53,12 +53,12 @@ class Presenter
 
     /**
      * @param Generator $generator
-     * @param \FlexySEO\Engine\Indexable $indexable
      */
-    public function __construct($generator, $indexable)
+    public function __construct(Generator $generator)
     {
         $this->generator = $generator;
-        $this->indexable = $indexable;
+
+        $this->indexable = new Indexable($generator->getContext());
 
         $this->templates = array(
             'meta'      => "<meta property='{{name}}' content='{{value}}' />",
@@ -98,7 +98,7 @@ class Presenter
     {
         list($url, $status) = $this->generator->redirect();
 
-        apply_filters('wpfs_redirect', $url, $status, $this->indexable);
+        $url = apply_filters('wpfs_redirect', $url, $status, $this->indexable);
 
         if ($url) {
             Rewriter::redirect($url, $status);
@@ -111,7 +111,7 @@ class Presenter
     private function link_presenter()
     {
         /**
-         * present canonical link
+         * Present canonical link
          */
         $canonical = $this->generator->generate_canonical();
 

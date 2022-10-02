@@ -1,8 +1,14 @@
-/**
- * @author    sh1zen
- * @copyright Copyright (C)  2022
- * @license   http://www.gnu.org/licenses/gpl.html GNU/GPL
- */
+.shzn-header h1, .shzn-header h3 {
+    color: inherit
+}
+
+.shzn-card, .shzn-centered, .shzn-donation-wrap, .shzn-header h1, .shzn-submit, .shzn-uploader__init {
+    text-align: center
+}
+
+.shzn-icon__arrow, .shzn-modal__close svg, input[type=checkbox][readonly] {
+    pointer-events: none
+}
 
 :root {
     --border-color: #717171;
@@ -10,15 +16,15 @@
     --tabs-text-selected-color: #2b2b2b;
     --main-dark-color: #717171;
     --main-light-color: #efefef;
-    --header-text-color: #717171;
+    --header-text-color: #717171
 }
 
 #wpcontent {
     padding: 20px;
-    background-color: #F3F4F5;
+    background-color: #f3f4f5
 }
 
-.hidden {
+.hidden, .shzn-ar-tabcontent[aria-hidden=true], .shzn-notice:empty {
     display: none
 }
 
@@ -31,18 +37,14 @@
 }
 
 .shzn-child:last-child {
-    margin-bottom: 20px;
-}
-
-input[type=checkbox][readonly] {
-    pointer-events: none
+    margin-bottom: 20px
 }
 
 .width15 {
     width: 15%
 }
 
-.width20 {
+.table-sweep thead th.col-sweep-action, .width20 {
     width: 20%
 }
 
@@ -58,7 +60,7 @@ input[type=checkbox][readonly] {
     width: 35%
 }
 
-.width40 {
+.width40, block.shzn b {
     width: 40%
 }
 
@@ -76,10 +78,6 @@ input[type=checkbox][readonly] {
     padding: 10px 12px;
     border: 1px solid #ccd0d4;
     border-left-width: 4px
-}
-
-.shzn-notice:empty {
-    display: none
 }
 
 .shzn-notice p {
@@ -113,12 +111,12 @@ input[type=checkbox][readonly] {
     max-width: 300px;
     padding: 20px;
     align-content: center;
-    text-align: center;
     background: #5a5a5a;
     color: #fff;
     -webkit-border-radius: 3px;
     -moz-border-radius: 3px;
     border-radius: 3px;
+    box-shadow: 0 0 3px 0 #686868
 }
 
 .shzn-donation-title {
@@ -140,7 +138,7 @@ input[type=checkbox][readonly] {
     width: 100%;
     background: #0a0a0a;
     height: 1px;
-    margin: 22px 0 12px 0
+    margin: 22px 0 12px
 }
 
 input.shzn-apple-switch:before {
@@ -151,7 +149,7 @@ input.shzn-apple-switch:before {
 input.shzn-apple-switch:focus {
     outline: 0;
     border: none;
-    box-shadow: inset 0 0 2px 1px rgb(0 0 0 / 10%);
+    box-shadow: inset 0 0 2px 1px rgb(0 0 0 / 10%)
 }
 
 input.shzn-apple-switch {
@@ -164,7 +162,7 @@ input.shzn-apple-switch {
     border-radius: 15px;
     border: none !important;
     box-shadow: inset 0 0 2px 1px rgba(0, 0, 0, .1);
-    transition: background-color .4s cubic-bezier(.275, -.45, .725, 1.45);
+    transition: background-color .4s cubic-bezier(.275, -.45, .725, 1.45)
 }
 
 input.shzn-apple-switch:after {
@@ -177,17 +175,22 @@ input.shzn-apple-switch:after {
     height: 22px;
     border-radius: 50%;
     box-shadow: 2px 0 4px rgb(230 35 0 / 20%);
-    transition: all .3s cubic-bezier(.275, -.45, .725, 1.45);
+    transition: .3s cubic-bezier(.275, -.45, .725, 1.45)
 }
 
 input.shzn-apple-switch:checked {
-    background: #cffdeb !important;
+    background: #cdf5ce !important;
+}
+
+aside.shzn .shzn-box, block.shzn {
+    background: rgb(255 255 255 / 70%);
+    border-radius: 8px
 }
 
 input.shzn-apple-switch:checked:after {
     left: 28px;
     background: #5fb996;
-    box-shadow: 2px 0 4px rgb(9 255 119 / 0.2);
+    box-shadow: 2px 0 4px rgb(9 255 119 / .2)
 }
 
 .shzn-ar-tabs {
@@ -195,13 +198,13 @@ input.shzn-apple-switch:checked:after {
     width: 100%;
     margin: 0;
     padding: 0;
-    position: relative;
+    position: relative
 }
 
 .shzn-ar-tabcontent {
     overflow: hidden;
     box-sizing: border-box;
-    position: relative;
+    position: relative
 }
 
 .shzn-ar-tablist {
@@ -214,9 +217,8 @@ input.shzn-apple-switch:checked:after {
     width: 100%;
     margin: 0;
     height: 39px;
-    border-bottom: 2px solid #9a9898;
+    border-bottom: 2px solid #9a9898
 }
-
 
 .shzn-ar-tablist::-webkit-scrollbar-thumb {
     background-color: #505050
@@ -237,7 +239,7 @@ input.shzn-apple-switch:checked:after {
     outline: 0;
     border-top-left-radius: 3px;
     border-top-right-radius: 3px;
-    user-select: none;
+    user-select: none
 }
 
 .shzn-ar-tab_link {
@@ -261,11 +263,7 @@ input.shzn-apple-switch:checked:after {
     -moz-border-radius-topleft: 6px;
     -moz-border-radius-topright: 6px;
     border-top-left-radius: 6px;
-    border-top-right-radius: 6px;
-}
-
-.shzn-ar-tabcontent[aria-hidden=true] {
-    display: none
+    border-top-right-radius: 6px
 }
 
 .shzn-loader {
@@ -293,8 +291,8 @@ input.shzn-apple-switch:checked:after {
     left: 50%;
     border-radius: 50%;
     position: absolute;
-    -webkit-animation: load4 1.1s infinite linear;
-    animation: load4 1.1s infinite linear;
+    -webkit-animation: 1.1s linear infinite load4;
+    animation: 1.1s linear infinite load4;
     -webkit-transform: translateZ(0);
     -ms-transform: translateZ(0);
     transform: translateZ(0)
@@ -354,7 +352,6 @@ input.shzn-apple-switch:checked:after {
     }
 }
 
-
 ul.shzn {
     list-style: inside
 }
@@ -363,11 +360,18 @@ section.shzn-wrap {
     max-width: 1200px;
     margin: auto;
     padding: 2em 0;
-    position: relative;
+    position: relative
+}
+
+block.shzn, notice.shzn {
+    height: auto;
+    width: auto;
+    margin: 0 auto 2em;
+    box-sizing: border-box
 }
 
 .shzn-home {
-    margin: 30px auto;
+    margin: 30px auto
 }
 
 .shzn-wrap-flex {
@@ -375,12 +379,12 @@ section.shzn-wrap {
     flex-direction: row;
     flex-wrap: wrap;
     align-items: flex-start;
-    justify-content: space-between;
+    justify-content: space-between
 }
 
 .shzn-wrap-flex section.shzn {
     flex: 1 1 100%;
-    max-width: calc(100% - 400px);
+    max-width: calc(100% - 400px)
 }
 
 .shzn-row {
@@ -394,8 +398,7 @@ section.shzn-wrap {
     display: flex;
     flex-direction: column;
     overflow: hidden;
-    text-align: center;
-    justify-content: center;
+    justify-content: center
 }
 
 aside.shzn {
@@ -404,76 +407,53 @@ aside.shzn {
     flex-direction: row;
     flex-wrap: wrap;
     min-width: 300px;
-    max-width: 370px;
+    max-width: 370px
+}
+
+.list-tables pre-table, .shzn-header, block.shzn, notice.shzn {
+    display: block;
+    overflow: hidden
 }
 
 aside.shzn .shzn-box {
     padding: 15px 20px;
     margin: 0;
-    background: rgb(255 255 255 / 70%);
     box-shadow: 0 0 4px 1px rgb(0 0 0 / 20%);
-    width: 100%;
-    border-radius: 8px;
+    width: 100%
 }
 
 aside.shzn .shzn-box:not(:last-child) {
-    margin-bottom: 32px;
+    margin-bottom: 32px
 }
 
 .shzn-header {
     position: relative;
-    display: block;
     width: 100%;
     background: var(--main-dark-color);
     color: var(--header-text-color);
-    display: block;
     padding: 1em 1.5em;
-    overflow: hidden;
     box-sizing: border-box;
-    margin: 0 auto 25px auto;
+    margin: 0 auto 25px;
     border-radius: 3px;
-    box-shadow: 0 0 3px 1px #686868;
-}
-
-.shzn-header h1 {
-    text-align: center;
-    color: inherit;
-}
-
-.shzn-header h3 {
-    color: inherit;
+    box-shadow: 0 0 3px 1px #686868
 }
 
 .shzn h2 {
-    padding: 12px 0 8px 0;
-    border-bottom: 2px solid rgb(0 0 0 / 26%);
+    padding: 12px 0 8px;
+    border-bottom: 2px solid
 }
 
 block.shzn {
     max-width: 100%;
-    height: auto;
-    width: auto;
-    display: block;
-    margin: 0 auto 2em auto;
     padding: 1.5em;
-    background: rgb(255 255 255 / 70%);
-    border-radius: 8px;
-    box-shadow: 0 0 8px 2px rgb(0 0 0 / 20%);
-    overflow: hidden;
-    box-sizing: border-box;
+    box-shadow: 0 0 8px 2px rgb(0 0 0 / 20%)
 }
 
 notice.shzn {
     max-width: 100%;
-    height: auto;
-    width: auto;
-    display: block;
-    margin: 0 auto 2em auto;
     padding: 20px;
     border-radius: 4px;
-    box-shadow: inset 0 0 4px 1px rgb(0 0 0 / 20%);
-    overflow: hidden;
-    box-sizing: border-box;
+    box-shadow: inset 0 0 4px 1px rgb(193 193 193);
 }
 
 block.shzn line {
@@ -489,15 +469,11 @@ block.shzn line {
 }
 
 block.shzn p {
-    margin: 0 0 1em 0
-}
-
-block.shzn b {
-    width: 40%
+    margin: 0 0 1em
 }
 
 block.shzn .value {
-    width: 60%;
+    width: 60%
 }
 
 block.shzn :after {
@@ -520,25 +496,24 @@ block.shzn :after {
     width: 56%
 }
 
-.table-sweep thead th.col-sweep-action {
-    width: 20%
-}
-
 .list-tables {
     background: #fff;
-    margin: 2px 2px 4em 2px;
+    margin: 2px 2px 4em;
     overflow: hidden;
     box-shadow: 0 0 2px 0 #353535
 }
 
 .list-tables pre-table {
     padding: 0 1em;
-    display: block;
-    overflow: hidden;
     border-top: 1px solid #ccd0d4;
     border-left: 1px solid #ccd0d4;
     border-right: 1px solid #ccd0d4;
     font-weight: 700
+}
+
+input.shzn, textarea.shzn {
+    padding: 6px 12px;
+    box-sizing: border-box
 }
 
 .shzn-gridRow {
@@ -554,54 +529,53 @@ block.shzn :after {
 }
 
 .shzn-submit {
-    margin: 2em 0 0 0 !important;
-    padding: 0;
-    text-align: center;
+    margin: 2em 0 0 !important;
+    padding: 0
 }
 
 table.shzn {
     width: 100%;
     margin: auto;
     border-collapse: collapse;
-    position: relative;
+    position: relative
 }
 
 table.shzn tbody td.option {
-    text-align: left;
+    text-align: left
 }
 
 table.shzn tbody td.value {
     text-align: right;
-    width: 60%;
+    width: 60%
 }
 
-textarea.shzn:focus, input.shzn:focus {
+input.shzn:focus, textarea.shzn:focus {
     border: 2px solid var(--border-color);
     box-shadow: inset 0 0 4px 1px #a3a3a3;
-    outline: none;
+    outline: 0
 }
 
-textarea.shzn, input.shzn {
+input.shzn, textarea.shzn {
     box-shadow: 0 0 0 0 transparent;
     border-radius: 2px;
     border: 2px solid #8c8f94;
     background-color: rgb(255 255 255 / 28%);
-    color: #525252;
-    padding: 4px 12px;
-    box-sizing: border-box;
-    transition: all 250ms 50ms ease-in-out;
+    color: #525252
+}
+
+.shzn-footer th, .shzn-thead th, .shzn-uploader__init, table.shzn thead th {
+    color: #fff;
+    font-weight: 700
 }
 
 textarea.shzn {
     border-radius: 2px;
-    padding: 12px 14px;
-    box-shadow: none;
-    box-sizing: border-box;
+    box-shadow: none
 }
 
-table.shzn textarea, table.shzn input[type=text] {
+table.shzn input[type=text], table.shzn textarea {
     max-width: 100%;
-    width: 100%;
+    width: 100%
 }
 
 .shzn-thead, table.shzn thead {
@@ -612,13 +586,8 @@ table.shzn textarea, table.shzn input[type=text] {
     background: #2f5978
 }
 
-.shzn-footer th, .shzn-thead th, table.shzn thead th {
-    font-weight: 700;
-    color: #fff
-}
-
 table.shzn .shzn-actions {
-    padding: 1.5em 0 1em 0
+    padding: 1.5em 0 1em
 }
 
 table.shzn .shzn-actions :not(:last-child) {
@@ -627,17 +596,17 @@ table.shzn .shzn-actions :not(:last-child) {
 
 table.shzn-settings tr {
     border-bottom: 2px solid #e0e0e0;
-    transition: all 300ms 150ms ease-in-out;
-    height: 50px;
+    transition: .3s ease-in-out 150ms;
+    height: 50px
 }
 
 table.shzn td {
-    padding: 12px 10px;
+    padding: 12px 10px
 }
 
-table.shzn tr:hover{
-    background: #b7b7b717;
-    box-shadow: 0 0 4px #c3c3c3;
+table.shzn tr:hover {
+    background: #ffffffa1;
+    box-shadow: 0 0 4px #c3c3c3
 }
 
 table.shzn tr.blank-row {
@@ -646,10 +615,6 @@ table.shzn tr.blank-row {
 
 .shzn-setting-header {
     margin-top: 2em
-}
-
-.shzn-centered {
-    text-align: center
 }
 
 .shzn-block {
@@ -672,14 +637,13 @@ table.shzn tr.blank-row {
 
 #shzn-uoptions {
     margin: auto;
-    max-width: 1000px;
+    max-width: 1000px
 }
-
 
 .shzn-dropdown {
     box-sizing: border-box;
     position: relative;
-    width: 100%;
+    width: 100%
 }
 
 .shzn-input__wrapper {
@@ -688,18 +652,18 @@ table.shzn tr.blank-row {
     flex-direction: row;
     flex: 0 0 100%;
     border: 1px solid #8c8f94;
-    align-items: center;
+    align-items: center
 }
 
 .shzn-input__wrapper input {
     border: none;
-    padding: 8px 15px;
+    padding: 8px 15px
 }
 
 .shzn-input__wrapper input:focus {
     border: none;
-    outline: none;
-    box-shadow: none;
+    outline: 0;
+    box-shadow: none
 }
 
 .shzn-dropdown__opener {
@@ -709,23 +673,20 @@ table.shzn tr.blank-row {
     margin: 0 10px;
     display: block;
     cursor: pointer;
-    text-align: center;
+    text-align: center
 }
 
 .shzn-uploader__init {
     background: #5f6373;
-    color: #fff;
     max-width: 100px;
     font-size: 14px;
-    font-weight: bold;
-    text-align: center;
     padding: 4px 20px;
     cursor: pointer;
-    transition: all 200ms 150ms ease-in-out
+    transition: .2s ease-in-out 150ms
 }
 
 .shzn-uploader__init:hover {
-    background: #3a3e4d;
+    background: #3a3e4d
 }
 
 .shzn-multiselect__wrapper {
@@ -740,7 +701,7 @@ table.shzn tr.blank-row {
     width: 100%;
     overflow: hidden;
     display: none;
-    z-index: 1;
+    z-index: 1
 }
 
 .shzn-multiselect {
@@ -753,13 +714,13 @@ table.shzn tr.blank-row {
     padding: 0;
     margin: 0;
     vertical-align: top;
-    box-sizing: border-box;
+    box-sizing: border-box
 }
 
 .shzn-multiselect__element {
     margin: 0;
-    border-bottom: 1px solid #E8E8EB;
-    font-weight: bold;
+    border-bottom: 1px solid #e8e8eb;
+    font-weight: 700;
     display: block;
     padding: 12px;
     line-height: 16px;
@@ -769,14 +730,13 @@ table.shzn tr.blank-row {
     vertical-align: middle;
     position: relative;
     cursor: pointer;
-    white-space: nowrap;
+    white-space: nowrap
 }
-
 
 .shzn-faq-list {
     width: 90%;
     margin: 0 auto;
-    padding: 0;
+    padding: 0
 }
 
 .shzn-faq-item {
@@ -804,7 +764,7 @@ table.shzn tr.blank-row {
     line-height: 30px;
     font-weight: 700;
     color: #161616;
-    font-size: 16px;
+    font-size: 16px
 }
 
 .shzn-collapse-icon {
@@ -846,28 +806,28 @@ table.shzn tr.blank-row {
     display: flex;
     flex-direction: row;
     flex-wrap: nowrap;
-    justify-content: space-between;
+    justify-content: space-between
 }
 
 .shzn-dir-explorer text {
     flex: 1 1 50%;
     line-height: 26px;
     padding-left: 11px;
-    font-weight: 500;
+    font-weight: 500
 }
 
 .shzn-dir-explorer input {
-    outline: none;
+    outline: 0;
     border: none;
-    background: white;
+    background: #fff;
     border-radius: 0;
-    flex: 1 1 50%;
+    flex: 1 1 50%
 }
 
 .shzn-dir-explorer input:focus {
-    outline: none;
+    outline: 0;
     border: none;
-    box-shadow: none;
+    box-shadow: none
 }
 
 ul.shzn-autocomplete {
@@ -881,7 +841,7 @@ ul.shzn-autocomplete {
     line-height: 26px;
     z-index: 100;
     max-height: 244px;
-    overflow: auto;
+    overflow: auto
 }
 
 ul.shzn-autocomplete li {
@@ -890,27 +850,27 @@ ul.shzn-autocomplete li {
     padding: 4px 10px;
     margin: 0;
     cursor: pointer;
-    border-bottom: 1px solid #dadada;
+    border-bottom: 1px solid #dadada
 }
 
 .shzn-progressbarCircle__stroke {
-    animation: mck_progress 2s ease-in-out;
+    animation: 2s ease-in-out mck_progress
 }
 
 @keyframes mck_progress {
     0% {
-        stroke-dasharray: 0, 100;
+        stroke-dasharray: 0, 100
     }
 }
 
 .shzn-highlighted {
     margin-top: 1em;
     padding: 1em;
-    box-shadow: 0 0 2px 1px rgba(64, 64, 64, 0.75);
-    -webkit-box-shadow: 0 0 2px 1px rgba(64, 64, 64, 0.75);
-    -moz-box-shadow: 0 0 2px 1px rgba(64, 64, 64, 0.75);
+    box-shadow: 0 0 2px 1px rgba(64, 64, 64, .75);
+    -webkit-box-shadow: 0 0 2px 1px rgba(64, 64, 64, .75);
+    -moz-box-shadow: 0 0 2px 1px rgba(64, 64, 64, .75);
     font-size: 1.1em;
-    font-weight: bold;
+    font-weight: 700
 }
 
 .shzn-icon {
@@ -919,30 +879,34 @@ ul.shzn-autocomplete li {
     -webkit-user-select: none;
     -moz-user-select: none;
     -ms-user-select: none;
-    user-select: none;
+    user-select: none
+}
+
+.shzn-modal, .shzn-modalWrapper {
+    height: 100%;
+    contain: content;
+    width: 100%
 }
 
 .shzn-icon__arrow {
     transform: rotate(90deg);
     transition: transform .25s;
-    pointer-events: none;
     stroke: currentColor;
-    stroke-width: 1px;
+    stroke-width: 1px
 }
 
 .is-open .shzn-icon__arrow {
-    transform: rotate(270deg);
+    transform: rotate(270deg)
 }
 
 .shzn-list {
     list-style: disc;
-    padding: 0 20px;
+    padding: 0 20px
 }
 
-
 .shzn-modalWrapper {
-    -webkit-animation: sw-motion-opacity-out .25s ease forwards;
-    animation: sw-motion-opacity-out .25s ease forwards;
+    -webkit-animation: .25s forwards sw-motion-opacity-out;
+    animation: .25s forwards sw-motion-opacity-out;
     display: flex;
     position: fixed;
     top: 0;
@@ -950,9 +914,6 @@ ul.shzn-autocomplete li {
     left: 0;
     flex-direction: column;
     justify-content: flex-start;
-    width: 100%;
-    height: 100%;
-    contain: content;
     background-color: rgba(0, 0, 0, .4);
     overflow-x: hidden;
     z-index: 10000;
@@ -964,11 +925,8 @@ ul.shzn-autocomplete li {
     position: relative;
     flex: 0 0 auto;
     max-width: 100%;
-    width: 100%;
-    height: 100%;
     margin: auto;
     background-color: #fff;
-    contain: content;
     overflow: hidden;
     z-index: 1;
     border-radius: 3px
@@ -989,7 +947,7 @@ ul.shzn-autocomplete li {
     overflow: hidden;
     display: flex;
     flex-direction: row;
-    justify-content: center;
+    justify-content: center
 }
 
 .shzn-modal__title {
@@ -1008,7 +966,7 @@ ul.shzn-autocomplete li {
     overflow-x: hidden;
     overflow-y: auto;
     font-size: 14px;
-    box-sizing: border-box;
+    box-sizing: border-box
 }
 
 .shzn-modal__close {
@@ -1029,34 +987,79 @@ ul.shzn-autocomplete li {
     color: #000
 }
 
-.shzn-modal__close svg {
-    pointer-events: none
+.hwt-container {
+    display: block;
+    max-width: 100%;
+    width: 100%;
+    position: relative;
+    overflow: hidden;
+    -webkit-text-size-adjust: none;
+    box-sizing: border-box
 }
 
+.hwt-backdrop {
+    position: absolute;
+    top: 0;
+    left: 0;
+    overflow: hidden
+}
+
+.hwt-highlights {
+    text-align: left;
+    width: auto;
+    height: auto;
+    color: transparent;
+    overflow: hidden
+}
+
+.hwt-input {
+    display: block;
+    position: relative;
+    margin: 0;
+    padding: 0;
+    border-radius: 0;
+    font: inherit;
+    overflow-x: hidden;
+    overflow-y: auto
+}
+
+.hwt-content {
+    padding: 6px 12px !important;
+    font: 17px/2 sans-serif;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    border: 2px solid transparent
+}
+
+.hwt-content mark {
+    padding: 0;
+    color: inherit;
+    background-color: #90dfc0;
+    border-radius: 3px;
+    box-shadow: 0 0 3px 0 #00000082
+}
 
 @media only screen and (max-width: 1192px) {
-
     .shzn-wrap-flex section.shzn {
         flex: 0 0 100%;
-        max-width: 100%;
+        max-width: 100%
     }
 
     #shzn-uoptions {
         max-width: 100%;
-        margin: auto;
+        margin: auto
     }
 
     aside.shzn {
         margin: 0 auto;
         max-width: 100%;
-        flex: 0 0 100%;
+        flex: 0 0 100%
     }
 }
 
 @media screen and (max-width: 782px) {
-
     #wpcontent {
-        padding: 10px;
+        padding: 10px
     }
 }
 
@@ -1084,11 +1087,11 @@ ul.shzn-autocomplete li {
     }
 
     .shzn-modal__content {
-        padding: 24px;
+        padding: 24px
     }
 
     .shzn-modal__title {
-        font-size: 24px;
+        font-size: 24px
     }
 
     .shzn-modal__bottom, .shzn-modal__header {

@@ -48,7 +48,7 @@ class UtilEnv
         return function_exists('set_time_limit') and set_time_limit($time);
     }
 
-    public static function db_create($table_name, $args)
+    public static function db_create($table_name, $args, $drop_if_exist = false)
     {
         global $wpdb;
 
@@ -56,6 +56,10 @@ class UtilEnv
 
         if (!str_starts_with($table_name, $wpdb->prefix)) {
             $table_name = $wpdb->prefix . $table_name;
+        }
+
+        if ($drop_if_exist) {
+            $wpdb->query("DROP TABLE IF EXISTS {$table_name}");
         }
 
         $sql = "CREATE TABLE IF NOT EXISTS {$table_name} ( ";
@@ -171,7 +175,7 @@ class UtilEnv
     }
 
     /**
-     * Returns true if server is nginx
+     * Returns true if server is iis
      *
      * @return boolean
      */
@@ -237,17 +241,7 @@ class UtilEnv
      */
     public static function is_https()
     {
-        switch (true) {
-            case (isset($_SERVER['HTTPS']) and
-                self::to_boolean($_SERVER['HTTPS'])):
-            case (isset($_SERVER['SERVER_PORT']) and
-                (int)$_SERVER['SERVER_PORT'] == 443):
-            case (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) and
-                $_SERVER['HTTP_X_FORWARDED_PROTO'] == 'https'):
-                return true;
-        }
-
-        return false;
+        return isset($_SERVER['HTTPS']) and self::to_boolean($_SERVER['HTTPS']) or (isset($_SERVER['SERVER_PORT']) and (int)$_SERVER['SERVER_PORT'] == 443) or (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) and $_SERVER['HTTP_X_FORWARDED_PROTO'] == 'https');
     }
 
     /**
@@ -281,7 +275,7 @@ class UtilEnv
         }
 
         if ($strict) {
-            return $value === true;
+            return false;
         }
 
         return (boolean)$value;
@@ -295,21 +289,7 @@ class UtilEnv
      */
     public static function is_url($url)
     {
-        return preg_match('~^(https?:)?//~', $url);
-    }
-
-    /**
-     * Returns URL regexp from URL
-     *
-     * @param string $url
-     * @return string
-     */
-    public static function get_url_regexp($url)
-    {
-        $url = preg_replace('~(https?:)?//~i', '', $url);
-        $url = preg_replace('~^www\.~i', '', $url);
-
-        return '(https?:)?//(www\.)?' . self::preg_quote($url);
+        return is_string($url) and preg_match('~^(https?:)?//~', $url);
     }
 
     /**
@@ -333,9 +313,9 @@ class UtilEnv
      * @param string $path
      * @return string
      */
-    public static function realpath($path, $exist = false)
+    public static function realpath($path, $exist = false, $trailing_slash = false)
     {
-        $path = self::normalize_path($path);
+        $path = self::normalize_path($path, $trailing_slash);
 
         if ($exist) {
             $absolutes = realpath($path);
@@ -439,179 +419,36 @@ class UtilEnv
         return trim($file, '/');
     }
 
-    public static function change_file_extension($file, $extension)
+    public static function change_file_extension($file, $extension, $unique = false)
     {
-        return str_replace(pathinfo($file, PATHINFO_EXTENSION), $extension, $file);
-    }
+        $changed = str_replace(pathinfo($file, PATHINFO_EXTENSION), $extension, $file);
 
-    /**
-     * Removes all query strings from url
-     * @param $url
-     * @return false|string
-     */
-    public static function remove_query_all($url)
-    {
-        $pos = strpos($url, '?');
-        if ($pos === false)
-            return $url;
-
-        return substr($url, 0, $pos);
-    }
-
-    /**
-     * Copy of wordpress get_home_path, but accessible not only for wp-admin
-     * Get the absolute filesystem path to the root of the WordPress installation
-     * (i.e. filesystem path of siteurl)
-     *
-     * @return string Full filesystem path to the root of the WordPress installation
-     */
-    public static function site_path()
-    {
-        $home = set_url_scheme(get_option('home'), 'http');
-        $siteurl = set_url_scheme(get_option('siteurl'), 'http');
-
-        if (!empty($home) && 0 !== strcasecmp($home, $siteurl)) {
-            $wp_path_rel_to_home = str_ireplace($home, '', $siteurl); /* $siteurl - $home */
-            $pos = strripos(str_replace('\\', '/', $_SERVER['SCRIPT_FILENAME']), trailingslashit($wp_path_rel_to_home));
-            $home_path = substr($_SERVER['SCRIPT_FILENAME'], 0, $pos);
-            $home_path = trailingslashit($home_path);
-        }
-        else {
-            $home_path = ABSPATH;
+        if ($unique) {
+            $changed = self::unique_filename($changed);
         }
 
-        return str_replace('\\', '/', $home_path);
+        return $changed;
     }
 
-    /**
-     * Removes WP query string from URL
-     * @param $url
-     * @return string|string[]|null
-     */
-    public static function remove_query($url)
+    public static function unique_filename(string $filename, bool $obfuscation = false)
     {
-        return preg_replace('~(\?|&amp;|&#038;|&)+ver=[a-z\d-_.]+~i', '', $url);
-    }
+        $iter = 0;
 
-    /**
-     * Redirects to URL
-     *
-     * @param string $url
-     * @param array $params
-     */
-    public static function redirect($url = '', $params = array())
-    {
-        $url = self::url_format($url, $params);
+        $path_parts = pathinfo($filename);
 
-        @header('Location: ' . $url);
-        exit();
-    }
+        $filename = $obfuscation ? md5(SHZN_SALT . $path_parts['filename']) : $path_parts['filename'];
 
-    /**
-     * Formats URL
-     *
-     * @param string $url
-     * @param array $params
-     * @param boolean $skip_empty
-     * @param string $separator
-     * @return string
-     */
-    public static function url_format(string $url = '', array $params = array(), bool $skip_empty = false, string $separator = '&')
-    {
-        if ($url != '') {
-            $parse_url = @parse_url($url);
-            $url = '';
+        $path = $path_parts['dirname'] === '.' ? '' : "{$path_parts['dirname']}/";
 
-            if (!empty($parse_url['scheme'])) {
-                $url .= $parse_url['scheme'] . '://';
+        do {
 
-                if (!empty($parse_url['user'])) {
-                    $url .= $parse_url['user'];
+            $out_name = $iter > 0 ? "{$filename}-{$iter}" : $filename;
 
-                    if (!empty($parse_url['pass'])) {
-                        $url .= ':' . $parse_url['pass'];
-                    }
-                }
+            $iter++;
 
-                if (!empty($parse_url['host'])) {
-                    $url .= $parse_url['host'];
-                }
+        } while (file_exists("{$path}{$out_name}.{$path_parts['extension']}"));
 
-                if (!empty($parse_url['port']) and $parse_url['port'] != 80) {
-                    $url .= ':' . (int)$parse_url['port'];
-                }
-            }
-
-            if (!empty($parse_url['path'])) {
-                $url .= $parse_url['path'];
-            }
-
-            if (!empty($parse_url['query'])) {
-                $old_params = array();
-                parse_str($parse_url['query'], $old_params);
-
-                $params = array_merge($old_params, $params);
-            }
-
-            $query = self::url_query($params);
-
-            if ($query != '') {
-                $url .= '?' . $query;
-            }
-
-            if (!empty($parse_url['fragment'])) {
-                $url .= '#' . $parse_url['fragment'];
-            }
-        }
-        else {
-            $query = self::url_query($params, $skip_empty, $separator);
-
-            if ($query != '') {
-                $url = '?' . $query;
-            }
-        }
-
-        return $url;
-    }
-
-    /**
-     * Formats query string
-     *
-     * @param array $params
-     * @param boolean $skip_empty
-     * @param string $separator
-     * @return string
-     */
-    public static function url_query($params = array(), $skip_empty = false, $separator = '&')
-    {
-        $str = '';
-        static $stack = array();
-
-        foreach ((array)$params as $key => $value) {
-            if ($skip_empty === true and empty($value)) {
-                continue;
-            }
-
-            $stack[] = $key;
-
-            if (is_array($value)) {
-                if (count($value)) {
-                    $str .= ($str != '' ? '&' : '') .
-                        self::url_query($value, $skip_empty, $key);
-                }
-            }
-            else {
-                $name = '';
-                foreach ($stack as $key) {
-                    $name .= ($name != '' ? '[' . $key . ']' : $key);
-                }
-                $str .= ($str != '' ? $separator : '') . $name . '=' . rawurlencode($value);
-            }
-
-            array_pop($stack);
-        }
-
-        return $str;
+        return "{$path}{$out_name}.{$path_parts['extension']}";
     }
 
     /**
@@ -671,21 +508,6 @@ class UtilEnv
         return $server_load;
     }
 
-    /**
-     * Checks if current request is REST REQUEST
-     * @param $url
-     * @return bool
-     */
-    public static function is_rest_request($url)
-    {
-        if (defined('REST_REQUEST') and REST_REQUEST)
-            return true;
-
-        // in case when called before constant is set
-        // wp filters are not available in that case
-        return str_contains($url, '/wp-json/');
-    }
-
     public static function is_function_disabled($function_name)
     {
         return in_array($function_name, array_map('trim', explode(',', ini_get('disable_functions'))), true);
@@ -719,13 +541,15 @@ class UtilEnv
     {
         $val = trim($val);
 
-        if (empty($val))
+        if (empty($val)) {
             return 0;
+        }
 
         $val = preg_replace('/[^\dkmgtb]/', '', strtolower($val));
 
-        if (!preg_match("/\b(\d+(?:\.\d+)?)\s*([kmgt]?b)\b/", trim($val), $matches))
+        if (!preg_match("/\b(\d+(?:\.\d+)?)\s*([kmgt]?b)\b/", trim($val), $matches)) {
             return absint($val);
+        }
 
         $val = absint($matches[1]);
 
@@ -783,28 +607,6 @@ class UtilEnv
     }
 
     /**
-     * @param  $log
-     * @param string $filename
-     * @param bool $force
-     */
-    public static function write_log($log, string $filename = '', bool $force = false)
-    {
-        if (WP_DEBUG or SHZN_DEBUG or $force) {
-
-            if (is_array($log) || is_object($log)) {
-                $log = print_r($log, true);
-            }
-
-            if ($filename) {
-                file_put_contents(self::normalize_path(WP_CONTENT_DIR) . DIRECTORY_SEPARATOR . $filename, $log, FILE_APPEND);
-            }
-            else {
-                error_log($log);
-            }
-        }
-    }
-
-    /**
      *
      * @param int $current Current number.
      * @param int $total Total number.
@@ -819,7 +621,6 @@ class UtilEnv
 
         return ($total > 0 ? round(($current / $total) * 100, 2) : 0) . '%';
     }
-
 
     /**
      * check if time left is more than a margin otherwise try to rise it
@@ -897,5 +698,35 @@ class UtilEnv
          * and not turned off explicitly and not when being previewed in Customizer)!
          */
         return (!is_admin() and !is_feed() and !is_embed() and !$noOptimize and !$is_customize_preview);
+    }
+
+    public static function relativePath(string $from, string $to)
+    {
+        $fromA = explode('/', rtrim($from, '/'));
+        $toA = explode('/', $to);
+
+        $descend = [];
+        $ascend = [];
+
+        for ($i = 0; $i < max(count($fromA), count($toA)); $i++) {
+
+            if (!isset($fromA[$i], $toA[$i]) or $fromA[$i] !== $toA[$i]) {
+
+                if (isset($fromA[$i])) {
+                    $ascend[] = '..';
+                }
+
+                if (isset($toA[$i])) {
+                    $descend[] = $toA[$i];
+                }
+
+            }
+        }
+
+        if (empty($ascend)) {
+            $ascend = ['.'];
+        }
+
+        return implode('/', array_merge($ascend, $descend));
     }
 }

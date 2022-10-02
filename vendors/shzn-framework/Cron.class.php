@@ -116,7 +116,7 @@ class Cron
     }
 
     /**
-     * @param $function
+     * @param callable $function
      * @param array $args
      * @param int $timestamp
      * @return bool

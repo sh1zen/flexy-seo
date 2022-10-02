@@ -8,7 +8,6 @@
 namespace FlexySEO\Engine\Generators;
 
 use FlexySEO\Engine\Generator;
-use FlexySEO\Engine\Helpers\CurrentPage;
 
 class Schema
 {
@@ -54,15 +53,11 @@ class Schema
 
     private array $graphs;
 
-    private CurrentPage $context;
-
     private Generator $generator;
 
     public function __construct(Generator $generator)
     {
         $this->generator = $generator;
-
-        $this->context = wpfseo()->currentPage;
 
         $this->schema = [
             "@context" => "https://schema.org",
@@ -81,42 +76,42 @@ class Schema
 
     private function load_graphs()
     {
-        if ($this->context->is_404()) {
+        if ($this->generator->getContext()->is_404()) {
             return;
         }
 
         $this->add('WebSite');
 
-        if ($this->context->is_homepage()) {
+        if ($this->generator->getContext()->is_homepage()) {
 
             if (shzn('wpfs')->settings->get("seo.schema.organization.is", false)) {
                 $this->add('Organization');
             }
 
-            if ($this->context->is_home_posts_page()) {
+            if ($this->generator->getContext()->is_home_posts_page()) {
                 $this->add('CollectionPage');
             }
             else {
                 $this->add('WebPage');
             }
         }
-        elseif ($this->context->is_posts_page() or $this->context->is_home_posts_page() or wpfseo()->ecommerce->isWooCommerceShopPage()) {
+        elseif ($this->generator->getContext()->is_posts_page() or $this->generator->getContext()->is_home_posts_page() or wpfseo()->ecommerce->isWooCommerceShopPage()) {
 
             $this->add('CollectionPage');
         }
-        elseif ($this->context->is_simple_page()) {
+        elseif ($this->generator->getContext()->is_simple_page()) {
 
-            $this->add($this->getPostGraphs($this->context->get_queried_object()), 'page');
+            $this->add($this->getPostGraphs($this->generator->getContext()->get_queried_object()), 'page');
         }
-        elseif ($this->context->is_author_archive()) {
+        elseif ($this->generator->getContext()->is_author_archive()) {
 
             $this->add(['ProfilePage', 'Person']);
         }
-        elseif ($this->context->is_search()) {
+        elseif ($this->generator->getContext()->is_search()) {
 
             $this->add('SearchResultsPage');
         }
-        elseif ($this->context->is_post_type_archive() or $this->context->is_date_archive() or $this->context->is_term_archive()) {
+        elseif ($this->generator->getContext()->is_post_type_archive() or $this->generator->getContext()->is_date_archive() or $this->generator->getContext()->is_term_archive()) {
 
             $this->add('CollectionPage');
         }
@@ -127,6 +122,7 @@ class Schema
     public function add($graphType)
     {
         if (is_array($graphType)) {
+
             foreach ($graphType as $graph) {
                 $this->add($graph);
             }
@@ -142,9 +138,9 @@ class Schema
                 $namespace = $graphType;
             }
 
-            $graphBuild = (new $namespace($this->generator))->get($this->context, $graphType);
+            $graphBuild = (new $namespace($this->generator))->get($this->generator->getContext(), $graphType);
 
-            $graphBuild = apply_filters("wpfs_schema_" . strtolower($graphType), $graphBuild, $this->context);
+            $graphBuild = apply_filters("wpfs_schema_" . strtolower($graphType), $graphBuild, $this->generator->getContext());
 
             $this->graphs[] = $graphBuild->export();
         }
@@ -214,7 +210,7 @@ class Schema
 
     private function parse_graphs()
     {
-        $graphs = apply_filters('wpfs_schema_parse_' . $this->context->get_page_type(), $this->graphs, $this->context);
+        $graphs = apply_filters('wpfs_schema_parse_' . $this->generator->getContext()->get_page_type(), $this->graphs, $this->generator->getContext());
 
         $graphs = $this->validate_type($graphs);
 

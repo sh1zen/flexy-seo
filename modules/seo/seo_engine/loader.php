@@ -54,6 +54,8 @@ if(shzn('wpfs')->settings->get('seo.schema.enabled', false)) {
     require_once WPFS_SEO_ENGINE_GENERATORS . 'schema/graph/Organization.php';
 }
 
+require_once WPFS_SEO_ENGINE . 'wp_hooks.php';
+
 /**
  * @param string $context
  * @return \FlexySEO\Engine\Generator|\FlexySEO\Engine\Helpers\Helpers|\FlexySEO\Engine\WPFS_SEO|string|null

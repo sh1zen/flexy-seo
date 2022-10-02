@@ -60,7 +60,7 @@ class Images
             return 0;
         }
 
-        // We have the Post ID, but it's not in the cache yet. We do that here and return.
+        // We have the Post ID, but it's not in the cache yet.
         shzn('wpfs')->options->update($url, 'attachmentUrlToPostId', $id, 'cache', WEEK_IN_SECONDS);
 
         return $id;
@@ -79,7 +79,7 @@ class Images
             return $attachment_id;
         }
 
-        if (!($data = $this->get_image($attachment_id, $size))) {
+        if (!($data = self::get_image($attachment_id, $size))) {
             return '';
         }
 
@@ -162,7 +162,7 @@ class Images
         $variations = [];
 
         foreach ($this->get_sizes() as $size) {
-            $variation = $this->get_image($attachment_id, $size);
+            $variation = self::get_image($attachment_id, $size);
 
             // The get_image function returns false if the size doesn't exist for this attachment.
             if ($variation) {
@@ -186,7 +186,7 @@ class Images
     /**
      * Find the right version of an image based on size.
      *
-     * @param int $attachment_id Attachment ID.
+     * @param int $attachment Attachment ID.
      * @param string|array $size Size name.
      *
      * * * @return false|array $image {
@@ -207,16 +207,16 @@ class Images
      * @type int $filesize The file size in bytes, if already set.
      * }
      */
-    public function get_image($attachment_id, $size = 'full', $allowExternal = true)
+    public static function get_image($attachment, $size = 'full', $allowExternal = true)
     {
-        if (!$attachment_id) {
+        if (!$attachment) {
             return false;
         }
 
         if (is_array($size)) {
 
-            foreach ($size as $s) {
-                if ($image = $this->get_image($attachment_id, $s, $allowExternal)) {
+            foreach ($size as $_size) {
+                if ($image = self::get_image($attachment, $_size, $allowExternal)) {
                     return $image;
                 }
             }
@@ -224,7 +224,20 @@ class Images
             return false;
         }
 
-        $cacheKey = Cache::generate_key($attachment_id, $size);
+        $is_url = UtilEnv::is_url($attachment);
+
+        if (!$is_url) {
+
+            $attachment = shzn_get_post($attachment);
+
+            if (!$attachment) {
+                return false;
+            }
+        }
+
+        $attachment_id = $is_url ? 0 : $attachment->ID;
+
+        $cacheKey = Cache::generate_key($is_url ? $attachment : $attachment_id, $size);
 
         $image = shzn('wpfs')->options->get($cacheKey, 'schema.images.get_image', 'cache');
 
@@ -234,26 +247,39 @@ class Images
 
         $external = false;
 
-        $attachment = get_post($attachment_id);
-
-        if (!$attachment) {
-            return false;
-        }
-
-        $metadata = wp_get_attachment_metadata($attachment_id, true);
-
-        if ($metadata) {
-            $file_url = wp_get_attachment_url($attachment_id);
-        }
-        else {
-            $file_url = $attachment->guid;
+        if ($is_url) {
+            $file_url = $attachment;
             $external = true;
+
+            list($width, $height) = getimagesize($file_url);
+
             $metadata = [
                 'file'       => '',
-                'width'      => 0,
-                'height'     => 0,
+                'width'      => $width,
+                'height'     => $height,
                 'image_meta' => []
             ];
+        }
+        else {
+
+            $metadata = wp_get_attachment_metadata($attachment_id, true);
+
+            if ($metadata) {
+                $file_url = Post::get_url($attachment);
+            }
+            else {
+                $file_url = $attachment->guid;
+                $external = true;
+
+                list($width, $height) = getimagesize($file_url);
+
+                $metadata = [
+                    'file'       => '',
+                    'width'      => $width,
+                    'height'     => $height,
+                    'image_meta' => []
+                ];
+            }
         }
 
         if ($external and !$allowExternal) {
@@ -262,9 +288,9 @@ class Images
 
         $image = [
             'id'          => $attachment_id,
-            'alt'         => $this->get_alt_tag($attachment_id),
-            'caption'     => $attachment->post_excerpt,
-            'description' => $attachment->post_content,
+            'alt'         => $is_url ? '' : self::get_alt_tag($attachment_id),
+            'caption'     => $is_url ? '' : $attachment->post_excerpt,
+            'description' => $is_url ? '' : $attachment->post_content,
             'size'        => $size,
             'url'         => $file_url,
             'file'        => $metadata['file'],
@@ -292,23 +318,15 @@ class Images
             $image['type'] = $metadata['sizes'][$size]['mime-type'];
         }
 
-        if ($external) {
-
-            $image['pixels'] = 0;
-            $image['filesize'] = 0;
-        }
-        else {
-
-            // Deals with non-set keys and values being null or false.
-            if (empty($image['width']) or empty($image['height'])) {
-                return false;
-            }
-
-            $image['pixels'] = ((int)$image['width'] * (int)$image['height']);
-            $image['filesize'] = @filesize(UtilEnv::url_to_path($image['url']));
+        // Deals with non-set keys and values being null or false.
+        if (empty($image['width']) or empty($image['height'])) {
+            return false;
         }
 
-        shzn('wpfs')->options->update($cacheKey, 'schema.images.get_image', $image, 'cache', WEEK_IN_SECONDS);
+        $image['pixels'] = ((int)$image['width'] * (int)$image['height']);
+        $image['filesize'] = $external ? 0 : @filesize(UtilEnv::url_to_path($image['url']));
+
+        shzn('wpfs')->options->update($cacheKey, 'schema.images.get_image', $image, 'cache', WEEK_IN_SECONDS, $attachment_id);
 
         return $image;
     }
@@ -321,7 +339,7 @@ class Images
      *
      * @return string The image alt text.
      */
-    public function get_alt_tag($attachment_id)
+    private static function get_alt_tag($attachment_id)
     {
         return (string)get_post_meta($attachment_id, '_wp_attachment_image_alt', true);
     }

@@ -9,7 +9,6 @@ namespace FlexySEO\Engine\Helpers;
 
 /**
  * Contains helper functions for eCommerce plugins.
-
  */
 class ECommerce
 {
@@ -18,7 +17,6 @@ class ECommerce
      *
      * @param int $id The post ID to check against (optional).
      * @return bool     Whether the current page is the WooCommerce shop page.
-
      *
      */
     public function isWooCommerceShopPage($id = 0)
@@ -39,8 +37,6 @@ class ECommerce
      * Checks whether WooCommerce is active.
      *
      * @return boolean Whether WooCommerce is active.
-
-     *
      */
     public function isWooCommerceActive()
     {
@@ -52,8 +48,6 @@ class ECommerce
      *
      * @param int $id The post ID to check against (optional).
      * @return bool     Whether the current page is the WooCommerce cart page.
-
-     *
      */
     public function isWooCommerceCartPage($id = 0)
     {
@@ -74,8 +68,6 @@ class ECommerce
      *
      * @param int $id The post ID to check against (optional).
      * @return bool     Whether the current page is the WooCommerce checkout page.
-
-     *
      */
     public function isWooCommerceCheckoutPage($id = 0)
     {
@@ -96,8 +88,6 @@ class ECommerce
      *
      * @param int $id The post ID to check against (optional).
      * @return bool     Whether the current page is the WooCommerce account page.
-
-     *
      */
     public function isWooCommerceAccountPage($id = 0)
     {

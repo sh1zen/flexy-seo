@@ -7,12 +7,12 @@
 
 namespace FlexySEO\Engine\Generators\Templates;
 
-use FlexySEO\Engine\Generator;
+use FlexySEO\Engine\Default_Generator;
 use FlexySEO\Engine\Generators\OpenGraph;
 use FlexySEO\Engine\Helpers\CurrentPage;
 use FlexySEO\Engine\Rewriter;
 
-class AuthorArchive_Generator extends Generator
+class AuthorArchive_Generator extends Default_Generator
 {
     /**
      * @param CurrentPage $current_page
@@ -112,10 +112,8 @@ class AuthorArchive_Generator extends Generator
     /**
      * @return OpenGraph
      */
-    public function openGraph()
+    public function openGraph(OpenGraph $og)
     {
-        $og = parent::openGraph();
-
         $og->type('profile');
 
         $og->profile([

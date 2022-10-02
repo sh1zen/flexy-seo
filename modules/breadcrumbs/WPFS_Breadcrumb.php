@@ -486,7 +486,7 @@ class WPFS_Breadcrumb
             case 'post_parent':
                 if (isset($this->queried_object->post_parent) and $this->queried_object->post_parent) {
                     $replaces[] = array(
-                        'text' => get_post($this->queried_object->post_parent)->post_title,
+                        'text' => shzn_get_post($this->queried_object->post_parent)->post_title,
                         'url'  => get_permalink($this->queried_object->post_parent)
                     );
                 }
@@ -504,7 +504,7 @@ class WPFS_Breadcrumb
             case 'queried_object':
                 if ($wp_query->is_singular()) {
                     $replaces[] = array(
-                        'text' => get_post($this->queried_object->ID)->post_title,
+                        'text' => shzn_get_post($this->queried_object)->post_title,
                         'url'  => get_permalink($this->queried_object->ID)
                     );
                 }
@@ -685,7 +685,7 @@ class WPFS_Breadcrumb
         $tax = $term->taxonomy;
         $parents = array();
         while ($term->parent) {
-            $term = get_term($term->parent, $tax);
+            $term = shzn_get_term($term->parent, $tax);
             $parents[] = $term;
         }
 
@@ -825,7 +825,7 @@ class WPFS_Breadcrumb
         $children = array();
 
         foreach ((array)$terms[$term->term_id] as $child) {
-            $children[] = get_term($child, $term->taxonomy);
+            $children[] = shzn_get_term($child, $term->taxonomy);
         }
 
         return $children;
@@ -1047,12 +1047,11 @@ class WPFS_Breadcrumb
 
             $link_output = "<{$this->element} data-role='links'>";
 
-            $link_output .= "<a role='button' data-action='toggle'><span>Cascade</span><span class='caret'></span></a>";
+            $link_output .= "<a role='button' data-action='toggle'><span>Cascade</span><span></span></a>";
 
             $link_output .= "<ul class='wpfs-breadcrumb-list'>";
 
             foreach ($link as $_link) {
-                // todo not output meta in this case
                 $link_output .= $this->crumb_to_link($_link, $position, false);
             }
 

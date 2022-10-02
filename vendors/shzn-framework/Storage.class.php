@@ -95,10 +95,12 @@ class Storage
         }
 
         if (!($data = unserialize($data))) {
+            @unlink($path);
             return false;
         }
 
         if (boolval($data['expire']) and $data['expire'] < time()) {
+            @unlink($path);
             return false;
         }
 
@@ -155,8 +157,6 @@ class Storage
         else {
             unset($this->cache[$context]);
         }
-
-        $this->handle_autosave();
     }
 
     private function handle_autosave()
@@ -179,7 +179,7 @@ class Storage
         }
 
         // auto add time() to expire if passed just lifespan
-        if ($expire <= YEAR_IN_SECONDS) {
+        if ($expire <= time()) {
             $expire += time();
         }
 
@@ -244,10 +244,9 @@ class Storage
         }
     }
 
-    public function get_path($context = 'default', $blog_id = 0)
+    public function get_path($context = 'default', $key = '', $blog_id = 0)
     {
-        $context = $this->filter_context($context, $blog_id);
-        return $this->generate_path($context);
+        return $this->generate_path($this->filter_context($context, $blog_id), $key);
     }
 
     public function save($args = array(), $blog_id = 0)
@@ -262,7 +261,7 @@ class Storage
 
         $args['context'] = $this->filter_context($args['context'], $blog_id);
 
-        if ($args['expire'] <= YEAR_IN_SECONDS) {
+        if ($args['expire'] <= time()) {
             $args['expire'] += time();
         }
 
@@ -274,8 +273,9 @@ class Storage
 
         $cached = serialize($args);
 
-        if (!$cached)
+        if (!$cached) {
             return false;
+        }
 
         Disk::make_path($path);
 

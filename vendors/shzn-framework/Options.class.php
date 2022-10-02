@@ -31,11 +31,11 @@ class Options
         $this->table_name = $table_name;
 
         /**
-         * remove expired values once a week
+         * remove expired values once a day
          */
         if ($this->get($context, "clear_old_options", "core", 0) < time()) {
             $this->delete_expired();
-            $this->update($context, "clear_old_options", time() + WEEK_IN_SECONDS, "core", 0);
+            $this->update($context, "clear_old_options", time() + DAY_IN_SECONDS, "core", 0);
         }
     }
 
@@ -110,14 +110,19 @@ class Options
     {
         global $wpdb;
 
-        $tableName = $this->table_name();
-
-        $time = time();
-
-        $wpdb->query("DELETE FROM {$tableName} WHERE expiration > 0 AND expiration < {$time}");
+        $wpdb->query("DELETE FROM " . $this->table_name() . " WHERE expiration > 0 AND expiration < " . time());
     }
 
-    public function update($obj_id, $option, $value = false, $context = 'core', $expiration = 0)
+    /**
+     * @param $obj_id
+     * @param $option
+     * @param bool $value
+     * @param string $context
+     * @param int $expiration could be 0, specific time, DAY_IN_SECONDS, or negative -> not persistent cache
+     * @param string|int|null $container
+     * @return bool
+     */
+    public function update($obj_id, $option, $value = false, $context = 'core', $expiration = 0, $container = null)
     {
         global $wpdb;
 
@@ -132,7 +137,7 @@ class Options
         $old_value = $this->get($obj_id, $option, $context, null);
 
         if ($old_value === null) {
-            return $this->add($obj_id, $option, $value, $context, $expiration);
+            return $this->add($obj_id, $option, $value, $context, $expiration, $container);
         }
 
         if (is_object($value)) {
@@ -150,7 +155,7 @@ class Options
         }
 
         $result = $wpdb->query(
-            $wpdb->prepare("REPLACE INTO " . $this->table_name() . " (obj_id, context, item, value, expiration) VALUES (%s, %s, %s, %s, %d)", $obj_id, $context, $option, $serialized_value, $expiration)
+            $wpdb->prepare("REPLACE INTO " . $this->table_name() . " (obj_id, context, item, value, container, expiration) VALUES (%s, %s, %s, %s, %s, %d)", $obj_id, $context, $option, $serialized_value, $container, $expiration)
         );
 
         if (!$result) {
@@ -168,9 +173,10 @@ class Options
      * @param bool $value
      * @param string $context
      * @param int $expiration could be 0, specific time, DAY_IN_SECONDS, or negative -> not persistent cache
+     * @param string|int|null $container
      * @return bool
      */
-    public function add($obj_id, $option, $value = false, string $context = 'core', int $expiration = 0)
+    public function add($obj_id, $option, $value = false, string $context = 'core', int $expiration = 0, $container = null)
     {
         global $wpdb;
 
@@ -192,7 +198,7 @@ class Options
 
         $serialized_value = maybe_serialize($value);
 
-        $result = $wpdb->query($wpdb->prepare("REPLACE INTO " . $this->table_name() . " (obj_id, context, item, value, expiration) VALUES (%s, %s, %s, %s, %d)", $obj_id, $context, $option, $serialized_value, $expiration));
+        $result = $wpdb->query($wpdb->prepare("REPLACE INTO " . $this->table_name() . " (obj_id, context, item, value, container, expiration) VALUES (%s, %s, %s, %s, %s, %d)", $obj_id, $context, $option, $serialized_value, $container, $expiration));
 
         if (!$result) {
             return false;
@@ -223,16 +229,6 @@ class Options
         $this->cache->delete('db_cache');
 
         return true;
-    }
-
-    public function add_value($obj_id, $value = false, $context = 'core', $expiration = 0)
-    {
-        return $this->update($obj_id, 'key_value', $value, $context, $expiration);
-    }
-
-    public function get_value($obj_id, $context = 'core', $default = false, $cache = true)
-    {
-        return $this->get($obj_id, 'key_value', $context, $default, $cache);
     }
 
     public function get_all($option, $context = 'core', $default = false, $limiter = false, $offset = 0)
@@ -283,9 +279,8 @@ class Options
 
         if ($row) {
             $this->cache->delete($row['obj_id'] . $row['item'] . $row['context'], 'db_cache');
+            $this->cache->delete($row['obj_id'], 'db_cache');
         }
-
-        $this->cache->delete($row['obj_id'], 'db_cache');
 
         return boolval($wpdb->query($wpdb->prepare("DELETE FROM " . $this->table_name() . " WHERE id = %s", $id)));
     }
@@ -322,5 +317,19 @@ class Options
         }
 
         return $res;
+    }
+
+    public function remove_by_container($container)
+    {
+        global $wpdb;
+
+        return boolval($wpdb->query($wpdb->prepare("DELETE FROM " . $this->table_name() . " WHERE container = %s", $container)));
+    }
+
+    public function remove_by_value($value, $regex = false)
+    {
+        global $wpdb;
+
+        return boolval($wpdb->query($wpdb->prepare("DELETE FROM " . $this->table_name() . " WHERE value " . ($regex ? 'REGEXP' : '=') . " %s", $value)));
     }
 }

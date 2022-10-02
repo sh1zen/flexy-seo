@@ -25,6 +25,29 @@ class PagesHandler
 
         add_action("admin_print_styles-post.php", array($this, 'enqueue_scripts_edit_page'));
         add_action('admin_print_styles-post-new.php', array($this, 'enqueue_scripts_edit_page'));
+
+        add_action('admin_notices', [$this, 'notice'], 10, 0);
+    }
+
+    public function notice()
+    {
+        global $pagenow;
+
+        $user_id = shzn('common')->utility->cu_id;
+
+        if (isset($_GET['wpfs-dismiss-notice'])) {
+
+            shzn('wpfs')->options->add($user_id, 'dismissed', true, 'admin-notice', MONTH_IN_SECONDS);
+        }
+        elseif ($pagenow == 'index.php' and !shzn('wpfs')->options->get($user_id, 'dismissed', 'admin-notice', false)) {
+            ?>
+            <div class="notice notice-info is-dismissible">
+                <h3>Help me to build <a href="<?php echo admin_url('admin.php?page=wp-flexyseo'); ?>">Flexy SEO</a>.</h3>
+                <p><?php echo sprintf(__("Buy me a coffe <a href='%s'>here</a> or leave a review <a href='%s'>here</a>.", 'wpfs'), "https://www.paypal.com/donate?business=dev.sh1zen%40outlook.it&item_name=Thank+you+in+advanced+for+the+kind+donations.+You+will+sustain+me+developing+Flexy+SEO.&currency_code=EUR", "https://wordpress.org/support/plugin/flexy-seo/reviews/?filter=5"); ?></p>
+                <a href="?wpfs-dismiss-notice"><?php echo __('Dismiss', 'wpfs') ?></a>
+            </div>
+            <?php
+        }
     }
 
     public function add_plugin_pages()

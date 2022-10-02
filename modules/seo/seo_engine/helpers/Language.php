@@ -9,7 +9,6 @@ namespace FlexySEO\Engine\Helpers;
 
 /**
  * Contains i18n and language (code) helper methods.
-
  */
 class Language
 {
@@ -17,7 +16,6 @@ class Language
      * Returns the language of the current response in BCP 47 format.
      *
      * @return string The language code in BCP 47 format.
-
      *
      */
     public function currentLanguageCodeBCP47()
@@ -29,7 +27,6 @@ class Language
      * Returns the language of the current response.
      *
      * @return string The language code.
-
      *
      */
     public function currentLanguageCode()

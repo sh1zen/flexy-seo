@@ -1,13 +1,7 @@
-/**
- * @author    sh1zen
- * @copyright Copyright (C)  2022
- * @license   http://www.gnu.org/licenses/gpl.html GNU/GPL
- */
-
 :root {
-    --border-color: #00e045;
-    --tabs-bg-selected-color: #2a9e53;
+    --border-color: #41a961;
+    --tabs-bg-selected-color: #379357;
     --tabs-text-selected-color: #fff;
-    --main-dark-color: #1fab50;
-    --header-text-color: #fff;
+    --main-dark-color: #349154;
+    --header-text-color: #fff
 }

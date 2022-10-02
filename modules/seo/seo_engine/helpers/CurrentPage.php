@@ -104,15 +104,13 @@ class CurrentPage
      */
     public function is_post_type_archive()
     {
-        $wp_query = $this->get_main_query();
-
-        return $wp_query->is_post_type_archive();
+        return $this->get_main_query()->is_post_type_archive();
     }
 
     /**
      * Determine whether this is the statically set posts page, when it's not the frontpage.
      *
-     * @return bool Whether or not it's a non-frontpage, statically set posts page.
+     * @return bool Whether it's a non-frontpage, statically set posts page.
      */
     public function is_posts_page()
     {
@@ -143,7 +141,7 @@ class CurrentPage
     /**
      * Checks if the current page is the front page.
      *
-     * @return bool Whether or not the current page is the front page.
+     * @return bool Whether the current page is the front page.
      */
     public function is_front_page()
     {
@@ -187,7 +185,7 @@ class CurrentPage
     {
         $wp_query = $this->get_main_query();
 
-        return $wp_query->is_tax || $wp_query->is_tag || $wp_query->is_category;
+        return ($wp_query->is_tax || $wp_query->is_tag || $wp_query->is_category);
     }
 
     /**
@@ -254,9 +252,8 @@ class CurrentPage
      */
     public function get_queried_posts()
     {
-        return $this->get_main_query()->get_posts();
+        return $this->get_main_query()->posts ??  $this->get_main_query()->get_posts();
     }
-
 
     /**
      * @return \WP_Post
