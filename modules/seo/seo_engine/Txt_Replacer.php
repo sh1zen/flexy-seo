@@ -1,7 +1,7 @@
 <?php
 /**
  * @author    sh1zen
- * @copyright Copyright (C)  2022
+ * @copyright Copyright (C) 2023.
  * @license   http://www.gnu.org/licenses/gpl.html GNU/GPL
  */
 
@@ -133,7 +133,7 @@ class Txt_Replacer
                 $res = call_user_func($replacer, $object);
 
                 // update the callable with its result to get more efficiency
-                shzn('wpfs')->cache->force_set("{$rule}-{$type}", $res, "Replacer");
+                shzn('wpfs')->cache->set("{$rule}-{$type}", $res, "Replacer", true);
             }
             else {
                 $res = $replacer;

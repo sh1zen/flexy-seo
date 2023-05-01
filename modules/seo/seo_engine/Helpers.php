@@ -1,7 +1,7 @@
 <?php
 /**
  * @author    sh1zen
- * @copyright Copyright (C)  2022
+ * @copyright Copyright (C) 2023.
  * @license   http://www.gnu.org/licenses/gpl.html GNU/GPL
  */
 
@@ -15,11 +15,6 @@ class Helpers
      * @var \WP_Query
      */
     public $main_query;
-
-    /**
-     * @var \FlexySEO\Engine\Helpers\StringHelper
-     */
-    public $string;
 
     /**
      * @var \FlexySEO\Engine\Helpers\Images
@@ -64,8 +59,6 @@ class Helpers
         $this->main_query = $main_query;
 
         $this->cache = shzn('wpfs')->cache;
-
-        $this->string = new StringHelper();
 
         $this->language = new Language();
 

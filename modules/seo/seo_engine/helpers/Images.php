@@ -1,7 +1,7 @@
 <?php
 /**
  * @author    sh1zen
- * @copyright Copyright (C)  2022
+ * @copyright Copyright (C) 2023.
  * @license   http://www.gnu.org/licenses/gpl.html GNU/GPL
  */
 
@@ -447,7 +447,7 @@ class Images
      */
     public function isValidAttachment($url)
     {
-        $uploadDirUrl = wpfseo()->string->escapeRegex(UtilEnv::wp_upload_dir('baseurl'));
+        $uploadDirUrl = preg_quote(UtilEnv::wp_upload_dir('baseurl'), '/');
         return preg_match("/$uploadDirUrl.*/", $url);
     }
 

@@ -1,7 +1,7 @@
 <?php
 /**
  * @author    sh1zen
- * @copyright Copyright (C)  2022
+ * @copyright Copyright (C) 2023.
  * @license   http://www.gnu.org/licenses/gpl.html GNU/GPL
  */
 
@@ -18,7 +18,6 @@ require_once WPFS_SEO_ENGINE_HELPERS . 'Images.php';
 require_once WPFS_SEO_ENGINE_HELPERS . 'Post.php';
 require_once WPFS_SEO_ENGINE_HELPERS . 'Term.php';
 require_once WPFS_SEO_ENGINE_HELPERS . 'CurrentPage.php';
-require_once WPFS_SEO_ENGINE_HELPERS . 'StringHelper.php';
 require_once WPFS_SEO_ENGINE_HELPERS . 'Language.php';
 
 require_once WPFS_SEO_ENGINE . 'Helpers.php';

@@ -1,7 +1,7 @@
 <?php
 /**
  * @author    sh1zen
- * @copyright Copyright (C)  2022
+ * @copyright Copyright (C) 2023.
  * @license   http://www.gnu.org/licenses/gpl.html GNU/GPL
  */
 
@@ -33,15 +33,23 @@ if (!defined('SHZN_FRAMEWORK')) {
     require_once WPFS_VENDORS . 'shzn-framework/loader.php';
 }
 
-shzn('wpfs', ['path' => WPFS_MODULES, 'table_name' => "flexy_seo"], [
-    'meter'         => false,
-    'cron'          => false,
-    'cache'         => true,
-    'storage'       => true,
-    'settings'      => true,
-    'moduleHandler' => true,
-    'options'       => true
-]);
+shzn(
+    'wpfs',
+    [
+        'path'         => WPFS_MODULES,
+        'table_name'   => "flexy_seo",
+        'use_memcache' => true
+    ],
+    [
+        'meter'         => false,
+        'cron'          => false,
+        'cache'         => true,
+        'storage'       => true,
+        'settings'      => true,
+        'moduleHandler' => true,
+        'options'       => true
+    ]
+);
 
 const WPFS_DEBUG = SHZN_DEBUG;
 

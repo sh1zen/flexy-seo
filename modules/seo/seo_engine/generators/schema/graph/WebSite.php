@@ -1,7 +1,7 @@
 <?php
 /**
  * @author    sh1zen
- * @copyright Copyright (C)  2022
+ * @copyright Copyright (C) 2023.
  * @license   http://www.gnu.org/licenses/gpl.html GNU/GPL
  */
 
@@ -31,8 +31,8 @@ class WebSite extends Graph
                 '@type'       => 'WebSite',
                 '@id'         => self::getSchemaID(),
                 'url'         => $homeUrl,
-                'name'        => wpfseo()->string->decodeHtmlEntities(get_bloginfo('name')),
-                'description' => wpfseo()->string->decodeHtmlEntities(get_bloginfo('description')),
+                'name'        => html_entity_decode((string)get_bloginfo('name'), ENT_QUOTES),
+                'description' => html_entity_decode((string)get_bloginfo('description'), ENT_QUOTES),
                 'inLanguage'  => wpfseo()->language->currentLanguageCodeBCP47()
             ]
         );

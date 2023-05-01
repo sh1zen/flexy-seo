@@ -1,7 +1,7 @@
 <?php
 /**
  * @author    sh1zen
- * @copyright Copyright (C)  2022
+ * @copyright Copyright (C) 2023.
  * @license   http://www.gnu.org/licenses/gpl.html GNU/GPL
  */
 
@@ -38,8 +38,8 @@ class Organization extends Graph
                 '@type'       => ucfirst(shzn('wpfs')->settings->get('seo.schema.organization.type', 'organization')),
                 '@id'         => self::getSchemaID(),
                 'url'         => $homeUrl,
-                'name'        => shzn('wpfs')->settings->get('seo.schema.organization.name', wpfseo()->string->decodeHtmlEntities(get_bloginfo('name'))),
-                'description' => shzn('wpfs')->settings->get('seo.schema.organization.description', wpfseo()->string->decodeHtmlEntities(get_bloginfo('description'))),
+                'name'        => shzn('wpfs')->settings->get('seo.schema.organization.name', html_entity_decode((string)get_bloginfo('name'), ENT_QUOTES)),
+                'description' => shzn('wpfs')->settings->get('seo.schema.organization.description', html_entity_decode((string)get_bloginfo('description'), ENT_QUOTES)),
                 'sameAs'      => GraphUtility::socialUrls(),
                 'address'     => shzn('wpfs')->settings->get('seo.schema.organization.address', ''),
                 //'founder'     => array_map('trim', explode(',', shzn('wpfs')->settings->get('seo.schema.organization.founder', ''))),

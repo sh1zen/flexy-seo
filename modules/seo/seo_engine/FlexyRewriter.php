@@ -7,13 +7,13 @@
 
 namespace FlexySEO\Engine;
 
-class Rewriter
+class FlexyRewriter
 {
-    private static $_instance;
+    private static FlexyRewriter $_instance;
 
     private $rules;
 
-    private $current_page;
+    private Helpers\CurrentPage $current_page;
 
     /**
      * Sets the helpers.
@@ -28,6 +28,28 @@ class Rewriter
         $this->register_hooks();
     }
 
+    /**
+     * Initializes the integration.
+     *
+     * This is the place to register hooks and filters.
+     *
+     * @return void
+     */
+    public function register_hooks()
+    {
+        add_action('wp', [$this, 'static_redirects']);
+        //add_action('template_redirect', [$this, 'template_redirect'], 1);
+    }
+
+    public static function getInstance(): FlexyRewriter
+    {
+        if (!isset(self::$_instance)) {
+            self::$_instance = new self();
+        }
+
+        return self::$_instance;
+    }
+
     public function get_pagenum_link($pagenum = 1, $escape = true)
     {
         global $wp_rewrite;
@@ -36,12 +58,13 @@ class Rewriter
 
         $request = remove_query_arg('paged');
 
-        $home_root = parse_url(shzn()->utility->home_url);
+        $home_root = parse_url(shzn_utils()->home_url);
         $home_root = (isset($home_root['path'])) ? $home_root['path'] : '';
         $home_root = preg_quote($home_root, '|');
 
         $request = preg_replace('|^' . $home_root . '|i', '', $request);
-        $request = preg_replace('|^/+|', '', $request);
+        //$request = preg_replace('|^/+|', '', $request);
+        $request = ltrim($request, "/");
 
         if (!$wp_rewrite->using_permalinks() || is_admin()) {
             $base = trailingslashit(get_bloginfo('url'));
@@ -91,46 +114,24 @@ class Rewriter
     }
 
     /**
-     * Initializes the integration.
-     *
-     * This is the place to register hooks and filters.
-     *
-     * @return void
-     */
-    public function register_hooks()
-    {
-        add_action('wp', [$this, 'static_redirects']);
-        //add_action('template_redirect', [$this, 'template_redirect'], 1);
-    }
-
-    public static function get_instance()
-    {
-        if (!isset(self::$_instance)) {
-            self::$_instance = new self();
-        }
-
-        return self::$_instance;
-    }
-
-    /**
      * When certain archives are disabled, this redirects those to the homepage.
      */
     public function static_redirects()
     {
         if (!shzn('wpfs')->settings->get('seo.archives.date.active', true) and $this->current_page->is_date_archive()) {
-            Rewriter::redirect(shzn()->utility->home_url);
+            shzn_utils()->rewriter->redirect('/');
         }
 
         if (!shzn('wpfs')->settings->get('seo.archives.author.active', true) and $this->current_page->is_author_archive()) {
-            Rewriter::redirect(shzn()->utility->home_url);
+            shzn_utils()->rewriter->redirect('/');
         }
 
         if (!shzn('wpfs')->settings->get('seo.tax.post_format.active', true) and $this->current_page->is_post_format_archive()) {
-            Rewriter::redirect(shzn()->utility->home_url);
+            shzn_utils()->rewriter->redirect('/');
         }
 
         if (!shzn('wpfs')->settings->get('seo.tax.post_format.active', true) and $this->current_page->is_post_format_archive()) {
-            Rewriter::redirect(shzn()->utility->home_url);
+            shzn_utils()->rewriter->redirect('/');
         }
 
         /**
@@ -147,13 +148,8 @@ class Rewriter
                 return;
             }
 
-            Rewriter::redirect($redirect->url, $redirect->status);
+            shzn_utils()->rewriter->redirect($redirect->url ?: '/', $redirect->status);
         }
-    }
-
-    public static function redirect($url, $status = 301, $_x_redirect_by = 'Flexy SEO')
-    {
-        wp_redirect($url, $status, $_x_redirect_by);
     }
 
     private function redirect_rule($object_id, $type = 'post')
@@ -190,11 +186,12 @@ class Rewriter
         }
 
         $url = $this->get_attachment_url();
+
         if (empty($url)) {
             return;
         }
 
-        Rewriter::redirect($url);
+        shzn_utils()->rewriter->redirect($url);
     }
 
     /**

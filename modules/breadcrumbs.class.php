@@ -1,7 +1,7 @@
 <?php
 /**
  * @author    sh1zen
- * @copyright Copyright (C)  2022
+ * @copyright Copyright (C) 2023.
  * @license   http://www.gnu.org/licenses/gpl.html GNU/GPL
  */
 
@@ -18,7 +18,7 @@ class Mod_breadcrumbs extends Module
         parent::__construct('wpfs');
 
         if (!(wp_doing_cron() or wp_doing_ajax() or is_admin())) {
-            include_once WPFS_MODULES . 'breadcrumbs/WPFS_Breadcrumb.php';
+            require_once WPFS_MODULES . 'breadcrumbs/WPFS_Breadcrumb.php';
 
             add_action('wp_head', array($this, 'print_style'));
         }

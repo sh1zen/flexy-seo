@@ -1,7 +1,7 @@
 <?php
 /**
  * @author    sh1zen
- * @copyright Copyright (C)  2022
+ * @copyright Copyright (C) 2023.
  * @license   http://www.gnu.org/licenses/gpl.html GNU/GPL
  */
 
@@ -158,15 +158,9 @@ class Mod_seo extends Module
             }
 
             ?>
-            <table class="shzn shzn-settings">
-                <tbody>
-                <?php
-
-                Graphic::generate_fields($_setting_fields, array('name_prefix' => shzn('wpfs')->settings->option_name));
-
-                ?>
-                </tbody>
-            </table>
+            <block class="shzn-options">
+                <?php Graphic::generate_fields($_setting_fields, $this->infos(), array('name_prefix' => shzn('wpfs')->settings->option_name)); ?>
+            </block>
             <p class="shzn-submit">
                 <input type="submit" class="button-primary" value="<?php _e('Save Changes', 'wpfs') ?>"/>
             </p>
@@ -379,7 +373,6 @@ class Mod_seo extends Module
                 $fields['archives'] = array_merge(
                     $fields['archives'],
                     $this->group_setting_fields(
-
                         $this->setting_field(sprintf(__('%s archive:', 'wpfs'), $archive_name), false, 'separator'),
                         $this->setting_field(__('Status', 'wpfs'), "archives.{$post_type}.active", 'checkbox', ['default_value' => true]),
                         $this->setting_field(sprintf(__('Show %s archive in search results', 'wpfs'), $archive_name), "archives.{$post_type}.show", 'checkbox', ['default_value' => true, 'parent' => "archives.{$post_type}.active"]),
