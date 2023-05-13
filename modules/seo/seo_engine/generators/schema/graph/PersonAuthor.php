@@ -24,7 +24,7 @@ class PersonAuthor extends Person
      * @param ...$args
      * @return \FlexySEO\Engine\Generators\GraphBuilder $data The graph data.
      */
-    public function get(CurrentPage $currentPage, string $type = '', ...$args)
+    public function get(CurrentPage $currentPage, string $type = '', ...$args): GraphBuilder
     {
         if (!$currentPage->get_queried_object()->post_author) {
             return new GraphBuilder();

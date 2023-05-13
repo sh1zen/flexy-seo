@@ -5,9 +5,11 @@
  * @license   http://www.gnu.org/licenses/gpl.html GNU/GPL
  */
 
+use FlexySEO\Engine\Helpers\CurrentPage;
 use FlexySEO\Engine\Helpers\Images;
 use FlexySEO\Engine\Helpers\Post;
-use FlexySEO\Engine\Txt_Replacer;
+use WPS\core\TextReplacer;
+use WPS\core\StringHelper;
 
 /**
  * Return current page breadcrumbs
@@ -23,61 +25,44 @@ function wpfs_breadcrumb(string $before, string $after, bool $display = true, ar
     return WPFS_Breadcrumb::breadcrumb($before, $after, $display, $args);
 }
 
-/**
- * @param null|\WP_Post $post
- * @param int $length
- * @param string $more
- * @return string
- */
-function wpfs_get_post_excerpt($post = null, $length = 32, $more = '...')
+function wpfs_get_post_excerpt($post = null, $length = 32, $more = '...'): string
 {
-    $post = shzn_get_post($post);
+    $post = wps_get_post($post);
 
-    $post_excerpt = empty($post->post_excerpt) ? $post->post_content : $post->post_excerpt;
+    $post_excerpt = $post->post_excerpt ?: $post->post_content;
+
+    $post_excerpt = StringHelper::filter_text($post_excerpt, true);
+
+    $post_excerpt = preg_replace("#\s([.,:;])\s#", "$1 ", $post_excerpt);
 
     if ($length) {
-        $post_excerpt = wp_trim_words($post_excerpt, $length, $more);
+        $post_excerpt = StringHelper::truncate($post_excerpt, $length, $more);
     }
 
     return $post_excerpt;
 }
 
-/**
- * @param null|\WP_Post $post
- * @param string $default
- * @return string
- */
-function wpfs_get_the_description($post = null, $default = ''): string
+function wpfs_get_the_description($post = null, string $default = ''): string
 {
     if ($post) {
 
-        $post = shzn_get_post($post);
+        $post = wps_get_post($post);
 
-        $_description = shzn('wpfs')->options->get($post->ID, "description", "customMeta", "");
+        $description = wpfs_get_post_meta_description($post, false, '') ?: '%%description%%';
 
-        if (!empty($_description)) {
-            $description = $_description;
-        }
-
-        if (empty($description)) {
-            $description = '%%description%%';
-        }
-
-        $description = Txt_Replacer::replace(
+        $description = TextReplacer::replace(
             $description,
             $post,
             'post'
         );
+
+        $description = StringHelper::escape_text($description);
     }
     else {
         $description = wpfseo('generator')->get_description($default);
     }
 
-    if (empty($description)) {
-        $description = $default;
-    }
-
-    return $description;
+    return $description ?: $default;
 }
 
 function wpfs_get_mainImageURL($post = null, $size = 'large'): string
@@ -87,7 +72,7 @@ function wpfs_get_mainImageURL($post = null, $size = 'large'): string
     return $url;
 }
 
-function wpfs_image_details($attachment, $size = 'thumbnail')
+function wpfs_get_image($attachment, $size = 'thumbnail')
 {
     return Images::get_image($attachment, $size);
 }
@@ -102,7 +87,7 @@ function wpfs_image_details($attachment, $size = 'thumbnail')
  */
 function wpfs_replace_vars(string $string, int $object_id = 0, string $type = 'post'): string
 {
-    return Txt_Replacer::replace($string, $object_id, $type);
+    return TextReplacer::replace($string, $object_id, $type);
 }
 
 /**
@@ -112,19 +97,20 @@ function wpfs_replace_vars(string $string, int $object_id = 0, string $type = 'p
  * @param String|callable $replacement
  * @param string|string[] $type
  */
-function wpfs_add_replacement_rule(string $rule, $replacement, $type = [])
+function wpfs_add_replacement_rule(string $rule, $replacement, $type = []): void
 {
     if (defined("WPFS_SEO_ENGINE_LOADED") and WPFS_SEO_ENGINE_LOADED) {
-        Txt_Replacer::add_replacer($rule, $replacement, $type);
+
+        TextReplacer::add_replacer($rule, $replacement, $type ?: CurrentPage::get_page_types());
     }
 }
 
-function wpfs_term_description($term = 0)
+function wpfs_term_description($term, $default = ''): string
 {
-    return html_entity_decode(stripslashes(wpfseo('helpers')->term->get_description($term)));
+    return wpfseo('helpers')->term->get_description($term, $default);
 }
 
-function wpfs_the_title($filtered = true, $trailingBlogName = true)
+function wpfs_the_title(): string
 {
     $title = '';
     $generator = wpfseo('generator');
@@ -133,14 +119,10 @@ function wpfs_the_title($filtered = true, $trailingBlogName = true)
         $title = wpfseo('generator')->generate_title();
     }
 
-    if (!$trailingBlogName) {
-        $title = trim(str_replace(get_bloginfo('name', 'display'), "", $title), " " . shzn('wpfs')->settings->get('seo.title.separator', '-'));
-    }
-
-    return $filtered ? apply_filters('wpfs_title', $title) : $title;
+    return $title;
 }
 
-function wpfs_document_title($separator = '-', $blogName = true)
+function wpfs_document_title($separator = '-', $blogName = true): string
 {
     global $page, $paged;
 
@@ -217,7 +199,7 @@ function wpfs_document_title($separator = '-', $blogName = true)
         $titleFragments['site'] = get_bloginfo('name', 'display');
     }
 
-    $title = implode(" {$separator} ", array_filter($titleFragments));
+    $title = implode(" $separator ", array_filter($titleFragments));
 
     $title = trim($title);
 

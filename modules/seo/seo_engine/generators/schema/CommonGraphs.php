@@ -14,11 +14,12 @@ class CommonGraphs
     /**
      * Builds the graph data for a given image with a given schema ID.
      *
-     * @param int|string $imageUrlId The image ID.
+     * @param int|string|array $imageUrlId The image ID.
+     * @param string|array $size
      * @param string $graphId The graph ID.
-     * @return array $data    The image graph data.
+     * @return array
      */
-    public static function imageObject($imageUrlId, string|array $size = 'large', string $graphId = '')
+    public static function imageObject($imageUrlId, $size = 'large', string $graphId = ''): array
     {
         if (is_array($imageUrlId)) {
             $imageData = array_merge([
@@ -34,7 +35,7 @@ class CommonGraphs
             $attachmentId = true;
         }
         else {
-            $attachmentId = wpfseo()->images->attachmentUrlToPostId($imageUrlId);
+            $attachmentId = wpfseo('helpers')->images->attachmentUrlToPostId($imageUrlId);
             $imageData = Images::get_image($attachmentId, $size);
 
             if (!$imageData) {
@@ -51,15 +52,15 @@ class CommonGraphs
         }
 
         if ($graphId and !str_contains($graphId, '#')) {
-            $graphId = shzn()->utility->home_url . '#' . $graphId;
+            $graphId = wps_utils()->home_url . '#' . $graphId;
         }
 
         $schema = new GraphBuilder(
             'ImageObject',
             [
-                '@id'         => strtolower($graphId),
-                'url'         => $imageData['url'],
-                'inLanguage'  => wpfseo()->language->currentLanguageCodeBCP47()
+                '@id'        => strtolower($graphId),
+                'url'        => $imageData['url'],
+                'inLanguage' => wpfseo('helpers')->language->currentLanguageCodeBCP47()
             ]
         );
 
@@ -74,6 +75,4 @@ class CommonGraphs
 
         return $schema->export();
     }
-
-
 }

@@ -7,6 +7,7 @@
 
 namespace FlexySEO\Engine;
 
+use FlexySEO\Engine\Helpers\ExtraTermFields;
 use FlexySEO\Engine\Helpers\Helpers;
 use FlexySEO\Engine\Helpers\XRE_MetaBox;
 
@@ -16,13 +17,13 @@ if (!defined('WPFS_SEO_ENGINE')) {
 
 class WPFS_SEO
 {
-    private static ?WPFS_SEO $_instance;
+    private static WPFS_SEO $_instance;
 
-    public ?Helpers $helpers = null;
+    public Helpers $helpers;
 
-    public ?XRE_MetaBox $metaBox = null;
+    public XRE_MetaBox $metaBox;
 
-    public ?Generator $generator = null;
+    public Generator $generator;
 
     /**
      * Create the breadcrumb
@@ -30,7 +31,8 @@ class WPFS_SEO
     private function __construct()
     {
         if (is_admin()) {
-            $this->metaBox = new XRE_MetaBox();
+            XRE_MetaBox::Init();
+            ExtraTermFields::Init();
         }
 
         $this->register_actions();
@@ -40,7 +42,7 @@ class WPFS_SEO
     {
         if (!is_admin()) {
 
-            add_action('wp', array($this, 'set_up'), 1);
+            add_action('wp', array($this, 'set_up'), 10, 0);
 
             remove_action('wp_head', 'rel_canonical');
             remove_action('wp_head', 'index_rel_link');
@@ -58,18 +60,12 @@ class WPFS_SEO
         }
     }
 
-    /**
-     * @return \FlexySEO\Engine\WPFS_SEO|null
-     */
-    public static function getInstance()
+    public static function getInstance(): WPFS_SEO
     {
         return self::$_instance;
     }
 
-    /**
-     * @return \FlexySEO\Engine\WPFS_SEO
-     */
-    public static function Init()
+    public static function Init(): WPFS_SEO
     {
         if (!isset(self::$_instance)) {
 
@@ -81,9 +77,12 @@ class WPFS_SEO
         return self::$_instance;
     }
 
-    public function set_up($wp_query)
+    public function set_up()
     {
-        $this->helpers = Helpers::Init($wp_query);
+        global $wp_the_query;
+
+        //pass the main query reference
+        $this->helpers = new Helpers($wp_the_query);
 
         $this->generator = new Generator($this->helpers->currentPage);
 
@@ -94,4 +93,3 @@ class WPFS_SEO
         $presenter->build();
     }
 }
-

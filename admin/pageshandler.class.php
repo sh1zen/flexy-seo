@@ -7,8 +7,8 @@
 
 namespace FlexySeo\core;
 
-use SHZN\core\Graphic;
-use SHZN\core\UtilEnv;
+use WPS\core\StringHelper;
+use WPS\core\UtilEnv;
 
 /**
  * Creates the menu page for the plugin.
@@ -26,23 +26,22 @@ class PagesHandler
         add_action("admin_print_styles-post.php", array($this, 'enqueue_scripts_edit_page'));
         add_action('admin_print_styles-post-new.php', array($this, 'enqueue_scripts_edit_page'));
 
-        add_action('admin_notices', [$this, 'notice'], 10, 0);
+        //add_action('admin_notices', [$this, 'notice'], 10, 0);
     }
 
     public function notice()
     {
         global $pagenow;
 
-        $user_id = shzn('common')->utility->cu_id;
-
         if (isset($_GET['wpfs-dismiss-notice'])) {
 
-            shzn('wpfs')->options->add($user_id, 'dismissed', true, 'admin-notice', MONTH_IN_SECONDS);
+            wps('wpfs')->options->add(wps_utils()->cu_id, 'dismissed', true, 'admin-notice', MONTH_IN_SECONDS);
         }
-        elseif ($pagenow == 'index.php' and !shzn('wpfs')->options->get($user_id, 'dismissed', 'admin-notice', false)) {
+        elseif ($pagenow == 'index.php' and !wps('wpfs')->options->get(wps_utils()->cu_id, 'dismissed', 'admin-notice', false)) {
             ?>
             <div class="notice notice-info is-dismissible">
-                <h3>Help me to build <a href="<?php echo admin_url('admin.php?page=wp-flexyseo'); ?>">Flexy SEO</a>.</h3>
+                <h3>Help me to build <a href="<?php echo admin_url('admin.php?page=wp-flexyseo'); ?>">Flexy SEO</a>.
+                </h3>
                 <p><?php echo sprintf(__("Buy me a coffe <a href='%s'>here</a> or leave a review <a href='%s'>here</a>.", 'wpfs'), "https://www.paypal.com/donate?business=dev.sh1zen%40outlook.it&item_name=Thank+you+in+advanced+for+the+kind+donations.+You+will+sustain+me+developing+Flexy+SEO.&currency_code=EUR", "https://wordpress.org/support/plugin/flexy-seo/reviews/?filter=5"); ?></p>
                 <a href="?wpfs-dismiss-notice"><?php echo __('Dismiss', 'wpfs') ?></a>
             </div>
@@ -57,7 +56,7 @@ class PagesHandler
         /**
          * Modules - sub pages
          */
-        foreach (shzn('wpfs')->moduleHandler->get_modules(array('scopes' => 'admin-page')) as $module) {
+        foreach (wps('wpfs')->moduleHandler->get_modules(array('scopes' => 'admin-page')) as $module) {
 
             add_submenu_page('wp-flexyseo', 'WPFS ' . $module['name'], $module['name'], 'customize', $module['slug'], array($this, 'render_module'));
         }
@@ -77,33 +76,33 @@ class PagesHandler
     {
         $this->enqueue_scripts();
 
-        shzn('wpfs')->settings->render_modules_settings();
+        wps('wpfs')->settings->render_modules_settings();
     }
 
     public function enqueue_scripts()
     {
         wp_enqueue_style('wpfs_css');
-        wp_enqueue_script('vendor-shzn-js');
+        wp_enqueue_script('vendor-wps-js');
     }
 
     public function enqueue_scripts_edit_page()
     {
         wp_enqueue_style('wpfs_css');
-        wp_enqueue_script('vendor-shzn-js');
+        wp_enqueue_script('vendor-wps-js');
     }
 
     public function render_core_settings()
     {
         $this->enqueue_scripts();
 
-        shzn('wpfs')->settings->render_core_settings();
+        wps('wpfs')->settings->render_core_settings();
     }
 
     public function render_module()
     {
-        $module_slug = sanitize_text_field($_GET['page']);
+        $module_slug = StringHelper::sanitize_text($_GET['page']);
 
-        $object = shzn('wpfs')->moduleHandler->get_module_instance($module_slug);
+        $object = wps('wpfs')->moduleHandler->get_module_instance($module_slug);
 
         if (is_null($object)) {
             return;
@@ -118,11 +117,11 @@ class PagesHandler
     {
         $assets_url = PluginInit::getInstance()->plugin_base_url;
 
-        $min = shzn()->utility->online ? '.min' : '';
+        $min = wps_utils()->online ? '.min' : '';
 
-        wp_register_style('wpfs_css', "{$assets_url}assets/style{$min}.css", ['vendor-shzn-css']);
+        wp_register_style('wpfs_css', "{$assets_url}assets/style{$min}.css", ['vendor-wps-css']);
 
-        shzn_localize([
+        wps_localize([
             'text_na' => __('N/A', 'wpfs'),
             'saved'   => __('Settings Saved', 'wpfs'),
             'error'   => __('Request fail', 'wpfs'),
@@ -135,25 +134,26 @@ class PagesHandler
     {
         $this->enqueue_scripts();
         ?>
-        <section class="shzn-wrap">
-            <block class="shzn">
-                <section class='shzn-header'><h1>FAQ</h1></section>
+        <section class="wps-wrap">
+            <block class="wps">
+                <section class='wps-header'><h1>FAQ</h1></section>
                 <br>
-                <div class="shzn-faq-list">
-                    <div class="shzn-faq-item">
-                        <div class="shzn-faq-question-wrapper ">
-                            <div class="shzn-faq-question shzn-collapse-handler"><?php echo __('How Flexy-Breadcrumbs works?', 'wpfs') ?>
-                                <icon class="shzn-collapse-icon">+</icon>
+                <div class="wps-faq-list">
+                    <div class="wps-faq-item">
+                        <div class="wps-faq-question-wrapper ">
+                            <div
+                                    class="wps-faq-question wps-collapse-handler"><?php echo __('How Flexy-Breadcrumbs works?', 'wpfs') ?>
+                                <icon class="wps-collapse-icon">+</icon>
                             </div>
-                            <div class="shzn-faq-answer shzn-collapse">
+                            <div class="wps-faq-answer wps-collapse">
                                 <p><?php echo __('To use Breadcrumbs put this code in your theme, exactly where you want breadcrumbs to be displayed.', 'wpfs'); ?></p>
                                 <code>&lt;?php if(function_exists('wpfs_breadcrumb')) wpfs_breadcrumb($pre='', $after=''); ?&gt;</code><br>
                                 <p><?php echo __('You can use your own $pre and $after wrapper, default value is no wrapper.', 'wpfs'); ?></p>
                                 <strong><?php echo __('Options:', 'wpfs'); ?></strong>
-                                <ul class="shzn-list">
+                                <ul class="wps-list">
                                     <li><?php echo __('In Breadcrumb page configure your options and set up your breadcrumb structure for each entity.', 'wpfs'); ?></li>
                                     <li><?php echo __('With flexed breadcrumb is possible to personalize the crumb structure with personalized url or text:', 'wpfs'); ?>
-                                        <ul class="shzn-list">
+                                        <ul class="wps-list">
                                             <li>
                                                 <strong><?php echo __('>>', 'wpfs'); ?></strong> : <?php echo __('separate each crumb', 'wpfs'); ?>
                                             </li>
@@ -204,12 +204,13 @@ class PagesHandler
                             </div>
                         </div>
                     </div>
-                    <div class="shzn-faq-item">
-                        <div class="shzn-faq-question-wrapper ">
-                            <div class="shzn-faq-question shzn-collapse-handler"><?php echo __('How Flexy-SEO works?', 'wpfs') ?>
-                                <icon class="shzn-collapse-icon">+</icon>
+                    <div class="wps-faq-item">
+                        <div class="wps-faq-question-wrapper ">
+                            <div
+                                    class="wps-faq-question wps-collapse-handler"><?php echo __('How Flexy-SEO works?', 'wpfs') ?>
+                                <icon class="wps-collapse-icon">+</icon>
                             </div>
-                            <div class="shzn-faq-answer shzn-collapse">
+                            <div class="wps-faq-answer wps-collapse">
                                 <p><?php echo __('Uses replacements to construct the perfect description or keywords for each page.', 'wpfs'); ?></p>
                                 <br>
                                 <?php echo sprintf(__('See about replacements <a href="%s">here</a>.', 'wpfs'), admin_url('admin.php?page=seo#seo-vars')); ?>
@@ -241,28 +242,28 @@ class PagesHandler
 
         settings_errors();
 
-        $conf = UtilEnv::array_flatter(shzn('wpfs')->settings->get());
+        $conf = UtilEnv::array_flatter(wps('wpfs')->settings->get());
 
         $conf_level = round((count(array_filter($conf)) / count($conf)) * 100);
 
         ?>
-        <section class="shzn-wrap-flex shzn-wrap shzn-home">
-            <section class="shzn">
-                <block class="shzn">
-                    <block class="shzn-header">
+        <section class="wps-wrap-flex wps-wrap wps-home">
+            <section class="wps">
+                <block class="wps">
+                    <block class="wps-header">
                         <h1>Flexy SEO</h1>
                     </block>
                     <h2><?php _e('Configuration:', 'wpfs'); ?></h2>
                     <p>
                         <?php
                         $color = $conf_level > 75 ? '#00e045' : ($conf_level > 45 ? '#e7f100' : '#f10000');
-                        echo "<div class='shzn-progressbarCircle' data-percent='{$conf_level}' data-stroke='2' data-size='155' data-color='{$color}'></div>";
-                        echo '<div class="shzn-highlighted">' . sprintf(__('Configure SEO options: <a href="%s">here</a>.', 'wpfs'), admin_url('admin.php?page=seo')) . '</div>';
-                        echo '<div class="shzn-highlighted">' . sprintf(__('Configure Breadcrumbs options: <a href="%s">here</a>.', 'wpfs'), admin_url('admin.php?page=breadcrumbs')) . '</div>';
+                        echo "<div class='wps-progressbarCircle' data-percent='{$conf_level}' data-stroke='2' data-size='155' data-color='{$color}'></div>";
+                        echo '<div class="wps-highlighted">' . sprintf(__('Configure SEO options: <a href="%s">here</a>.', 'wpfs'), admin_url('admin.php?page=seo')) . '</div>';
+                        echo '<div class="wps-highlighted">' . sprintf(__('Configure Breadcrumbs options: <a href="%s">here</a>.', 'wpfs'), admin_url('admin.php?page=breadcrumbs')) . '</div>';
                         ?>
                     </p>
                 </block>
-                <block class="shzn">
+                <block class="wps">
                     <h2><?php _e('Options:', 'wpfs'); ?></h2>
                     <form method="POST">
                         <?php wp_nonce_field('wpfs-nonce'); ?>
@@ -274,7 +275,7 @@ class PagesHandler
                 <?php
                 if (!is_plugin_active('wp-optimizer/wp-optimizer.php')) {
                     ?>
-                    <block class="shzn">
+                    <block class="wps">
                         <h2><?php _e('Tips:', 'wpfs'); ?></h2>
                         <h3>
                             <?php
@@ -286,25 +287,26 @@ class PagesHandler
                 }
                 ?>
             </section>
-            <aside class="shzn">
-                <section class="shzn-box">
-                    <div class="shzn-donation-wrap">
-                        <div class="shzn-donation-title"><?php _e('Support this project, buy me a coffee.', 'wpfs'); ?></div>
+            <aside class="wps">
+                <section class="wps-box">
+                    <div class="wps-donation-wrap">
+                        <div
+                                class="wps-donation-title"><?php _e('Support this project, buy me a coffee.', 'wpfs'); ?></div>
                         <br>
                         <a href="https://www.paypal.com/donate/?business=dev.sh1zen%40outlook.it&item_name=Thank+you+in+advanced+for+the+kind+donations.+You+will+sustain+me+developing+FlexySEO.&currency_code=EUR">
                             <img src="https://www.paypalobjects.com/en_US/IT/i/btn/btn_donateCC_LG.gif"
                                  title="PayPal - The safer, easier way to pay online!" alt="Donate with PayPal button"/>
                         </a>
-                        <div class="shzn-donation-hr"></div>
-                        <div class="shzn-donation-btc">
-                            <div class="shzn-donation-name">BTC:</div>
-                            <p class="shzn-donation-value">3QE5CyfTxb5kufKxWtx4QEw4qwQyr9J5eo</p>
+                        <div class="wps-donation-hr"></div>
+                        <div class="wps-donation-btc">
+                            <div class="wps-donation-name">BTC:</div>
+                            <p class="wps-donation-value">3QE5CyfTxb5kufKxWtx4QEw4qwQyr9J5eo</p>
                         </div>
                     </div>
                 </section>
-                <section class="shzn-box">
+                <section class="wps-box">
                     <h3><?php _e('Want to support in other ways?', 'wpfs'); ?></h3>
-                    <ul class="shzn">
+                    <ul class="wps">
                         <li>
                             <a href="https://translate.wordpress.org/projects/wp-plugins/flexy-seo/"><?php _e('Help me translating', 'wpfs'); ?></a>
                         </li>
@@ -313,7 +315,7 @@ class PagesHandler
                         </li>
                     </ul>
                     <h3>Flexy SEO:</h3>
-                    <ul class="shzn">
+                    <ul class="wps">
                         <li>
                             <a href="https://github.com/sh1zen/flexy-seo/"><?php _e('Source code', 'wpfs'); ?></a>
                         </li>

@@ -13,32 +13,36 @@
  * Author URI: https://sh1zen.github.io/
  * Text Domain: wpfs
  * Domain Path: /languages
- * Version: 1.7.0
+ * Version: 2.0.0
  */
 
-const WPFS_VERSION = '1.7.0';
+const WPFS_VERSION = '2.0.0';
 
 const WPFS_FILE = __FILE__;
 const WPFS_ABSPATH = __DIR__ . '/';
 const WPFS_MODULES = WPFS_ABSPATH . 'modules/';
 const WPFS_ADMIN = WPFS_ABSPATH . 'admin/';
-const WPFS_ASSETS = WPFS_ABSPATH . 'assets/';
-const WPFS_VENDORS = WPFS_ABSPATH . 'vendors/';
 
-// shzn-framework commons
-if (!defined('SHZN_FRAMEWORK')) {
-    if (!file_exists(WPFS_VENDORS . 'shzn-framework/loader.php')) {
-        return;
+
+// wps-framework commons
+if (!defined('WPS_FRAMEWORK')) {
+
+    if (defined('WPS_FRAMEWORK_SOURCE') and file_exists(WPS_FRAMEWORK_SOURCE . 'loader.php')) {
+        require_once WPS_FRAMEWORK_SOURCE . 'loader.php';
     }
-    require_once WPFS_VENDORS . 'shzn-framework/loader.php';
+    else {
+        if (!file_exists(WPFS_ABSPATH . 'vendors/wps-framework/loader.php')) {
+            return;
+        }
+        require_once WPFS_ABSPATH . 'vendors/wps-framework/loader.php';
+    }
 }
 
-shzn(
+wps(
     'wpfs',
     [
-        'path'         => WPFS_MODULES,
-        'table_name'   => "flexy_seo",
-        'use_memcache' => true
+        'modules_path' => WPFS_MODULES,
+        'table_name'   => "wp_flexy_seo",
     ],
     [
         'meter'         => false,
@@ -51,7 +55,7 @@ shzn(
     ]
 );
 
-const WPFS_DEBUG = SHZN_DEBUG;
+define("WPFS_DEBUG", $_SERVER["SERVER_ADDR"] === '127.0.0.1');
 
 // main class
 require_once WPFS_ADMIN . 'PluginInit.class.php';

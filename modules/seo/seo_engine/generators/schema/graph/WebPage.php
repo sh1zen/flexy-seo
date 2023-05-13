@@ -30,7 +30,7 @@ class WebPage extends Graph
      * @param ...$args
      * @return GraphBuilder $data The graph data.
      */
-    public function get(CurrentPage $currentPage, string $type = '', ...$args)
+    public function get(CurrentPage $currentPage, string $type = '', ...$args): GraphBuilder
     {
         if (!empty($type)) {
             $this->type = $type;
@@ -45,7 +45,7 @@ class WebPage extends Graph
             'name'            => $this->generator->generate_title(),
             'description'     => $this->generator->get_description(),
             'keywords'        => $this->generator->get_keywords(),
-            'inLanguage'      => wpfseo()->language->currentLanguageCodeBCP47(),
+            'inLanguage'      => wpfseo('helpers')->language->currentLanguageCodeBCP47(),
             'isPartOf'        => [
                 '@id' => WebSite::getSchemaID()
             ],
@@ -73,7 +73,7 @@ class WebPage extends Graph
 
             if (is_page()) {
 
-                if (shzn('wpfs')->settings->get("seo.schema.organization.is", false)) {
+                if (wps('wpfs')->settings->get("seo.schema.organization.is", false)) {
                     $schema->set(
                         'publisher',
                         ['@id' => Organization::getSchemaID()]

@@ -5,14 +5,7 @@
  * @license   http://www.gnu.org/licenses/gpl.html GNU/GPL
  */
 
-use SHZN\core\StringHelper;
-
-/**
- * @author    sh1zen
- * @copyright Copyright (C)  2022
- * @license   http://www.gnu.org/licenses/gpl.html GNU/GPL
- */
-
+use WPS\core\StringHelper;
 
 class WPFS_Breadcrumb
 {
@@ -26,10 +19,7 @@ class WPFS_Breadcrumb
      */
     public static string $after = '';
 
-    /**
-     * @var    object    Instance of this class
-     */
-    private static $_instance;
+    private static WPFS_Breadcrumb $_Instance;
 
     /**
      * @var    string    Blog's show on front setting, 'page' or 'posts'
@@ -103,23 +93,23 @@ class WPFS_Breadcrumb
      * @param array $args
      * @return string
      */
-    public static function breadcrumb(string $before = '', string $after = '', bool $display = true, array $args = array())
+    public static function breadcrumb(string $before = '', string $after = '', bool $display = true, array $args = array()): string
     {
-        if (!shzn('wpfs')->settings->get('breadcrumbs.active', false)) {
+        if (!wps('wpfs')->settings->get('breadcrumbs.active', false)) {
             return '';
         }
 
-        if (!isset(self::$_instance)) {
-            self::$_instance = new self();
+        if (!isset(self::$_Instance)) {
+            self::$_Instance = new self();
         }
 
-        self::$_instance->generate($args);
+        self::$_Instance->generate($args);
 
         // Remember the last used before/after for use in case the object goes __toString()
         self::$before = $before;
         self::$after = $after;
 
-        $output = $before . self::$_instance->output . $after;
+        $output = $before . self::$_Instance->output . $after;
 
         if ($display === true) {
             echo $output;
@@ -146,7 +136,7 @@ class WPFS_Breadcrumb
 
         $this->options = array_merge($this->get_option('.'), $args);
 
-        $this->home_url = shzn()->utility->home_url;
+        $this->home_url = wps_utils()->home_url;
 
         $this->show_on_front = get_option('show_on_front');
         $this->page_for_posts = get_option('page_for_posts');
@@ -158,17 +148,14 @@ class WPFS_Breadcrumb
         $this->wrap_breadcrumb();
     }
 
-    /**
-     * @return WP_Query
-     */
-    private function get_wp_query()
+    private function get_wp_query(): WP_Query
     {
         return $GLOBALS['wp_query'];
     }
 
     private function get_option($option, $default = false)
     {
-        $res = isset($this->options[$option]) ? $this->options[$option] : shzn('wpfs')->settings->get("breadcrumbs." . $option, '');
+        $res = $this->options[$option] ?? wps('wpfs')->settings->get("breadcrumbs." . $option, '');
 
         if (empty($res)) {
             $res = $default;
@@ -338,7 +325,7 @@ class WPFS_Breadcrumb
         );
     }
 
-    private function generate_crumb_value($text, $url)
+    private function generate_crumb_value($text, $url): array
     {
         return array(
             'text' => $text,
@@ -431,7 +418,7 @@ class WPFS_Breadcrumb
         }
     }
 
-    private function perform_replace($rule, $format_crumb)
+    private function perform_replace($rule, $format_crumb): array
     {
         $replaces = $this->generate_replacements($rule);
 
@@ -441,8 +428,8 @@ class WPFS_Breadcrumb
             foreach ($format_crumb as $subject) {
 
                 $items[] = array(
-                    'text' => str_replace("%%{$rule}%%", $replace['text'], $subject['text']),
-                    'url'  => str_replace("%%{$rule}%%", $replace['url'], $subject['url']),
+                    'text' => str_replace("%%$rule%%", $replace['text'] ?: '', $subject['text']),
+                    'url'  => str_replace("%%$rule%%", $replace['url'] ?: '', $subject['url']),
                 );
             }
         }
@@ -491,7 +478,7 @@ class WPFS_Breadcrumb
             case 'post_parent':
                 if (isset($this->queried_object->post_parent) and $this->queried_object->post_parent) {
                     $replaces[] = array(
-                        'text' => shzn_get_post($this->queried_object->post_parent)->post_title,
+                        'text' => wps_get_post($this->queried_object->post_parent)->post_title,
                         'url'  => get_permalink($this->queried_object->post_parent)
                     );
                 }
@@ -509,7 +496,7 @@ class WPFS_Breadcrumb
             case 'queried_object':
                 if ($wp_query->is_singular()) {
                     $replaces[] = array(
-                        'text' => shzn_get_post($this->queried_object)->post_title,
+                        'text' => wps_get_post($this->queried_object)->post_title,
                         'url'  => get_permalink($this->queried_object->ID)
                     );
                 }
@@ -612,7 +599,7 @@ class WPFS_Breadcrumb
             $meta = str_replace("meta_", "", $rule);
 
             $_meta = get_metadata_raw(
-                wpfseo()->currentPage->get_query_type(),
+                wpfseo('helpers')->currentPage->get_query_type(),
                 $this->queried_object->ID, $meta,
                 true
             );
@@ -636,19 +623,14 @@ class WPFS_Breadcrumb
          * @param string $rule The rule.
          * @param array $replaces The currently generated replacements.
          * @since 1.0.0
-         *
          */
         return apply_filters('wpfs_breadcrumb_replacements', $replaces, $rule);
     }
 
     /**
      * Find the deepest term in an array of term objects
-     *
-     * @param array $terms
-     *
-     * @return WP_Term
      */
-    private function find_deepest_term($terms)
+    private function find_deepest_term(array $terms): WP_Term
     {
         /* Let's find the deepest term in this array, by looping through and then
            unsetting every term that is used as a parent by another one in the array. */
@@ -680,17 +662,13 @@ class WPFS_Breadcrumb
 
     /**
      * Get a term's parents.
-     *
-     * @param object $term Term to get the parents for
-     *
-     * @return    WP_Term[]
      */
-    private function get_term_parents($term)
+    private function get_term_parents(object $term): array
     {
         $tax = $term->taxonomy;
         $parents = array();
         while ($term->parent) {
-            $term = shzn_get_term($term->parent, $tax);
+            $term = wps_get_term($term->parent, $tax);
             $parents[] = $term;
         }
 
@@ -709,10 +687,10 @@ class WPFS_Breadcrumb
      * Add hierarchical ancestor crumbs to the crumbs property for a single post
      * @param WP_Post $post
      */
-    private function add_post_ancestor_crumbs($post)
+    private function add_post_ancestor_crumbs(WP_Post $post)
     {
         $ancestors = $this->get_post_ancestors($post);
-        if (is_array($ancestors) and $ancestors !== array()) {
+        if (!empty($ancestors)) {
             foreach ($ancestors as $ancestor) {
                 $this->add_crumb($ancestor, 'postId');
             }
@@ -725,7 +703,7 @@ class WPFS_Breadcrumb
      * @param WP_Post $post
      * @return array
      */
-    private function get_post_ancestors($post)
+    private function get_post_ancestors(WP_Post $post): array
     {
         $ancestors = array();
 
@@ -788,10 +766,8 @@ class WPFS_Breadcrumb
 
     /**
      * Add parent taxonomy crumbs to the crumb property for hierarchical taxonomy
-     *
-     * @param object $term
      */
-    private function maybe_add_term_parent_crumbs($term)
+    private function maybe_add_term_parent_crumbs(WP_Term $term)
     {
         if (is_taxonomy_hierarchical($term->taxonomy) and $term->parent != 0) {
             foreach ($this->get_term_parents($term) as $parent_term) {
@@ -802,10 +778,8 @@ class WPFS_Breadcrumb
 
     /**
      * Add parent taxonomy crumbs to the crumb property for hierarchical taxonomy
-     *
-     * @param object $term
      */
-    private function maybe_add_term_children_crumbs($term)
+    private function maybe_add_term_children_crumbs(\WP_Term $term)
     {
         if ($this->get_option('dropdown_last') and is_taxonomy_hierarchical($this->queried_object->taxonomy)) {
 
@@ -818,19 +792,15 @@ class WPFS_Breadcrumb
 
     /**
      * Get a term's children.
-     *
-     * @param object $term Term to get the parents for
-     *
-     * @return    array
      */
-    private function get_term_children($term)
+    private function get_term_children(\WP_Term $term): array
     {
         $terms = _get_term_hierarchy($term->taxonomy);
 
         $children = array();
 
         foreach ((array)$terms[$term->term_id] as $child) {
-            $children[] = shzn_get_term($child, $term->taxonomy);
+            $children[] = wps_get_term($child, $term->taxonomy);
         }
 
         return $children;
@@ -956,7 +926,7 @@ class WPFS_Breadcrumb
         }
     }
 
-    private function get_link_info_for_terms($terms)
+    private function get_link_info_for_terms($terms): array
     {
         if (empty($terms)) {
             return $this->generate_crumb_value('', '');
@@ -981,17 +951,14 @@ class WPFS_Breadcrumb
 
     /**
      * Retrieve link url and text based on post type
-     *
-     * @param string $pt Post type
-     *
-     * @return array Array of link text and url
      */
-    private function get_link_info_for_ptarchive($pt)
+    private function get_link_info_for_ptarchive(string $post_type): array
     {
         $link = array();
         $archive_title = '';
 
-        $post_type_obj = get_post_type_object($pt);
+        $post_type_obj = get_post_type_object($post_type);
+
         if (is_object($post_type_obj)) {
             if (isset($post_type_obj->label) and $post_type_obj->label !== '') {
                 $archive_title = $post_type_obj->label;
@@ -1004,7 +971,7 @@ class WPFS_Breadcrumb
             }
         }
 
-        $link['url'] = get_post_type_archive_link($pt);
+        $link['url'] = get_post_type_archive_link($post_type);
         $link['text'] = $archive_title;
 
         return $link;
@@ -1042,7 +1009,7 @@ class WPFS_Breadcrumb
      * @return string
      * for paged article at this moment
      */
-    private function crumb_to_link(array $link, $position, bool $current = false)
+    private function crumb_to_link(array $link, $position, bool $current = false): string
     {
         $link_output = '';
 
@@ -1120,15 +1087,15 @@ class WPFS_Breadcrumb
         }
     }
 
-    public static function export()
+    public static function export(): array
     {
-        if (!isset(self::$_instance)) {
-            self::$_instance = new self();
+        if (!isset(self::$_Instance)) {
+            self::$_Instance = new self();
         }
 
-        self::$_instance->generate();
+        self::$_Instance->generate();
 
         // Remove any effectively empty crumbs
-        return array_filter(self::$_instance->crumbs);
+        return array_filter(self::$_Instance->crumbs);
     }
 }

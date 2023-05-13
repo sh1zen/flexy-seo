@@ -19,7 +19,7 @@ class Organization extends Graph
 {
     public static function getSchemaID()
     {
-        return shzn()->utility->home_url . '#organization';
+        return wps_utils()->home_url . '#organization';
     }
 
     /**
@@ -29,20 +29,20 @@ class Organization extends Graph
      * @param ...$args
      * @return GraphBuilder $data The graph data.
      */
-    public function get(CurrentPage $currentPage, string $type = '', ...$args)
+    public function get(CurrentPage $currentPage, string $type = '', ...$args): GraphBuilder
     {
-        $homeUrl = shzn()->utility->home_url;
+        $homeUrl = wps_utils()->home_url;
 
         $schema = new GraphBuilder(
             [
-                '@type'       => ucfirst(shzn('wpfs')->settings->get('seo.schema.organization.type', 'organization')),
+                '@type'       => ucfirst(wps('wpfs')->settings->get('seo.schema.organization.type', 'organization')),
                 '@id'         => self::getSchemaID(),
                 'url'         => $homeUrl,
-                'name'        => shzn('wpfs')->settings->get('seo.schema.organization.name', html_entity_decode((string)get_bloginfo('name'), ENT_QUOTES)),
-                'description' => shzn('wpfs')->settings->get('seo.schema.organization.description', html_entity_decode((string)get_bloginfo('description'), ENT_QUOTES)),
+                'name'        => wps('wpfs')->settings->get('seo.schema.organization.name', html_entity_decode((string)get_bloginfo('name'), ENT_QUOTES)),
+                'description' => wps('wpfs')->settings->get('seo.schema.organization.description', html_entity_decode((string)get_bloginfo('description'), ENT_QUOTES)),
                 'sameAs'      => GraphUtility::socialUrls(),
-                'address'     => shzn('wpfs')->settings->get('seo.schema.organization.address', ''),
-                //'founder'     => array_map('trim', explode(',', shzn('wpfs')->settings->get('seo.schema.organization.founder', ''))),
+                'address'     => wps('wpfs')->settings->get('seo.schema.organization.address', ''),
+                //'founder'     => array_map('trim', explode(',', wps('wpfs')->settings->get('seo.schema.organization.founder', ''))),
             ]
         );
 
@@ -52,8 +52,8 @@ class Organization extends Graph
             $schema->set('logo', $logo);
         }
 
-        $phone = shzn('wpfs')->settings->get('seo.schema.organization.phone', '');
-        $contactType = shzn('wpfs')->settings->get('seo.schema.organization.contact_type', '');
+        $phone = wps('wpfs')->settings->get('seo.schema.organization.phone', '');
+        $contactType = wps('wpfs')->settings->get('seo.schema.organization.contact_type', '');
 
         if (!empty($phone) and !empty($contactType)) {
 
@@ -63,8 +63,8 @@ class Organization extends Graph
                     '@type'       => 'ContactPoint',
                     'telephone'   => $phone,
                     'contactType' => ucwords(strtolower($contactType)),
-                    'email'       => shzn('wpfs')->settings->get('seo.schema.organization.email', get_bloginfo('admin_email')),
-                    'url'         => shzn('wpfs')->settings->get('seo.schema.organization.contactPage', ''),
+                    'email'       => wps('wpfs')->settings->get('seo.schema.organization.email', get_bloginfo('admin_email')),
+                    'url'         => wps('wpfs')->settings->get('seo.schema.organization.contactPage', ''),
                 ]
             );
         }
@@ -78,13 +78,13 @@ class Organization extends Graph
      */
     public static function logo()
     {
-        $logo = shzn('wpfs')->settings->get('seo.schema.organization.logo', '');
+        $logo = wps('wpfs')->settings->get('seo.schema.organization.logo', '');
 
         if ($logo) {
             return CommonGraphs::imageObject($logo, ['large', 'medium_large', 'medium'], 'organizationLogo');
         }
 
-        $logo = shzn('wpfs')->settings->get('org.logo_url.small', '');
+        $logo = wps('wpfs')->settings->get('org.logo_url.small', '');
 
         if ($logo) {
             return CommonGraphs::imageObject($logo, ['large', 'medium_large', 'medium'], 'organizationLogo');

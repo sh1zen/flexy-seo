@@ -7,19 +7,18 @@
 
 namespace FlexySEO\modules;
 
-use SHZN\modules\Module;
-use SHZN\core\UtilEnv;
+use WPS\core\RequestActions;
+use WPS\core\addon\Exporter;
+use WPS\core\Graphic;
+use WPS\modules\Module;
 
 class Mod_Settings extends Module
 {
-    public $scopes = array('core-settings', 'admin');
+    public array $scopes = array('core-settings', 'admin');
 
-    public function __construct()
-    {
-        parent::__construct('wpfs');
-    }
+    protected string $context = 'wpfs';
 
-    public function restricted_access($context = '')
+    public function restricted_access($context = ''): bool
     {
         switch ($context) {
 
@@ -32,52 +31,87 @@ class Mod_Settings extends Module
         }
     }
 
-    protected function custom_actions()
+    public function actions(): void
     {
-        return array(
-            array(
-                'id'           => 'reset_options',
-                'value'        => __('Reset Plugin options', 'wpfs'),
-                'button_types' => 'button-danger',
-                'after'        => '<hr>'
-            ),
-            array(
-                'id'           => 'export_options',
-                'value'        => __('Export Plugin options', 'wpfs'),
-                'button_types' => 'button-primary',
-                'after'        => '<hr>'
-            ),
-            array(
-                'before'       => array(
-                    'id'      => 'conf_data',
-                    'type'    => 'textarea',
-                    'context' => 'block'
-                ),
-                'id'           => 'import_options',
-                'button_types' => 'button-primary',
-                'value'        => __('Import Plugin options', 'wpfs'),
-            )
-        );
+        RequestActions::request($this->action_hook, function ($action) {
+
+            $response = false;
+
+            switch ($action) {
+                case 'reset_options':
+                    $response = wps('wpfs')->settings->reset();
+                    $response &= wps('wpfs')->moduleHandler->upgrade();
+                    break;
+
+                case 'restore_options':
+                    $response = wps('wpfs')->moduleHandler->upgrade();
+                    break;
+
+                case 'export_options':
+
+                    require_once WPS_ADDON_PATH . 'Exporter.class.php';
+
+                    $exporter = new Exporter();
+
+                    $exporter->set_raw(wps('wpfs')->settings->export());
+                    $exporter->format('text');
+                    $exporter->download('wpfs-export.conf');
+
+                    unset($exporter);
+                    break;
+
+                case 'import_options':
+                    $response = wps('wpfs')->settings->import($_REQUEST['conf_data']);
+                    $response &= wps('wpopt')->moduleHandler->upgrade();
+                    break;
+            }
+
+            if ($response) {
+                $this->add_notices('success', __('Action was correctly executed', $this->context));
+            }
+            else {
+                $this->add_notices('warning', __('Action execution failed', $this->context));
+            }
+        });
     }
 
-    protected function process_custom_actions($action, $options)
+    protected function print_footer(): string
     {
-        switch ($action) {
-            case 'reset_options':
-                return shzn('wpfs')->settings->reset();
+        ob_start();
+        ?>
+        <form method="POST" autocapitalize="off" autocomplete="off">
 
-            case 'export_options':
-                if (file_put_contents(WP_CONTENT_DIR . '/wpfs-export.conf', shzn('wpfs')->settings->export())) {
-                    UtilEnv::download_file(WP_CONTENT_DIR . '/wpfs-export.conf', true);
-                    return true;
-                }
-                break;
+            <?php RequestActions::nonce_field($this->action_hook); ?>
 
-            case 'import_options':
-                return shzn('wpfs')->settings->import($options['conf_data']);
-        }
+            <block class="wps-gridRow">
+                <row class="wps-custom-action wps-row">
+                    <?php
 
-        return false;
+                    echo RequestActions::get_action_button($this->action_hook, 'reset_options', __('Reset Plugin options', 'wpfs'));
+
+                    echo RequestActions::get_action_button($this->action_hook, 'restore_options', __('Restore Plugin options', 'wpfs'));
+
+                    echo RequestActions::get_action_button($this->action_hook, 'export_options', __('Export Plugin options', 'wpfs'), 'button-primary');
+
+                    ?>
+                </row>
+                <row class="wps-custom-action wps-row">
+                    <?php
+
+                    Graphic::generate_field(array(
+                        'id'      => 'conf_data',
+                        'type'    => 'textarea',
+                        'context' => 'block'
+                    ));
+
+                    echo RequestActions::get_action_button($this->action_hook, 'import_options', __('Import Plugin options', 'wpfs'), 'button-primary');
+
+                    ?>
+                </row>
+            </block>
+        </form>
+        <?php
+        return ob_get_clean();
     }
 }
 

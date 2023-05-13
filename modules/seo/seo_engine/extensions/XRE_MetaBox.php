@@ -8,28 +8,39 @@
 namespace FlexySEO\Engine\Helpers;
 
 use FlexySEO\Engine\Generators\Schema;
+use WPS\core\StringHelper;
 
 class XRE_MetaBox
 {
-    public $loaded = false;
+    static string $context = 'customMeta';
 
-    public function __construct()
+    private static XRE_MetaBox $Instance;
+
+    private function __construct()
     {
-        if (shzn('wpfs')->settings->get("seo.addon.xre_metaboxe", true)) {
+        if (wps('wpfs')->settings->get("seo.addon.xre_metaboxe", true)) {
             add_action('add_meta_boxes', [$this, 'add']);
             add_action('save_post', [$this, 'save'], 10, 3);
-            $this->loaded = true;
         }
     }
 
-    public static function get_value($id, $item, $context, $default = false)
+    public static function Init()
     {
-        return shzn('wpfs')->options->get($id, $item, $context, $default);
+        if (isset(self::$Instance)) {
+            return;
+        }
+
+        self::$Instance = new self();
+    }
+
+    public static function get_value($id, $item, $default = false)
+    {
+        return wps('wpfs')->options->get($id, $item, self::$context, $default);
     }
 
     public function enqueue_scripts()
     {
-        wp_enqueue_style('vendor-shzn-css');
+        wp_enqueue_style('vendor-wps-css');
     }
 
     /**
@@ -49,8 +60,6 @@ class XRE_MetaBox
 
     /**
      * Save the meta box selections.
-     *
-     * @param int $post_id The post ID.
      */
     public function save($post_id, $post, $update)
     {
@@ -63,7 +72,7 @@ class XRE_MetaBox
             $meta_name = $field_meta['name'];
 
             if (empty($metas[$meta_name])) {
-                shzn('wpfs')->options->remove($post_id, $meta_name, "customMeta");
+                wps('wpfs')->options->remove($post_id, $meta_name, self::$context);
                 continue;
             }
 
@@ -74,32 +83,26 @@ class XRE_MetaBox
             }
 
             if (empty($value)) {
-                shzn('wpfs')->options->remove($post_id, $meta_name, "customMeta");
+                wps('wpfs')->options->remove($post_id, $meta_name, self::$context);
             }
             else {
-                shzn('wpfs')->options->update($post_id, $meta_name, $value, "customMeta");
+                wps('wpfs')->options->update($post_id, $meta_name, $value, self::$context);
             }
         }
     }
 
-    private function fields($post)
+    private function fields($post): array
     {
         $keyword = $description = "";
-        $post_id = 0;
 
         if (!empty($post) and $post->ID) {
-            $post_id = $post->ID;
-            $keyword = shzn('wpfs')->options->get($post_id, "keywords", "customMeta", "");
-            $description = shzn('wpfs')->options->get($post_id, "description", "customMeta", "");
+            $keyword = wpfs_get_post_meta_keywords($post, true);
+            $description = wpfs_get_post_meta_description($post, true);
         }
 
-        $supportedPageGraphs = array_map(function ($graph) {
+        $supportedGraphs = array_map(function ($graph) {
             return ['text' => $graph, 'value' => $graph];
-        }, Schema::$webPageGraphs);
-
-        $supportedArticleGraphs = array_map(function ($graph) {
-            return ['text' => $graph, 'value' => $graph];
-        }, Schema::$webArticleGraphs);
+        }, array_merge(Schema::$webArticleGraphs, Schema::$webPageGraphs));
 
         return [
             [
@@ -117,33 +120,18 @@ class XRE_MetaBox
                 'values'            => [['value' => $description]]
             ],
             [
-                'name'              => 'graphPageType',
-                'label'             => __('Page type for Schema.org', 'wpfs'),
-                'type'              => 'select',
-                'sanitize_callback' => [$this, 'sanitize_text'],
-                'values'            => $supportedPageGraphs,
-                'value'             => shzn('wpfs')->options->get($post_id, "graphPageType", "customMeta")
-            ],
-            [
-                'name'              => 'graphArticleType',
-                'label'             => __('Article type for Schema.org', 'wpfs'),
-                'type'              => 'select',
-                'sanitize_callback' => 'sanitize_text_field',
-                'values'            => $supportedArticleGraphs,
-                'value'             => shzn('wpfs')->options->get($post_id, "graphArticleType", "customMeta")
-            ],
+                'name'   => 'graphType',
+                'label'  => __('Schema.org graph type', 'wpfs'),
+                'type'   => 'select',
+                'values' => $supportedGraphs,
+                'value'  => wpfs_get_post_meta_graphType($post, true)
+            ]
         ];
     }
 
-    public function sanitize_text($str)
+    public function sanitize_text($str): string
     {
-        $str = (string)$str;
-
-        $filtered = wp_check_invalid_utf8($str);
-
-        $filtered = htmlspecialchars($filtered, ENT_QUOTES);
-
-        return trim($filtered);
+        return StringHelper::sanitize_text($str);
     }
 
     /**
@@ -151,7 +139,7 @@ class XRE_MetaBox
      *
      * @param \WP_Post $post Post object.
      */
-    public function print_html($post)
+    public function print_html(\WP_Post $post)
     {
         ?>
         <style>
@@ -229,5 +217,3 @@ class XRE_MetaBox
         <?php
     }
 }
-
-

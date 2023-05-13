@@ -6,7 +6,5 @@
  */
 
 add_action('wpopt_delete_options_cache', function ($id) {
-    shzn('wpfs')->options->remove_by_container($id);
+    wps('wpfs')->options->remove_by_container($id);
 }, 10, 1);
-
-

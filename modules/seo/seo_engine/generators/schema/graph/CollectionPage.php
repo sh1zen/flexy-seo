@@ -23,7 +23,7 @@ class CollectionPage extends WebPage
      * @param mixed ...$args
      * @return GraphBuilder The graph data.
      */
-    public function get(CurrentPage $currentPage, string $type = '', ...$args)
+    public function get(CurrentPage $currentPage, string $type = '', ...$args): GraphBuilder
     {
         $schema = parent::get($currentPage, $type, $args);
 
@@ -33,6 +33,9 @@ class CollectionPage extends WebPage
             $schema->set('lastReviewed', mysql2date(DATE_W3C, $currentPage->get_queried_object()->post_date_gmt, false));
         }
 
+        $schema->set('nextPage', $this->generator->generate_rel_next());
+        $schema->set('previousPage', $this->generator->generate_rel_prev());
+
         if (!$currentPage->is_homepage()) {
 
             $subSchema = new GraphBuilder('ItemList');
@@ -40,6 +43,7 @@ class CollectionPage extends WebPage
 
             foreach ($currentPage->get_queried_posts() as $index => $post) {
                 $subSchema->add('itemListElement', [
+                    // todo get for each post type the corresponding type: RealEstateListing per annunci
                     "@type"    => "ListItem",
                     "url"      => get_permalink($post),
                     "position" => $index + 1

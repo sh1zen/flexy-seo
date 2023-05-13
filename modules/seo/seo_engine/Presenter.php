@@ -11,45 +11,35 @@ use FlexySEO\Engine\Generators\Schema;
 use FlexySEO\Engine\Helpers\SEOScriptTag;
 use FlexySEO\Engine\Helpers\SEOTag;
 
+use WPS\core\Rewriter;
+
 class Presenter
 {
-    /**
-     * @var Indexable
-     */
-    public $indexable;
-
-    /**
-     * @var Generator
-     */
-    private $generator;
+    private Generator $generator;
 
     /**
      * Array containing the tags
      *
      * @var SEOTag[]
      */
-    private $tags;
+    private array $tags;
 
     /**
      * Array containing the script tags
      *
      * @var SEOScriptTag[]
      */
-    private $scripts;
+    private array $scripts = [];
 
     /**
      * Current number of tags
-     *
-     * @var Int
      */
-    private $tag_index = 0;
+    private int $tag_index = 0;
 
     /**
      * HTML code of the tag template. {{name}} will be replaced by the variable's name and {{value}} with its value.
-     *
-     * @var string
      */
-    private $templates;
+    private array $templates;
 
     /**
      * @param Generator $generator
@@ -58,11 +48,9 @@ class Presenter
     {
         $this->generator = $generator;
 
-        $this->indexable = new Indexable($generator->getContext());
-
         $this->templates = array(
-            'meta'      => "<meta property='{{name}}' content='{{value}}' />",
-            'meta_name' => "<meta name='{{name}}' content='{{value}}' />",
+            'meta'      => "<meta property='{{name}}' content='{{value}}'/>",
+            'meta_name' => "<meta name='{{name}}' content='{{value}}'/>",
             'link'      => "<link rel='{{name}}' href='{{value}}'>"
         );
     }
@@ -72,7 +60,7 @@ class Presenter
         $this->redirect();
 
         // Filter the title for compatibility with other plugins and themes.
-        if (shzn('wpfs')->settings->get('seo.title.rewrite', true)) {
+        if (wps('wpfs')->settings->get('seo.title.rewrite', true)) {
             add_filter('wp_title', array($this, 'filter_title'), 10, 1);
             add_filter('the_title', array($this, 'filter_title'), 10, 1);
         }
@@ -87,7 +75,7 @@ class Presenter
         $this->social_presenter();
         $this->verification_codes_presenter();
 
-        if (shzn('wpfs')->settings->get('seo.schema.enabled', false)) {
+        if (wps('wpfs')->settings->get('seo.schema.enabled', false)) {
             $this->schema_presenter();
         }
 
@@ -98,10 +86,10 @@ class Presenter
     {
         list($url, $status) = $this->generator->redirect();
 
-        $url = apply_filters('wpfs_redirect', $url, $status, $this->indexable);
+        $url = apply_filters('wpfs_redirect', $url, $status, $this->generator->getContext()->get_page_type(), $this->generator->getContext());
 
         if ($url) {
-            Rewriter::redirect($url, $status);
+            Rewriter::getInstance()->redirect($url, $status);
         }
     }
 
@@ -115,8 +103,6 @@ class Presenter
          */
         $canonical = $this->generator->generate_canonical();
 
-        $canonical = apply_filters('wpfs_canonical', $canonical, $this->indexable);
-
         if ($canonical) {
             $this->add_tag('canonical', $canonical, 'link');
         }
@@ -126,8 +112,6 @@ class Presenter
          */
         $prev = $this->generator->generate_rel_prev();
 
-        $prev = apply_filters('wpfs_relprev', $prev, $this->indexable);
-
         if (!empty($prev)) {
             $this->add_tag('rel:prev', $prev, 'link');
         }
@@ -136,8 +120,6 @@ class Presenter
          * present next page
          */
         $next = $this->generator->generate_rel_next();
-
-        $next = apply_filters('wpfs_relnext', $next, $this->indexable);
 
         if (!empty($next)) {
             $this->add_tag('rel:next', $next, 'link');
@@ -156,8 +138,6 @@ class Presenter
     {
         $robots = $this->generator->get_robots();
 
-        $robots = apply_filters('wpfs_robots', $robots, $this->indexable);
-
         $this->add_tag('robots', implode(", ", $robots), 'meta_name');
     }
 
@@ -168,9 +148,7 @@ class Presenter
     {
         $keywords = $this->generator->get_keywords();
 
-        $keywords = apply_filters('wpfs_keywords', $keywords, $this->indexable);
-
-        $this->add_tag('keywords', implode(", ", (array)$keywords));
+        $this->add_tag('keywords', $keywords);
     }
 
     /**
@@ -180,9 +158,7 @@ class Presenter
     {
         $description = $this->generator->get_description();
 
-        $description = apply_filters('wpfs_description', $description, $this->indexable);
-
-        $this->add_tag('description', implode(", ", (array)$description), 'meta_name');
+        $this->add_tag('description', $description, 'meta_name');
     }
 
     /**
@@ -225,7 +201,7 @@ class Presenter
 
         $schemaGraph = $schema->export();
 
-        $schemaGraph = apply_filters('wpfs_schema', $schemaGraph, $this->indexable);
+        $schemaGraph = apply_filters('wpfs_schema', $schemaGraph, $this->generator->getContext()->get_page_type(), $this->generator->getContext());
 
         $this->add_script(new SEOScriptTag($schemaGraph, "application/ld+json"));
     }
@@ -241,7 +217,7 @@ class Presenter
         echo $this->render_scripts(true);
     }
 
-    public function render_tags($filter_empty = false)
+    public function render_tags($filter_empty = false): string
     {
         $output = '';
         $vars = ['{{name}}', '{{value}}'];
@@ -256,7 +232,7 @@ class Presenter
         return $output;
     }
 
-    public function render_scripts($filter_empty = false)
+    public function render_scripts($filter_empty = false): string
     {
         $output = '';
         foreach ($this->scripts as $script) {
@@ -264,16 +240,14 @@ class Presenter
             if ($filter_empty and empty($script->content))
                 continue;
 
-            $output .= "<script type='{$script->template}'>{$script->content}</script>";
+            $output .= "<script type='$script->template'>$script->content</script>";
         }
 
         return $output;
     }
 
-    public function filter_title($title = '')
+    public function filter_title($title = ''): string
     {
-        $title = $this->generator->generate_title();
-
-        return apply_filters("wpfs_title", $title);
+        return $this->generator->generate_title($title);
     }
 }

@@ -12,26 +12,20 @@ namespace FlexySEO\Engine\Helpers;
  */
 class CurrentPage
 {
-
-    /**
-     * @var \WP_Query
-     */
-    private $main_query;
+    private \WP_Query $query;
 
     private $cache;
 
     /**
      * Current_Page_Helper constructor.
-     *
-     * @param \WP_Query $main_query
      */
-    public function __construct($main_query)
+    public function __construct(\WP_Query $main_query)
     {
-        $this->cache = shzn('wpfs')->cache;
-        $this->main_query = $main_query;
+        $this->cache = wps('wpfs')->cache;
+        $this->query = $main_query;
     }
 
-    public static function get_page_types()
+    public static function get_page_types(): array
     {
         return [
             'search',
@@ -47,10 +41,8 @@ class CurrentPage
 
     /**
      * Returns the page type for the current request query.
-     *
-     * @return string Query type.
      */
-    public function get_query_type()
+    public function get_query_type(): string
     {
         if ($this->is_search()):
             $page_type = 'search';
@@ -77,44 +69,31 @@ class CurrentPage
 
     /**
      * Determine whether this is a search result.
-     *
-     * @return bool Whether nor not the current page is a search result.
      */
-    public function is_search()
+    public function is_search(): bool
     {
-        return $this->get_main_query()->is_search();
+        return $this->query->is_search();
     }
 
-    /**
-     * @return \WP_Query
-     */
-    public function get_main_query()
+    public function get_query(): \WP_Query
     {
-        if ($this->main_query instanceof \WP_Query) {
-            return $this->main_query;
-        }
-
-        return $GLOBALS['wp_the_query'];
+        return $this->query;
     }
 
     /**
      * Determine whether this is a post type archive.
-     *
-     * @return bool Whether nor not the current page is a post type archive.
      */
-    public function is_post_type_archive()
+    public function is_post_type_archive(): bool
     {
-        return $this->get_main_query()->is_post_type_archive();
+        return $this->query->is_post_type_archive();
     }
 
     /**
      * Determine whether this is the statically set posts page, when it's not the frontpage.
-     *
-     * @return bool Whether it's a non-frontpage, statically set posts page.
      */
-    public function is_posts_page()
+    public function is_posts_page(): bool
     {
-        $wp_query = $this->get_main_query();
+        $wp_query = $this->query;
 
         if (!$wp_query->is_home()) {
             return false;
@@ -123,47 +102,31 @@ class CurrentPage
         return get_option('show_on_front') === 'page';
     }
 
-    public function is_home()
+    public function is_home(): bool
     {
-        return $this->get_main_query()->is_home();
+        return $this->query->is_home();
     }
 
     /**
      * Checks if the current page is the front page.
-     *
-     * @return bool Whether or not the current page is the front page.
      */
-    public function is_homepage()
+    public function is_homepage(): bool
     {
-        return $this->get_main_query()->is_front_page();
-    }
-
-    /**
-     * Checks if the current page is the front page.
-     *
-     * @return bool Whether the current page is the front page.
-     */
-    public function is_front_page()
-    {
-        return $this->is_homepage();
+        return $this->query->is_front_page();
     }
 
     /**
      * Checks if the currently opened page is a simple page.
-     *
-     * @return bool Whether the currently opened page is a simple page.
      */
-    public function is_simple_page()
+    public function is_simple_page(): bool
     {
         return $this->get_simple_page_id() > 0;
     }
 
     /**
      * Returns the id of the currently opened page.
-     *
-     * @return int The id of the currently opened page.
      */
-    public function get_simple_page_id()
+    public function get_simple_page_id(): int
     {
         if (is_singular()) {
             return get_the_ID();
@@ -178,53 +141,39 @@ class CurrentPage
 
     /**
      * Determine whether this is a term archive.
-     *
-     * @return bool Whether nor not the current page is a term archive.
      */
-    public function is_term_archive()
+    public function is_term_archive(): bool
     {
-        $wp_query = $this->get_main_query();
-
-        return ($wp_query->is_tax || $wp_query->is_tag || $wp_query->is_category);
+        return ($this->query->is_tax || $this->query->is_tag || $this->query->is_category);
     }
 
     /**
      * Determine whether this is an author archive.
-     *
-     * @return bool Whether nor not the current page is an author archive.
      */
-    public function is_author_archive()
+    public function is_author_archive(): bool
     {
-        return $this->get_main_query()->is_author();
+        return $this->query->is_author();
     }
 
     /**
-     * Determine whether this is an date archive.
-     *
-     * @return bool Whether nor not the current page is an date archive.
+     * Determine whether this is a date archive.
      */
-    public function is_date_archive()
+    public function is_date_archive(): bool
     {
-        $wp_query = $this->get_main_query();
-
-        return $wp_query->is_date();
+        return $this->query->is_date();
     }
 
     /**
      * Determine whether this is a 404 page.
-     *
-     * @return bool Whether nor not the current page is a 404 page.
      */
-    public function is_404()
+    public function is_404(): bool
     {
-        $wp_query = $this->get_main_query();
-
-        return $wp_query->is_404();
+        return $this->query->is_404();
     }
 
-    public function get_queried_object_id()
+    public function get_queried_object_id(): int
     {
-        return $this->get_main_query()->get_queried_object_id();
+        return $this->query->get_queried_object_id();
     }
 
     public function get_term()
@@ -239,7 +188,7 @@ class CurrentPage
      */
     public function get_queried_object()
     {
-        return $this->get_main_query()->get_queried_object();
+        return $this->query->get_queried_object();
     }
 
     /**
@@ -247,28 +196,21 @@ class CurrentPage
      *
      * There are a few filters and actions that can be used to modify the post
      * database query.
-     *
-     * @return int[]|\WP_Post[] The queried object.
      */
-    public function get_queried_posts()
+    public function get_queried_posts(): array
     {
-        return $this->get_main_query()->posts ??  $this->get_main_query()->get_posts();
+        return $this->query->posts ?? $this->query->get_posts();
     }
 
-    /**
-     * @return \WP_Post
-     */
-    public function get_post()
+    public function get_post(): ?\WP_Post
     {
         return $this->is_simple_page() ? $this->get_queried_object() : null;
     }
 
     /**
      * Returns the page type for the current request.
-     *
-     * @return string Page type.
      */
-    public function get_page_type()
+    public function get_page_type(): string
     {
         if ($this->is_search()):
             $page_type = 'search_page';
@@ -299,14 +241,10 @@ class CurrentPage
 
     /**
      * Determine whether this is the static frontpage.
-     *
-     * @return bool Whether or not the current page is a static frontpage.
      */
-    public function is_home_static_page()
+    public function is_home_static_page(): bool
     {
-        $wp_query = $this->get_main_query();
-
-        if (!$wp_query->is_front_page()) {
+        if (!$this->query->is_front_page()) {
             return false;
         }
 
@@ -314,19 +252,15 @@ class CurrentPage
             return false;
         }
 
-        return $wp_query->is_page(get_option('page_on_front'));
+        return $this->query->is_page(get_option('page_on_front'));
     }
 
     /**
      * Determine whether this is the homepage and shows posts.
-     *
-     * @return bool Whether or not the current page is the homepage that displays posts.
      */
-    public function is_home_posts_page()
+    public function is_home_posts_page(): bool
     {
-        $wp_query = $this->get_main_query();
-
-        if (!$wp_query->is_home()) {
+        if (!$this->query->is_home()) {
             return false;
         }
 
@@ -343,25 +277,21 @@ class CurrentPage
 
     /**
      * Returns the id of the currently opened author archive.
-     *
-     * @return int The id of the currently opened author archive.
      */
-    public function get_author_id()
+    public function get_author_id(): int
     {
-        return $this->get_main_query()->get('author');
+        return $this->query->get('author');
     }
 
     public function get($query_var, $default = '')
     {
-        return $this->get_main_query()->get($query_var, $default);
+        return $this->query->get($query_var, $default);
     }
 
     /**
      * Returns the id of the front page.
-     *
-     * @return int The id of the front page. 0 if the front page is not a static page.
      */
-    public function get_front_page_id()
+    public function get_front_page_id(): int
     {
         if (get_option('show_on_front') !== 'page') {
             return 0;
@@ -371,40 +301,11 @@ class CurrentPage
     }
 
     /**
-     * Returns the id of the currently opened term archive.
-     *
-     * @return int The id of the currently opened term archive.
-     */
-    public function get_term_id()
-    {
-        $wp_query = $this->get_main_query();
-
-        if ($wp_query->is_category()) {
-            return $wp_query->get('cat');
-        }
-
-        if ($wp_query->is_tag()) {
-            return $wp_query->get('tag_id');
-        }
-
-        if ($wp_query->is_tax()) {
-            $queried_object = $wp_query->get_queried_object();
-            if ($queried_object and !is_wp_error($queried_object)) {
-                return $queried_object->term_id;
-            }
-        }
-
-        return 0;
-    }
-
-    /**
      * Returns the post type of the main query.
-     *
-     * @return string The post type of the main query.
      */
-    public function get_queried_post_type()
+    public function get_queried_post_type(): string
     {
-        $post_type = $this->get_main_query()->get('post_type');
+        $post_type = $this->query->get('post_type');
 
         if (is_array($post_type)) {
             $post_type = reset($post_type);
@@ -417,16 +318,14 @@ class CurrentPage
      * Returns the permalink of the currently opened date archive.
      * If the permalink was cached, it returns this permalink.
      * If not, we call another function to get the permalink through wp_query.
-     *
-     * @return string The permalink of the currently opened date archive.
      */
-    public function get_date_archive_permalink()
+    public function get_date_archive_permalink(): string
     {
         if ($permalink = $this->cache->get('date_archive_permalink')) {
             return $permalink;
         }
 
-        $wp_query = $this->get_main_query();
+        $wp_query = $this->query;
 
         if ($wp_query->is_day()) {
             $permalink = get_day_link($wp_query->get('year'), $wp_query->get('monthnum'), $wp_query->get('day'));
@@ -445,30 +344,24 @@ class CurrentPage
 
     /**
      * Determine whether this is an attachment page.
-     *
-     * @return bool Whether nor not the current page is an attachment page.
      */
-    public function is_attachment()
+    public function is_attachment(): bool
     {
-        return $this->get_main_query()->is_attachment;
+        return $this->query->is_attachment;
     }
 
     /**
      * Checks if the current page is the post format archive.
-     *
-     * @return bool Whether or not the current page is the post format archive.
      */
-    public function is_post_format_archive()
+    public function is_post_format_archive(): bool
     {
-        return $this->get_main_query()->is_tax('post_format');
+        return $this->query->is_tax('post_format');
     }
 
     /**
-     * Determine whether this page is an taxonomy archive page for multiple terms (url: /term-1,term2/).
-     *
-     * @return bool Whether or not the current page is an archive page for multiple terms.
+     * Determine whether this page is a taxonomy archive page for multiple terms (url: /term-1,term2/).
      */
-    public function is_multiple_terms_page()
+    public function is_multiple_terms_page(): bool
     {
         if (!$this->is_term_archive()) {
             return false;
@@ -479,14 +372,13 @@ class CurrentPage
 
     /**
      * Counts the total amount of queried terms.
-     *
-     * @return int The amoumt of queried terms.
      */
-    protected function count_queried_terms()
+    protected function count_queried_terms(): int
     {
-        $wp_query = $this->get_main_query();
+        $wp_query = $this->query;
         $term = $wp_query->get_queried_object();
         $queried_terms = $wp_query->tax_query->queried_terms;
+
         if (empty($queried_terms[$term->taxonomy]['terms'])) {
             return 0;
         }
@@ -496,18 +388,14 @@ class CurrentPage
 
     /**
      * Checks whether the current page is paged.
-     *
-     * @return bool Whether the current page is paged.
      */
-    public function is_paged()
+    public function is_paged(): bool
     {
-        return $this->get_main_query()->is_paged();
+        return $this->query->is_paged();
     }
 
     /**
      * Retrieves the current admin page.
-     *
-     * @return string The current page.
      */
     public function get_current_admin_page()
     {
@@ -522,8 +410,8 @@ class CurrentPage
         return !empty($page) ? $page : (!empty($page_n) ? $page_n : 1);
     }
 
-    public function is_feed()
+    public function is_feed(): bool
     {
-        return $this->get_main_query()->is_feed();
+        return $this->query->is_feed();
     }
 }

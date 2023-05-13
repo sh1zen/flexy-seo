@@ -8,6 +8,7 @@
 namespace FlexySEO\Engine\Generators\Schema\Graphs;
 
 use FlexySEO\Engine\Generator;
+use FlexySEO\Engine\Generators\GraphBuilder;
 use FlexySEO\Engine\Helpers\CurrentPage;
 
 /**
@@ -31,5 +32,5 @@ abstract class Graph
      * @param string $type
      * @param ...$args
      */
-    abstract public function get(CurrentPage $currentPage, string $type = '', ...$args);
+    abstract public function get(CurrentPage $currentPage, string $type = '', ...$args): GraphBuilder;
 }

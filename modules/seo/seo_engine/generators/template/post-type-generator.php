@@ -13,10 +13,7 @@ use FlexySEO\Engine\Helpers\CurrentPage;
 
 class PostType_Generator extends Default_Generator
 {
-    /**
-     * @param CurrentPage $current_page
-     */
-    public function __construct($current_page)
+    public function __construct(CurrentPage $current_page)
     {
         parent::__construct($current_page);
 
@@ -26,13 +23,14 @@ class PostType_Generator extends Default_Generator
             $type = 'none';
         }
 
-        $this->settings_path = "seo.post_type.{$type}.";
+        $this->settings_path = "seo.post_type.$type.";
     }
 
-    public function redirect()
+    public function redirect(): array
     {
         if ($this->current_page->is_attachment()) {
-            if (!shzn('wpfs')->settings->get('seo.media.rewrite_url', false)) {
+
+            if (!wps('wpfs')->settings->get('seo.media.rewrite_url', false)) {
                 return parent::redirect();
             }
 
@@ -44,17 +42,14 @@ class PostType_Generator extends Default_Generator
 
             return array($url, 301);
         }
-        else {
-            return parent::redirect();
-        }
+
+        return parent::redirect();
     }
 
     /**
      * Retrieves the attachment url for the current page.
-     *
-     * @return string The attachment url.
      */
-    private function get_attachment_url()
+    private function get_attachment_url(): string
     {
         /**
          * Allows the developer to change the target redirection URL for attachments.
@@ -71,48 +66,26 @@ class PostType_Generator extends Default_Generator
         );
     }
 
-    /**
-     * Generates the robots value.
-     *
-     * @param array $robots
-     * @return array The robots value.
-     */
-    public function get_robots($robots = [])
+    public function get_robots(): array
     {
         return [
-            'index'             => shzn('wpfs')->settings->get($this->settings_path . 'show', true) ? 'index' : 'noindex',
-            'follow'            => shzn('wpfs')->settings->get($this->settings_path . 'follow', true) ? 'follow' : 'nofollow',
-            'max-snippet'       => 'max-snippet:-1',
-            'max-image-preview' => 'max-image-preview:large',
+            'index'  => wps('wpfs')->settings->get($this->settings_path . 'show', true) ? 'index' : 'noindex',
+            'follow' => wps('wpfs')->settings->get($this->settings_path . 'follow', true) ? 'follow' : 'nofollow'
         ];
     }
 
-    /**
-     * Generates the meta keywords.
-     *
-     * @param string $keywords
-     * @return string[] The meta keywords.
-     */
-    public function get_keywords(string $keywords = '')
+    public function get_keywords(): string
     {
-        return parent::get_keywords(shzn('wpfs')->settings->get($this->settings_path . 'keywords', ''));
+        $custom_keywords = wpfs_get_post_meta_keywords($this->current_page->get_queried_object(), false, '');
+
+        if (!empty($custom_keywords)) {
+            return $custom_keywords;
+        }
+
+        return wps('wpfs')->settings->get($this->settings_path . 'keywords', '');
     }
 
-    /**
-     * Generates the title structure.
-     *
-     * @param string $title
-     * @return string The title.
-     */
-    public function generate_title($title = '')
-    {
-        return parent::generate_title(shzn('wpfs')->settings->get($this->settings_path . 'title', '%%title%%'));
-    }
-
-    /**
-     * @return OpenGraph
-     */
-    public function openGraph(OpenGraph $og)
+    public function openGraph(OpenGraph $og): OpenGraph
     {
         $object = $this->current_page->get_queried_object();
 
@@ -127,14 +100,14 @@ class PostType_Generator extends Default_Generator
         return $og;
     }
 
-    /**
-     * Generates the title structure.
-     *
-     * @param string $description
-     * @return string The meta description.
-     */
-    public function get_description(string $description = '')
+    public function get_description(): string
     {
-        return parent::get_description(shzn('wpfs')->settings->get($this->settings_path . 'meta_desc', ''));
+        $custom_description = wpfs_get_post_meta_description($this->current_page->get_queried_object(), false, '');
+
+        if (!empty($custom_description)) {
+            return $custom_description;
+        }
+
+        return wps('wpfs')->settings->get($this->settings_path . 'meta_desc', '%%description%%');
     }
 }

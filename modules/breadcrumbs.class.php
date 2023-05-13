@@ -7,24 +7,15 @@
 
 namespace FlexySEO\modules;
 
-use SHZN\modules\Module;
+use WPS\modules\Module;
 
 class Mod_breadcrumbs extends Module
 {
-    public $scopes = array('settings', 'admin-page', 'autoload');
+    public array $scopes = array('settings', 'admin-page', 'autoload');
 
-    public function __construct()
-    {
-        parent::__construct('wpfs');
+    protected string $context = 'wpfs';
 
-        if (!(wp_doing_cron() or wp_doing_ajax() or is_admin())) {
-            require_once WPFS_MODULES . 'breadcrumbs/WPFS_Breadcrumb.php';
-
-            add_action('wp_head', array($this, 'print_style'));
-        }
-    }
-
-    public function print_style()
+    public function print_style(): void
     {
         $style = apply_filters("wpfs_breadcrumb_style", false);
 
@@ -58,12 +49,12 @@ class Mod_breadcrumbs extends Module
         <?php
     }
 
-    public function render_admin_page()
+    public function render_admin_page(): void
     {
         ?>
-        <section class="shzn-wrap">
-            <block class="shzn">
-                <section class='shzn-header'><h1>SEO / Breadcrumbs</h1></section>
+        <section class="wps-wrap">
+            <block class="wps">
+                <section class='wps-header'><h1>SEO / Breadcrumbs</h1></section>
                 <?php
                 echo $this->render_settings();
                 ?>
@@ -72,11 +63,25 @@ class Mod_breadcrumbs extends Module
         <?php
     }
 
-    protected function setting_fields($filter = '')
+    protected function init(): void
     {
+        if (!(wp_doing_cron() or wp_doing_ajax() or is_admin())) {
+            require_once WPFS_MODULES . 'breadcrumbs/WPFS_Breadcrumb.php';
+
+            add_action('wp_head', array($this, 'print_style'));
+        }
+    }
+
+    protected function setting_fields($filter = ''): array
+    {
+        $fields['active'] =
+            $this->group_setting_fields(
+                $this->setting_field(__('Status:', 'wpfs'), false, 'separator'),
+                $this->setting_field(__('Active', 'wpfs'), "active", 'checkbox', ['default_value' => true]),
+            );
+
         $fields['general'] = $this->group_setting_fields(
-            $this->setting_field(__('Status:', 'wpfs'), false, 'separator'),
-            $this->setting_field(__('Active', 'wpfs'), "active", 'checkbox', ['default_value' => true]),
+
             $this->setting_field(__('Flexed Breadcrumbs', 'wpfs'), "flexed", 'checkbox', ['depend' => 'active', 'default_value' => false]),
             $this->setting_field(__('Highlight last page', 'wpfs'), "last_page", 'checkbox', ['depend' => 'active']),
             $this->setting_field(__('Separator', 'wpfs'), "separator", 'text', ['depend' => 'active', 'default_value' => '>']),

@@ -15,16 +15,22 @@ class Default_Generator
 {
     protected CurrentPage $current_page;
 
-    protected $settings_path = '';
+    protected string $settings_path = '';
 
-    protected $type = '';
+    protected string $type = '';
+
+    /**
+     * @var \WP_Post|\WP_Post_Type|\WP_Term|\WP_User|null
+     */
+    protected $queried_object;
 
     public function __construct(CurrentPage $current_page)
     {
         $this->current_page = $current_page;
+        $this->queried_object = $this->current_page->get_queried_object();
     }
 
-    public function redirect()
+    public function redirect(): array
     {
         return array(false, 301);
     }
@@ -32,152 +38,81 @@ class Default_Generator
     /**
      * Generates the robots value.
      *
-     * @param array $robots
      * @return array The robots value.
      */
-    public function get_robots($robots = array())
+    public function get_robots(): array
     {
-        //$indexable = shzn('wpfs')->options->get($this->current_page->get_queried_object_id(), "indexable", "customMeta", true);
-
-        $valid = [
-            'index'             => 'index', //$indexable ? 'index' : 'noindex',
-            'follow'            => 'follow', // 'nofollow'
-            'max-snippet'       => 'max-snippet:-1',
-            'max-image-preview' => 'max-image-preview:large',
-            'max-video-preview' => 'max-video-preview:-1',
-        ];
-
-        return array_merge($valid, $robots);
+        return [];
     }
 
     /**
-     * Generates the meta keywords.
-     *
-     * @param string $keywords
-     * @return string[] The meta keywords.
+     * Generates the meta keywords string.
      */
-    public function get_keywords(string $keywords = '')
+    public function get_keywords(): string
     {
-        if ($this->current_page->is_simple_page()) {
-            $_keywords = shzn('wpfs')->options->get($this->current_page->get_queried_object_id(), "keywords", "customMeta", "");
+        return wps('wpfs')->settings->get($this->settings_path . 'keywords', '');
+    }
 
-            if (!empty($_keywords)) {
-                $keywords = $_keywords;
-            }
+    public function get_paged_permalink($shift = 0): string
+    {
+        $page = $this->current_page->get_page_number() + $shift;
+        $max_pages = $this->current_page->get_query()->max_num_pages;
+
+        if ($max_pages and $page <= $max_pages and $page > 0) {
+            return wpfs_paged_link($page);
         }
-
-        if (is_array($keywords)) {
-            $keywords = implode(',', $keywords);
-        }
-
-        return Txt_Replacer::replace(
-            $keywords,
-            $this->current_page->get_queried_object(),
-            $this->current_page->get_query_type()
-        );
-    }
-
-    protected final function get_cache($cacheKey)
-    {
-        return shzn('wpfs')->cache->get($cacheKey, "generator");
-    }
-
-    protected final function set_cache($cacheKey, $data)
-    {
-        return shzn('wpfs')->cache->set($cacheKey, $data, "generator", true);
-    }
-
-    /**
-     * Generates the canonical.
-     *
-     * @return string The canonical.
-     */
-    public function generate_canonical()
-    {
-        $permalink = $this->get_paged_permalink();
-
-        if ($permalink) {
-            return $permalink;
+        elseif ($shift == 0) {
+            return wpfs_paged_link(0);
         }
 
         return '';
-    }
-
-    public function get_paged_permalink($shift = 0)
-    {
-        if ($url = $this->get_cache("permalink-{$shift}")) {
-            return $url;
-        }
-
-        $rewriter = Rewriter::get_instance();
-
-        $page = $this->current_page->get_page_number() + $shift;
-
-        $max_pages = $this->current_page->get_main_query()->max_num_pages;
-
-        if ($max_pages and $page <= $max_pages and $page > 0) {
-            $url = $rewriter->get_pagenum_link($page);
-        }
-        elseif ($shift == 0) {
-            $url = $rewriter->get_pagenum_link();
-        }
-        else {
-            $url = '';
-        }
-
-        $this->set_cache("permalink-{$shift}", $url);
-
-        return $url;
     }
 
     /**
      * Gets the permalink from the indexable or generates it if dynamic permalinks are enabled.
-     *
-     * @param int $shift
-     * @return string The permalink.
      */
-    public function get_permalink($shift = 0)
+    public function get_permalink(): string
     {
         if ($this->current_page->is_attachment()) {
-            return wp_get_attachment_url($this->current_page->get_queried_object_id());
+            $permalink = wp_get_attachment_url($this->current_page->get_queried_object_id());
         }
         elseif ($this->current_page->is_simple_page()) {
-            return get_permalink($this->current_page->get_queried_object_id());
+            $permalink = get_permalink($this->current_page->get_queried_object_id());
         }
         elseif ($this->current_page->is_homepage()) {
-            return home_url('/');
+            $permalink = home_url('/');
         }
         elseif ($this->current_page->is_term_archive()) {
-            $term = shzn_get_term($this->current_page->get_queried_object());
+            $term = wps_get_term($this->current_page->get_queried_object());
 
             if ($term === null || is_wp_error($term)) {
-                return null;
+                return '';
             }
 
-            return get_term_link($term, $term->taxonomy);
+            $permalink = get_term_link($term, $term->taxonomy);
         }
         elseif ($this->current_page->is_search()) {
-            return get_search_link();
-        }
-
-        elseif ($this->current_page->is_post_type_archive()) {
-            return get_post_type_archive_link($this->current_page->get_queried_post_type());
+            $permalink = get_search_link();
         }
         elseif ($this->current_page->is_author_archive()) {
-            return get_author_posts_url($this->current_page->get_queried_object_id());
+            $permalink = get_author_posts_url($this->current_page->get_queried_object_id());
+        }
+        elseif ($this->current_page->is_post_type_archive()) {
+            $permalink = get_post_type_archive_link($this->current_page->get_queried_post_type());
+        }
+        else {
+            $permalink = '';
         }
 
-        return '';
+        return $permalink;
     }
 
     /**
      * Generates the rel prev.
-     *
-     * @return string The rel prev value.
      */
-    public function generate_rel_prev()
+    public function generate_rel_prev(): string
     {
-        if ($this->current_page->is_paged() or $this->current_page->get_main_query()->max_num_pages) {
+        if ($this->current_page->is_paged() or $this->current_page->get_query()->max_num_pages) {
             return $this->get_paged_permalink(-1);
         }
 
@@ -186,47 +121,26 @@ class Default_Generator
 
     /**
      * Generates the rel next.
-     *
-     * @return string The rel prev next.
      */
-    public function generate_rel_next()
+    public function generate_rel_next(): string
     {
-        if ($this->current_page->is_paged() or $this->current_page->get_main_query()->max_num_pages) {
+        if ($this->current_page->is_paged() or $this->current_page->get_query()->max_num_pages) {
             return $this->get_paged_permalink(1);
         }
 
         return '';
     }
 
-    /**
-     * @return OpenGraph
-     */
-    public function openGraph(OpenGraph $og)
+    public function openGraph(OpenGraph $og): OpenGraph
     {
         $og->type('website');
 
         return $og;
     }
 
-    public function generate_title($title = '')
+    public function generate_title(): string
     {
-        if (($_title = $this->get_cache("title")) !== false) {
-            return $_title;
-        }
-
-        if (empty($title)) {
-            $title = "%%title%%";
-        }
-
-        $title = Txt_Replacer::replace(
-            $title,
-            $this->current_page->get_queried_object(),
-            $this->current_page->get_query_type()
-        );
-
-        $this->set_cache("title", $title);
-
-        return $title;
+        return wps('wpfs')->settings->get($this->settings_path . 'title', '%%title%%');
     }
 
     public function get_snippet_image($size = 'thumbnail', $use_default = true)
@@ -239,10 +153,10 @@ class Default_Generator
         if (empty($url) and $use_default) {
 
             if ($size === 'thumbnail') {
-                $url = shzn('wpfs')->settings->get('seo.org.logo_url.small', '');
+                $url = wps('wpfs')->settings->get('seo.org.logo_url.small', '');
             }
             else {
-                $url = shzn('wpfs')->settings->get('seo.org.logo_url.wide', '');
+                $url = wps('wpfs')->settings->get('seo.org.logo_url.wide', '');
             }
         }
 
@@ -250,51 +164,31 @@ class Default_Generator
             return false;
         }
 
-        $snippet_data = shzn('wpfs')->options->get($url, "snippet_data", "cache", false);
+        $snippet_data = wps('wpfs')->options->get($url, "snippet_data", "cache", false);
 
         if (!$snippet_data) {
 
-            $snippet_data = wpfseo()->images->get_snippet_data($url, $size);
+            $snippet_data = wpfseo('helpers')->images->get_snippet_data($url, $size);
 
             if (!$snippet_data) {
                 return false;
             }
 
-            shzn('wpfs')->options->add($url, "snippet_data", $snippet_data, "cache", WEEK_IN_SECONDS);
+            wps('wpfs')->options->add($url, "snippet_data", $snippet_data, "cache", WEEK_IN_SECONDS);
         }
 
         return $snippet_data;
     }
 
     /**
-     * Generates the meta description.
-     *
-     * @param string $description
-     * @return string The meta description.
+     * Generates the description structure.
      */
-    public function get_description(string $description = '')
+    public function get_description(): string
     {
-        if ($this->current_page->is_simple_page()) {
-
-            $_description = shzn('wpfs')->options->get($this->current_page->get_queried_object_id(), "description", "customMeta", "");
-
-            if (!empty($_description)) {
-                $description = $_description;
-            }
-        }
-
-        if (empty($description)) {
-            $description = '%%description%%';
-        }
-
-        return Txt_Replacer::replace(
-            $description,
-            $this->current_page->get_queried_object(),
-            $this->current_page->get_query_type()
-        );
+        return wps('wpfs')->settings->get($this->settings_path . 'meta_desc', '%%description%%');
     }
 
-    public function twitterCard(TwitterCard $tc)
+    public function twitterCard(TwitterCard $tc): TwitterCard
     {
         return $tc;
     }

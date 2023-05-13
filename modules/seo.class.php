@@ -7,41 +7,35 @@
 
 namespace FlexySEO\modules;
 
+use WPS\core\Graphic;
+use WPS\modules\Module;
+
 use FlexySEO\Engine\Generators\Schema;
-use SHZN\core\Graphic;
-use SHZN\modules\Module;
 use FlexySEO\Engine\WPFS_SEO;
 
 class Mod_seo extends Module
 {
-    public $scopes = array('admin-page', 'settings', 'autoload');
+    public array $scopes = array('admin-page', 'settings', 'autoload');
+
+    protected string $context = 'wpfs';
 
     private array $performer_response = array();
 
-    public function __construct()
-    {
-        parent::__construct('wpfs');
-
-        require_once WPFS_MODULES . 'seo/WPFS_SEO.php';
-
-        WPFS_SEO::Init();
-    }
-
-    public function enqueue_scripts()
+    public function enqueue_scripts(): void
     {
         parent::enqueue_scripts();
         wp_enqueue_media();
     }
 
-    public function render_admin_page()
+    public function render_sub_modules(): void
     {
         ?>
-        <section class="shzn-wrap">
-            <div id="shzn-ajax-message" class="shzn-notice"></div>
+        <section class="wps-wrap">
+            <div id="wps-ajax-message" class="wps-notice"></div>
             <?php
             if (!empty($this->performer_response)) {
 
-                echo '<div id="message" class="shzn-notice">';
+                echo '<div id="message" class="wps-notice">';
 
                 foreach ($this->performer_response as $response) {
                     list($text, $status) = $response;
@@ -52,10 +46,10 @@ class Mod_seo extends Module
                 echo '</div>';
             }
             ?>
-            <block class="shzn">
-                <section class='shzn-header'><h1>SEO / <?php echo __('Settings', 'wpfs'); ?></h1></section>
-                <form id="shzn-uoptions" action="options.php" method="post">
-                    <input type="hidden" name="<?php echo shzn('wpfs')->settings->option_name . "[change]" ?>"
+            <block class="wps">
+                <section class='wps-header'><h1>SEO / <?php echo __('Settings', 'wpfs'); ?></h1></section>
+                <form id="wps-uoptions" action="options.php" method="post">
+                    <input type="hidden" name="<?php echo wps('wpfs')->settings->get_context() . "[change]" ?>"
                            value="<?php echo $this->slug; ?>">
                     <?php
 
@@ -77,7 +71,7 @@ class Mod_seo extends Module
                         ),
                         array(
                             'id'        => 'seo-post-type',
-                            'tab-title' => __('Content types', 'wpfs'),
+                            'tab-title' => __('Post types', 'wpfs'),
                             'callback'  => array($this, 'render_settings'),
                             'args'      => array(get_post_types(array('public' => true)))
                         ),
@@ -118,15 +112,18 @@ class Mod_seo extends Module
                         ),
                     ));
                     ?>
+                    <p class="wps-submit">
+                        <input type="submit" class="button-primary" value="<?php _e('Save Changes', 'wpfs') ?>"/>
+                    </p>
                 </form>
             </block>
         </section>
         <script type="application/javascript">
-            jQuery('textarea.shzn').TextBoxHighlighter({
+            jQuery('textarea.wps').TextBoxHighlighter({
                 highlight: [/(%%\w+%%)+/gi]
             });
 
-            jQuery('input[type="text"].shzn').TextBoxHighlighter({
+            jQuery('input[type="text"].wps').TextBoxHighlighter({
                 highlight: [/(%%\w+%%)+/gi]
             });
         </script>
@@ -135,264 +132,279 @@ class Mod_seo extends Module
 
     /**
      * overwrite the base render setting gui for settings
-     * @param $filter
-     * @return string
      */
-    public function render_settings($filter = '')
+    public function render_settings($filter = ''): string
     {
-        $_header = $this->setting_form_templates('header');
-        $_footer = $this->setting_form_templates('footer');
-
-        $_divider = false;
-
         $_setting_fields = $this->setting_fields($filter);
 
         ob_start();
 
         if (!empty($_setting_fields)) {
 
-            $_divider = true;
-
-            if ($_header) {
-                echo "<h3 class='shzn-setting-header'>{$_header}</h3>";
-            }
-
             ?>
-            <block class="shzn-options">
-                <?php Graphic::generate_fields($_setting_fields, $this->infos(), array('name_prefix' => shzn('wpfs')->settings->option_name)); ?>
+            <block class="wps-options">
+                <?php Graphic::generate_fields($_setting_fields, $this->infos(), array('name_prefix' => wps('wpfs')->settings->get_context())); ?>
             </block>
-            <p class="shzn-submit">
-                <input type="submit" class="button-primary" value="<?php _e('Save Changes', 'wpfs') ?>"/>
-            </p>
             <?php
-        }
-
-        if (!empty($_footer)) {
-
-            if ($_divider) {
-                echo "<hr class='shzn-hr'>";
-            }
-
-            echo "<section class='shzn-setting-footer'>" . $_footer . "</section>";
         }
 
         return ob_get_clean();
     }
 
-    protected function setting_fields($filter = '')
+    protected function setting_fields($filter = ''): array
     {
-        $fields = [];
+        static $fields;
 
-        $fields['general'] = $this->group_setting_fields(
-            $this->setting_field(__('Titles:', 'wpfs'), false, 'separator'),
-            $this->setting_field(__('Rewrite titles', 'wpfs'), 'title.rewrite', 'checkbox', ['default_value' => true]),
-            $this->setting_field(__('Title separator', 'wpfs'), 'title.separator', 'dropdown', ['default_value' => '-', 'list' => ["-", ">", "<", ">>", "<<", "~", "•"]]),
+        if (!isset($fields)) {
 
-            $this->setting_field(__('Addon:', 'wpfs'), false, 'separator'),
-            $this->setting_field(__('Custom Term Description', 'wpfs'), 'addon.term_extra_fields', 'checkbox', ['default_value' => true]),
-            $this->setting_field(__('Edit page meta-boxes', 'wpfs'), 'addon.xre_metaboxe', 'checkbox', ['default_value' => true]),
+            $fields = [];
 
-            $this->setting_field(__('Media:', 'wpfs'), false, 'separator'),
-            $this->setting_field(__('Rewrite media url to attachment', 'wpfs'), 'media.rewrite_url', 'checkbox', ['default_value' => true]),
-
-            $this->setting_field(__('Knowledge Graph configuration:', 'wpfs'), false, 'separator'),
-            $this->setting_field(__('Default snippet image url (wide)', 'wpfs'), 'org.logo_url.wide', 'upload-input', ['placeholder' => __('Paste your image URL or select a new image', 'wpfs')]),
-            $this->setting_field(__('Default snippet image url (small)', 'wpfs'), 'org.logo_url.small', 'upload-input', ['placeholder' => __('Paste your image URL or select a new image', 'wpfs')]),
-            $this->setting_field(__('Add Twitter Card metadata', 'wpfs'), 'social.twitter.card', 'checkbox', ['default_value' => true]),
-            $this->setting_field(__('Use larger images for Twitter Card', 'wpfs'), 'social.twitter.large_images', 'checkbox', ['default_value' => true]),
-            $this->setting_field(__('Enable Facebook Open-Graph metadata', 'wpfs'), 'social.facebook.opengraph', 'checkbox', ['default_value' => true]),
-            $this->setting_field(__('Facebook default share image', 'wpfs'), 'social.facebook.logo_url', 'upload-input', ['placeholder' => __('Paste your image URL or select a new image', 'wpfs')])
-        );
-
-        $fields['special'] = $this->group_setting_fields(
-            $this->setting_field(__('Home:', 'wpfs'), false, 'separator'),
-            $this->setting_field(__('SEO title', 'wpfs'), 'home.title', 'text', ['default_value' => '%%sitename%% %%sep%% %%sitedesc%%']),
-            $this->setting_field(__('Meta description', 'wpfs'), 'home.meta_desc', 'textarea'),
-            $this->setting_field(__('Keywords (comma separate)', 'wpfs'), 'home.keywords'),
-
-            $this->setting_field(__('Search page:', 'wpfs'), false, 'separator'),
-            $this->setting_field(__('Title', 'wpfs'), 'search.title'),
-            $this->setting_field(__('Meta description', 'wpfs'), 'search.meta_desc', 'textarea'),
-            $this->setting_field(__('Keywords', 'wpfs'), 'search.keywords'),
-
-            $this->setting_field(__('404 page:', 'wpfs'), false, 'separator'),
-            $this->setting_field(__('Title', 'wpfs'), 'E404.title')
-        );
-
-        $fields['social'] = $this->group_setting_fields(
-            $this->setting_field(__('General', 'wpfs'), false, 'separator'),
-            $this->setting_field(__('Use same username', 'wpfs'), 'social.sameUsername.enable', 'checkbox', ['default_value' => false]),
-            $this->setting_field(__('Username', 'wpfs'), 'social.sameUsername.username', 'text', ['depend' => 'social.sameUsername.enable']),
-
-            $this->setting_field(__('Facebook:', 'wpfs'), false, 'separator'),
-            $this->setting_field(__('Active', 'wpfs'), 'social.facebook.enable', 'checkbox', ['depend' => 'social.sameUsername.enable', 'default_value' => true]),
-            $this->setting_field(__('Profile name or url', 'wpfs'), 'social.facebook.url', 'text', ['depend' => '!social.sameUsername.enable']),
-            $this->setting_field(__('Confirmation code', 'wpfs'), 'social.facebook.code'),
-
-            $this->setting_field(__('Twitter:', 'wpfs'), false, 'separator'),
-            $this->setting_field(__('Active', 'wpfs'), 'social.twitter.enable', 'checkbox', ['depend' => 'social.sameUsername.enable', 'default_value' => true]),
-            $this->setting_field(__('Profile name or url', 'wpfs'), 'social.twitter.url', 'text', ['depend' => '!social.sameUsername.enable']),
-            $this->setting_field(__('Confirmation code', 'wpfs'), 'social.twitter.code'),
-
-            $this->setting_field(__('Linkedin:', 'wpfs'), false, 'separator'),
-            $this->setting_field(__('Active', 'wpfs'), 'social.linkedin.enable', 'checkbox', ['depend' => 'social.sameUsername.enable', 'default_value' => true]),
-            $this->setting_field(__('Profile name or url', 'wpfs'), 'social.linkedin.url', 'text', ['depend' => '!social.sameUsername.enable']),
-
-            $this->setting_field(__('Pinterest:', 'wpfs'), false, 'separator'),
-            $this->setting_field(__('Active', 'wpfs'), 'social.pinterest.enable', 'checkbox', ['depend' => 'social.sameUsername.enable', 'default_value' => true]),
-            $this->setting_field(__('Profile name or url', 'wpfs'), 'social.pinterest.url', 'text', ['depend' => '!social.sameUsername.enable']),
-            $this->setting_field(__('Confirmation code', 'wpfs'), 'social.pinterest.code'),
-
-            $this->setting_field(__('Instagram:', 'wpfs'), false, 'separator'),
-            $this->setting_field(__('Active', 'wpfs'), 'social.instagram.enable', 'checkbox', ['depend' => 'social.sameUsername.enable', 'default_value' => true]),
-            $this->setting_field(__('Profile name or url', 'wpfs'), 'social.instagram.url', 'text', ['depend' => '!social.sameUsername.enable']),
-
-            $this->setting_field(__('YouTube:', 'wpfs'), false, 'separator'),
-            $this->setting_field(__('Active', 'wpfs'), 'social.youtube.enable', 'checkbox', ['depend' => 'social.sameUsername.enable', 'default_value' => false]),
-            $this->setting_field(__('Profile name or url', 'wpfs'), 'social.youtube.url', 'text', ['depend' => '!social.sameUsername.enable']),
-
-            $this->setting_field(__('Tumblr:', 'wpfs'), false, 'separator'),
-            $this->setting_field(__('Active', 'wpfs'), 'social.tumblr.enable', 'checkbox', ['depend' => 'social.sameUsername.enable', 'default_value' => false]),
-            $this->setting_field(__('Profile name or url', 'wpfs'), 'social.tumblr.url', 'text', ['depend' => '!social.sameUsername.enable']),
-
-            $this->setting_field(__('Yelp:', 'wpfs'), false, 'separator'),
-            $this->setting_field(__('Active', 'wpfs'), 'social.yelp.enable', 'checkbox', ['depend' => 'social.sameUsername.enable', 'default_value' => false]),
-            $this->setting_field(__('Profile name or url', 'wpfs'), 'social.yelp.url', 'text', ['depend' => '!social.sameUsername.enable']),
-
-            $this->setting_field(__('SoundCloud:', 'wpfs'), false, 'separator'),
-            $this->setting_field(__('Active', 'wpfs'), 'social.soundcloud.enable', 'checkbox', ['depend' => 'social.sameUsername.enable', 'default_value' => false]),
-            $this->setting_field(__('Profile name or url', 'wpfs'), 'social.soundcloud.url', 'text', ['depend' => '!social.sameUsername.enable']),
-
-            $this->setting_field(__('WikiPedia:', 'wpfs'), false, 'separator'),
-            $this->setting_field(__('Active', 'wpfs'), 'social.wikipedia.enable', 'checkbox', ['depend' => 'social.sameUsername.enable', 'default_value' => false]),
-            $this->setting_field(__('Profile name or url', 'wpfs'), 'social.wikipedia.url', 'text', ['depend' => '!social.sameUsername.enable'])
-        );
-
-        $fields['webmaster'] = $this->group_setting_fields(
-            $this->setting_field(__('Google:', 'wpfs'), false, 'separator'),
-            $this->setting_field(__('Verification code', 'wpfs'), 'webmaster.google.vercode'),
-
-            $this->setting_field(__('Bing:', 'wpfs'), false, 'separator'),
-            $this->setting_field(__('Verification code', 'wpfs'), 'webmaster.bing.vercode'),
-
-            $this->setting_field(__('Yandex:', 'wpfs'), false, 'separator'),
-            $this->setting_field(__('Verification code', 'wpfs'), 'webmaster.yandex.vercode'),
-
-            $this->setting_field(__('Baidu:', 'wpfs'), false, 'separator'),
-            $this->setting_field(__('Verification code', 'wpfs'), 'webmaster.baidu.vercode')
-        );
-
-        $fields['archives'] = $this->group_setting_fields(
-            $this->setting_field(__('Date archive:', 'wpfs'), false, 'separator'),
-            $this->setting_field(__('Show date archive in search results', 'wpfs'), 'archives.date.active', 'checkbox', ['default_value' => false]),
-            $this->setting_field(__('Title', 'wpfs'), 'archives.date.title', 'text', ['parent' => 'archives.date.active']),
-            $this->setting_field(__('Meta description', 'wpfs'), 'archives.date.meta_desc', 'textarea', ['parent' => 'archives.date.active']),
-            $this->setting_field(__('Keywords', 'wpfs'), 'archives.date.keywords', 'text', ['parent' => 'archives.date.active']),
-
-            $this->setting_field(__('Author archive:', 'wpfs'), false, 'separator'),
-            $this->setting_field(__('Status', 'wpfs'), 'archives.author.active', 'checkbox', ['default_value' => true]),
-            $this->setting_field(__('Show author archive in search results', 'wpfs'), 'archives.author.show', 'checkbox', ['default_value' => true, 'parent' => 'archives.author.active']),
-            $this->setting_field(__('Title', 'wpfs'), 'archives.author.title', 'text', ['parent' => 'archives.author.active']),
-            $this->setting_field(__('Meta description', 'wpfs'), 'archives.author.meta_desc', 'textarea', ['parent' => 'archives.author.active']),
-            $this->setting_field(__('Keywords', 'wpfs'), 'archives.author.keywords', 'text', ['parent' => 'archives.author.active'])
-        );
-
-        $fields['schema.org'] = $this->group_setting_fields(
-            $this->setting_field(__('Schema settings:', 'wpfs'), false, 'separator'),
-            $this->setting_field(__('Active', 'wpfs'), 'schema.enabled', 'checkbox', ['default_value' => true]),
-            $this->setting_field(__('Organization', 'wpfs'), 'schema.organization.is', 'checkbox', ['parent' => 'schema.enabled', 'default_value' => false]),
-            $this->setting_field(__('Organization Type', 'wpfs'), 'schema.organization.type', 'dropdown', ['parent' => 'schema.organization.is', 'default_value' => 'Corporation', 'list' => [
-                "Airline",
-                "Consortium",
-                "Corporation",
-                "EducationalOrganization",
-                "FundingScheme",
-                "GovernmentOrganization",
-                "LibrarySystem",
-                "LocalBusiness",
-                "MedicalOrganization",
-                "NewsMediaOrganization",
-                "OnlineBusiness",
-                "PerformingGroup",
-                "Project",
-                "ResearchOrganization",
-                "SearchRescueOrganization",
-                "SportsOrganization",
-                "WorkersUnion"
-            ]]),
-            $this->setting_field(__('Name', 'wpfs'), 'schema.organization.name', 'text', ['parent' => 'schema.organization.is']),
-            $this->setting_field(__('Description', 'wpfs'), 'schema.organization.description', 'text', ['parent' => 'schema.organization.is']),
-            $this->setting_field(__('Address', 'wpfs'), 'schema.organization.address', 'text', ['parent' => 'schema.organization.is']),
-            $this->setting_field(__('Founders (comma separated)', 'wpfs'), 'schema.organization.founder', 'text', ['parent' => 'schema.organization.is']),
-            $this->setting_field(__('Logo', 'wpfs'), 'schema.organization.logo', 'upload-input', ['parent' => 'schema.organization.is', 'placeholder' => __('Paste your image URL or select a new image', 'wpfs')]),
-            $this->setting_field(__('Contact Type', 'wpfs'), 'schema.organization.contact_type', 'dropdown', ['parent' => 'schema.organization.is', 'list' => [
-                "Customer Service",
-                "Technical Support",
-                "Billing Support",
-                "Bill Payment",
-                "Sales",
-                "Reservations",
-                "Credit Card Support",
-                "Emergency",
-                "Baggage Tracking",
-                "Roadside Assistance",
-                "Package Tracking"
-            ]]),
-            $this->setting_field(__('Phone', 'wpfs'), 'schema.organization.phone', 'text', ['parent' => 'schema.organization.is']),
-            $this->setting_field(__('E-mail', 'wpfs'), 'schema.organization.email', 'text', ['parent' => 'schema.organization.is']),
-            $this->setting_field(__('Enable Sitelinks Search Box', 'wpfs'), 'schema.sitelink', 'checkbox', ['parent' => 'schema.enabled', 'default_value' => false])
-        );
-
-        //settings for each taxonomy
-        foreach (get_taxonomies(array('public' => true), 'objects') as $tax_type_object) {
-
-            $tax_type = $tax_type_object->name;
-
-            $fields[$tax_type] = $this->group_setting_fields(
-                $this->setting_field(ucwords($tax_type_object->label) . ($tax_type_object->_builtin ? "" : " ({$tax_type_object->name})"), false, 'separator'),
-                $this->setting_field(sprintf(__("Show \"<i>%s</i>\" in search results", 'wpfs'), $tax_type_object->label), "tax.{$tax_type}.show", 'checkbox', ['default_value' => true]),
-                $this->setting_field(__('Title', 'wpfs'), "tax.{$tax_type}.title", 'text', ['default_value' => '%%title%%']),
-                $this->setting_field(__('Meta description', 'wpfs'), "tax.{$tax_type}.meta_desc", 'textarea'),
-                $this->setting_field(__('Keywords', 'wpfs'), "tax.{$tax_type}.keywords"),
-                $this->setting_field(__('Remove type prefix', 'wpfs'), "tax.{$tax_type}.prefix", 'checkbox', ['default_value' => false])
-
+            $fields['general'] = $this->group_setting_fields(
+                $this->group_setting_fields(
+                    $this->setting_field(__('Titles:', 'wpfs'), false, 'separator'),
+                    $this->setting_field(__('Rewrite titles', 'wpfs'), 'title.rewrite', 'checkbox', ['default_value' => true]),
+                    $this->setting_field(__('Force blog name as trailing part of the title', 'wpfs'), 'title.blogname', 'checkbox', ['default_value' => true]),
+                    $this->setting_field(__('Title separator', 'wpfs'), 'title.separator', 'dropdown', ['default_value' => '-', 'list' => ["-", ">", "<", ">>", "<<", "~", "•"]]),
+                ),
+                $this->group_setting_fields(
+                    $this->setting_field(__('Addon:', 'wpfs'), false, 'separator'),
+                    $this->setting_field(__('Custom Term Description', 'wpfs'), 'addon.term_extra_fields', 'checkbox', ['default_value' => true]),
+                    $this->setting_field(__('Edit page meta-boxes', 'wpfs'), 'addon.xre_metaboxe', 'checkbox', ['default_value' => true]),
+                ),
+                $this->group_setting_fields(
+                    $this->setting_field(__('Media:', 'wpfs'), false, 'separator'),
+                    $this->setting_field(__('Rewrite media url to attachment', 'wpfs'), 'media.rewrite_url', 'checkbox', ['default_value' => true]),
+                ),
+                $this->group_setting_fields(
+                    $this->setting_field(__('Knowledge Graph configuration:', 'wpfs'), false, 'separator'),
+                    $this->setting_field(__('Default snippet image url (wide)', 'wpfs'), 'org.logo_url.wide', 'upload-input', ['placeholder' => __('Paste your image URL or select a new image', 'wpfs')]),
+                    $this->setting_field(__('Default snippet image url (small)', 'wpfs'), 'org.logo_url.small', 'upload-input', ['placeholder' => __('Paste your image URL or select a new image', 'wpfs')]),
+                    $this->setting_field(__('Add Twitter Card metadata', 'wpfs'), 'social.twitter.card', 'checkbox', ['default_value' => true]),
+                    $this->setting_field(__('Use larger images for Twitter Card', 'wpfs'), 'social.twitter.large_images', 'checkbox', ['default_value' => true]),
+                    $this->setting_field(__('Enable Facebook Open-Graph metadata', 'wpfs'), 'social.facebook.opengraph', 'checkbox', ['default_value' => true]),
+                    $this->setting_field(__('Facebook default share image', 'wpfs'), 'social.facebook.logo_url', 'upload-input', ['placeholder' => __('Paste your image URL or select a new image', 'wpfs')])
+                )
             );
-        }
 
-        //settings for each post type
-        foreach (get_post_types(array('public' => true), 'objects') as $post_type_object) {
+            $fields['special'] = $this->group_setting_fields(
+                $this->group_setting_fields(
+                    $this->setting_field(__('Home:', 'wpfs'), false, 'separator'),
+                    $this->setting_field(__('SEO title', 'wpfs'), 'home.title', 'text', ['default_value' => '%%sitename%% %%sep%% %%sitedesc%%']),
+                    $this->setting_field(__('Meta description', 'wpfs'), 'home.meta_desc', 'textarea'),
+                    $this->setting_field(__('Keywords (comma separate)', 'wpfs'), 'home.keywords'),
+                ),
+                $this->group_setting_fields(
+                    $this->setting_field(__('Search page:', 'wpfs'), false, 'separator'),
+                    $this->setting_field(__('Show search page', 'wpfs'), 'search.active', 'checkbox', ['default_value' => true]),
+                    $this->setting_field(__('Title', 'wpfs'), 'search.title', 'text', ['parent' => 'search.active']),
+                    $this->setting_field(__('Meta description', 'wpfs'), 'search.meta_desc', 'textarea', ['parent' => 'search.active']),
+                    $this->setting_field(__('Keywords', 'wpfs'), 'search.keywords', 'text', ['parent' => 'search.active']),
+                ),
 
-            $post_type = $post_type_object->name;
+                $this->group_setting_fields(
+                    $this->setting_field(__('404 page:', 'wpfs'), false, 'separator'),
+                    $this->setting_field(__('Title', 'wpfs'), 'E404.title')
+                ),
+            );
 
-            $post_type_sanitized = str_replace(array('-', '_'), ' ', $post_type);
+            $fields['social'] = $this->group_setting_fields(
+                $this->group_setting_fields(
+                    $this->setting_field(__('General', 'wpfs'), false, 'separator'),
+                    $this->setting_field(__('Use same username', 'wpfs'), 'social.sameUsername.enable', 'checkbox', ['default_value' => false]),
+                    $this->setting_field(__('Username', 'wpfs'), 'social.sameUsername.username', 'text', ['depend' => 'social.sameUsername.enable']),
+                ),
+                $this->group_setting_fields(
+                    $this->setting_field(__('Facebook:', 'wpfs'), false, 'separator'),
+                    $this->setting_field(__('Active', 'wpfs'), 'social.facebook.enable', 'checkbox', ['depend' => 'social.sameUsername.enable', 'default_value' => true]),
+                    $this->setting_field(__('Profile name or url', 'wpfs'), 'social.facebook.url', 'text', ['depend' => '!social.sameUsername.enable']),
+                    $this->setting_field(__('Confirmation code', 'wpfs'), 'social.facebook.code'),
+                ),
+                $this->group_setting_fields(
+                    $this->setting_field(__('Twitter:', 'wpfs'), false, 'separator'),
+                    $this->setting_field(__('Active', 'wpfs'), 'social.twitter.enable', 'checkbox', ['depend' => 'social.sameUsername.enable', 'default_value' => true]),
+                    $this->setting_field(__('Profile name or url', 'wpfs'), 'social.twitter.url', 'text', ['depend' => '!social.sameUsername.enable']),
+                    $this->setting_field(__('Confirmation code', 'wpfs'), 'social.twitter.code'),
+                ),
+                $this->group_setting_fields(
+                    $this->setting_field(__('Linkedin:', 'wpfs'), false, 'separator'),
+                    $this->setting_field(__('Active', 'wpfs'), 'social.linkedin.enable', 'checkbox', ['depend' => 'social.sameUsername.enable', 'default_value' => true]),
+                    $this->setting_field(__('Profile name or url', 'wpfs'), 'social.linkedin.url', 'text', ['depend' => '!social.sameUsername.enable']),
+                ),
+                $this->group_setting_fields(
+                    $this->setting_field(__('Pinterest:', 'wpfs'), false, 'separator'),
+                    $this->setting_field(__('Active', 'wpfs'), 'social.pinterest.enable', 'checkbox', ['depend' => 'social.sameUsername.enable', 'default_value' => true]),
+                    $this->setting_field(__('Profile name or url', 'wpfs'), 'social.pinterest.url', 'text', ['depend' => '!social.sameUsername.enable']),
+                    $this->setting_field(__('Confirmation code', 'wpfs'), 'social.pinterest.code'),
+                ),
+                $this->group_setting_fields(
+                    $this->setting_field(__('Instagram:', 'wpfs'), false, 'separator'),
+                    $this->setting_field(__('Active', 'wpfs'), 'social.instagram.enable', 'checkbox', ['depend' => 'social.sameUsername.enable', 'default_value' => true]),
+                    $this->setting_field(__('Profile name or url', 'wpfs'), 'social.instagram.url', 'text', ['depend' => '!social.sameUsername.enable']),
+                ),
+                $this->group_setting_fields(
+                    $this->setting_field(__('YouTube:', 'wpfs'), false, 'separator'),
+                    $this->setting_field(__('Active', 'wpfs'), 'social.youtube.enable', 'checkbox', ['depend' => 'social.sameUsername.enable', 'default_value' => false]),
+                    $this->setting_field(__('Profile name or url', 'wpfs'), 'social.youtube.url', 'text', ['depend' => '!social.sameUsername.enable']),
+                ),
+                $this->group_setting_fields(
+                    $this->setting_field(__('Tumblr:', 'wpfs'), false, 'separator'),
+                    $this->setting_field(__('Active', 'wpfs'), 'social.tumblr.enable', 'checkbox', ['depend' => 'social.sameUsername.enable', 'default_value' => false]),
+                    $this->setting_field(__('Profile name or url', 'wpfs'), 'social.tumblr.url', 'text', ['depend' => '!social.sameUsername.enable']),
+                ),
+                $this->group_setting_fields(
+                    $this->setting_field(__('Yelp:', 'wpfs'), false, 'separator'),
+                    $this->setting_field(__('Active', 'wpfs'), 'social.yelp.enable', 'checkbox', ['depend' => 'social.sameUsername.enable', 'default_value' => false]),
+                    $this->setting_field(__('Profile name or url', 'wpfs'), 'social.yelp.url', 'text', ['depend' => '!social.sameUsername.enable']),
+                ),
+                $this->group_setting_fields(
+                    $this->setting_field(__('SoundCloud:', 'wpfs'), false, 'separator'),
+                    $this->setting_field(__('Active', 'wpfs'), 'social.soundcloud.enable', 'checkbox', ['depend' => 'social.sameUsername.enable', 'default_value' => false]),
+                    $this->setting_field(__('Profile name or url', 'wpfs'), 'social.soundcloud.url', 'text', ['depend' => '!social.sameUsername.enable']),
+                ),
+                $this->group_setting_fields(
+                    $this->setting_field(__('WikiPedia:', 'wpfs'), false, 'separator'),
+                    $this->setting_field(__('Active', 'wpfs'), 'social.wikipedia.enable', 'checkbox', ['depend' => 'social.sameUsername.enable', 'default_value' => false]),
+                    $this->setting_field(__('Profile name or url', 'wpfs'), 'social.wikipedia.url', 'text', ['depend' => '!social.sameUsername.enable'])
+                )
+            );
 
-            if ($post_type_object->has_archive) {
+            $fields['webmaster'] = $this->group_setting_fields(
+                $this->group_setting_fields(
+                    $this->setting_field(__('Google:', 'wpfs'), false, 'separator'),
+                    $this->setting_field(__('Verification code', 'wpfs'), 'webmaster.google.vercode'),
+                ),
+                $this->group_setting_fields(
+                    $this->setting_field(__('Bing:', 'wpfs'), false, 'separator'),
+                    $this->setting_field(__('Verification code', 'wpfs'), 'webmaster.bing.vercode'),
+                ),
+                $this->group_setting_fields(
+                    $this->setting_field(__('Yandex:', 'wpfs'), false, 'separator'),
+                    $this->setting_field(__('Verification code', 'wpfs'), 'webmaster.yandex.vercode'),
+                ),
+                $this->group_setting_fields(
+                    $this->setting_field(__('Baidu:', 'wpfs'), false, 'separator'),
+                    $this->setting_field(__('Verification code', 'wpfs'), 'webmaster.baidu.vercode')
+                ),
+            );
 
-                $archive_name = ucwords($post_type_object->label) . ($post_type_object->_builtin ? "" : " ({$post_type_object->name})");
+            $fields['archives'] = $this->group_setting_fields(
+                $this->group_setting_fields(
+                    $this->setting_field(__('Date archive:', 'wpfs'), false, 'separator'),
+                    $this->setting_field(__('Status', 'wpfs'), 'archives.date.active', 'checkbox', ['default_value' => false]),
+                    $this->setting_field(__('Show date archive in search results', 'wpfs'), 'archives.date.show', 'checkbox', ['default_value' => false, 'parent' => 'archives.date.active']),
+                    $this->setting_field(__('Title', 'wpfs'), 'archives.date.title', 'text', ['parent' => 'archives.date.active']),
+                    $this->setting_field(__('Meta description', 'wpfs'), 'archives.date.meta_desc', 'textarea', ['parent' => 'archives.date.active']),
+                    $this->setting_field(__('Keywords', 'wpfs'), 'archives.date.keywords', 'text', ['parent' => 'archives.date.active']),
+                ),
+                $this->group_setting_fields(
+                    $this->setting_field(__('Author archive:', 'wpfs'), false, 'separator'),
+                    $this->setting_field(__('Status', 'wpfs'), 'archives.author.active', 'checkbox', ['default_value' => true]),
+                    $this->setting_field(__('Show author archive in search results', 'wpfs'), 'archives.author.show', 'checkbox', ['default_value' => true, 'parent' => 'archives.author.active']),
+                    $this->setting_field(__('Title', 'wpfs'), 'archives.author.title', 'text', ['parent' => 'archives.author.active']),
+                    $this->setting_field(__('Meta description', 'wpfs'), 'archives.author.meta_desc', 'textarea', ['parent' => 'archives.author.active']),
+                    $this->setting_field(__('Keywords', 'wpfs'), 'archives.author.keywords', 'text', ['parent' => 'archives.author.active'])
+                ),
+            );
 
-                $fields['archives'] = array_merge(
-                    $fields['archives'],
+            $fields['schema.org'] = $this->group_setting_fields(
+                $this->setting_field(__('Schema settings:', 'wpfs'), false, 'separator'),
+                $this->setting_field(__('Active', 'wpfs'), 'schema.enabled', 'checkbox', ['default_value' => true]),
+                $this->setting_field(__('Organization', 'wpfs'), 'schema.organization.is', 'checkbox', ['parent' => 'schema.enabled', 'default_value' => false]),
+                $this->setting_field(__('Organization Type', 'wpfs'), 'schema.organization.type', 'dropdown', ['parent' => 'schema.organization.is', 'default_value' => 'Corporation', 'list' => [
+                    "Airline",
+                    "Consortium",
+                    "Corporation",
+                    "EducationalOrganization",
+                    "FundingScheme",
+                    "GovernmentOrganization",
+                    "LibrarySystem",
+                    "LocalBusiness",
+                    "MedicalOrganization",
+                    "NewsMediaOrganization",
+                    "OnlineBusiness",
+                    "PerformingGroup",
+                    "Project",
+                    "ResearchOrganization",
+                    "SearchRescueOrganization",
+                    "SportsOrganization",
+                    "WorkersUnion"
+                ]]),
+                $this->setting_field(__('Name', 'wpfs'), 'schema.organization.name', 'text', ['parent' => 'schema.organization.is']),
+                $this->setting_field(__('Description', 'wpfs'), 'schema.organization.description', 'text', ['parent' => 'schema.organization.is']),
+                $this->setting_field(__('Address', 'wpfs'), 'schema.organization.address', 'text', ['parent' => 'schema.organization.is']),
+                $this->setting_field(__('Founders (comma separated)', 'wpfs'), 'schema.organization.founder', 'text', ['parent' => 'schema.organization.is']),
+                $this->setting_field(__('Logo', 'wpfs'), 'schema.organization.logo', 'upload-input', ['parent' => 'schema.organization.is', 'placeholder' => __('Paste your image URL or select a new image', 'wpfs')]),
+                $this->setting_field(__('Contact Type', 'wpfs'), 'schema.organization.contact_type', 'dropdown', ['parent' => 'schema.organization.is', 'list' => [
+                    "Customer Service",
+                    "Technical Support",
+                    "Billing Support",
+                    "Bill Payment",
+                    "Sales",
+                    "Reservations",
+                    "Credit Card Support",
+                    "Emergency",
+                    "Baggage Tracking",
+                    "Roadside Assistance",
+                    "Package Tracking"
+                ]]),
+                $this->setting_field(__('Phone', 'wpfs'), 'schema.organization.phone', 'text', ['parent' => 'schema.organization.is']),
+                $this->setting_field(__('E-mail', 'wpfs'), 'schema.organization.email', 'text', ['parent' => 'schema.organization.is']),
+                $this->setting_field(__('Enable Sitelinks Search Box', 'wpfs'), 'schema.sitelink', 'checkbox', ['parent' => 'schema.enabled', 'default_value' => false])
+            );
+
+            //settings for each taxonomy
+            foreach (get_taxonomies(array('public' => true), 'objects') as $tax_type_object) {
+
+                $field_name = "tax.$tax_type_object->name";
+
+                $fields[$tax_type_object->name] = $this->group_setting_fields(
                     $this->group_setting_fields(
-                        $this->setting_field(sprintf(__('%s archive:', 'wpfs'), $archive_name), false, 'separator'),
-                        $this->setting_field(__('Status', 'wpfs'), "archives.{$post_type}.active", 'checkbox', ['default_value' => true]),
-                        $this->setting_field(sprintf(__('Show %s archive in search results', 'wpfs'), $archive_name), "archives.{$post_type}.show", 'checkbox', ['default_value' => true, 'parent' => "archives.{$post_type}.active"]),
-                        $this->setting_field(__('Title', 'wpfs'), "archives.{$post_type}.title", 'text', ['parent' => "archives.{$post_type}.active"]),
-                        $this->setting_field(__('Meta description', 'wpfs'), "archives.{$post_type}.meta_desc", 'textarea', ['parent' => "archives.{$post_type}.active"]),
-                        $this->setting_field(__('Keywords', 'wpfs'), "archives.{$post_type}.keywords", 'text', ['parent' => "archives.{$post_type}.active"])
-                    ));
+                        $this->setting_field(ucwords($tax_type_object->label) . ($tax_type_object->_builtin ? "" : " ({$tax_type_object->name})"), false, 'separator'),
+                        $this->setting_field(__('Status', 'wpfs'), "$field_name.active", 'checkbox', ['default_value' => true]),
+                        $this->setting_field(sprintf(__("Show \"<i>%s</i>\" in search results", 'wpfs'), $tax_type_object->label), "$field_name.show", 'checkbox', ['default_value' => true, 'parent' => "$field_name.active"]),
+                        $this->setting_field(__('Title', 'wpfs'), "$field_name.title", 'text', ['default_value' => '%%title%%', 'parent' => "$field_name.active"]),
+                        $this->setting_field(__('Meta description', 'wpfs'), "$field_name.meta_desc", 'textarea', ['parent' => "$field_name.active"]),
+                        $this->setting_field(__('Keywords', 'wpfs'), "$field_name.keywords", 'text', ['parent' => "$field_name.active"]),
+                        $this->setting_field(__('Remove type prefix', 'wpfs'), "$field_name.prefix", 'checkbox', ['default_value' => false, 'parent' => "$field_name.active"])
+                    )
+                );
             }
 
-            $fields[$post_type] = $this->group_setting_fields(
-                $this->setting_field(ucwords($post_type_object->label) . ($post_type_object->_builtin ? "" : " ({$post_type_object->name})"), false, 'separator'),
-                $this->setting_field(sprintf(__("Show <i>\"%s\"</i> in search results", 'wpfs'), $post_type_sanitized), "post_type.{$post_type}.show", 'checkbox', ['default_value' => true]),
-                $this->setting_field(__("Follow link directive", 'wpfs'), "post_type.{$post_type}.follow", 'checkbox', ['default_value' => true]),
-                $this->setting_field(__('Title', 'wpfs'), "post_type.{$post_type}.title", 'text', ['default_value' => '%%title%%']),
-                $this->setting_field(__('Meta description', 'wpfs'), "post_type.{$post_type}.meta_desc", 'textarea'),
-                $this->setting_field(__('Keywords', 'wpfs'), "post_type.{$post_type}.keywords"),
-                $post_type === 'page' ?
-                    $this->setting_field(sprintf(__('Predefined %s schema.org type', 'wpfs'), $post_type_sanitized), "post_type.{$post_type}.schema.pageType", 'dropdown', ['list' => Schema::$webPageGraphs, 'default_value' => 'WebPage']) :
-                    $this->setting_field(sprintf(__('Predefined %s schema.org type', 'wpfs'), $post_type_sanitized), "post_type.{$post_type}.schema.articleType", 'dropdown', ['list' => Schema::$webArticleGraphs, 'default_value' => 'Article']),
-            );
+            //settings for each post type
+            foreach (get_post_types(array('public' => true), 'objects') as $post_type_object) {
+
+                $post_type = $post_type_object->name;
+
+                $post_type_sanitized = str_replace(array('-', '_'), ' ', $post_type);
+
+                if ($post_type_object->has_archive) {
+
+                    $archive_name = ucwords($post_type_object->label) . ($post_type_object->_builtin ? "" : " ({$post_type_object->name})");
+
+                    $fields['archives'][] = $this->group_setting_fields(
+                        $this->setting_field(sprintf(__('%s archive:', 'wpfs'), $archive_name), false, 'separator'),
+                        $this->setting_field(__('Status', 'wpfs'), "archives.$post_type.active", 'checkbox', ['default_value' => true]),
+                        $this->setting_field(sprintf(__('Show %s archive in search results', 'wpfs'), $archive_name), "archives.$post_type.show", 'checkbox', ['default_value' => true, 'parent' => "archives.$post_type.active"]),
+                        $this->setting_field(__('Title', 'wpfs'), "archives.$post_type.title", 'text', ['parent' => "archives.$post_type.active"]),
+                        $this->setting_field(__('Meta description', 'wpfs'), "archives.$post_type.meta_desc", 'textarea', ['parent' => "archives.$post_type.active"]),
+                        $this->setting_field(__('Keywords', 'wpfs'), "archives.$post_type.keywords", 'text', ['parent' => "archives.$post_type.active"])
+                    );
+                }
+
+                $fields[$post_type] = $this->group_setting_fields(
+                    $this->group_setting_fields(
+                        $this->setting_field(ucwords($post_type_object->label) . ($post_type_object->_builtin ? "" : " ($post_type_object->name)"), false, 'separator'),
+                        $this->setting_field(sprintf(__("Show <i>\"%s\"</i> in search results", 'wpfs'), $post_type_sanitized), "post_type.$post_type.show", 'checkbox', ['default_value' => true]),
+                        $this->setting_field(__("Follow link directive", 'wpfs'), "post_type.$post_type.follow", 'checkbox', ['default_value' => true]),
+                        $this->setting_field(__('Title', 'wpfs'), "post_type.$post_type.title", 'text', ['default_value' => '%%title%%']),
+                        $this->setting_field(__('Meta description', 'wpfs'), "post_type.$post_type.meta_desc", 'textarea'),
+                        $this->setting_field(__('Keywords', 'wpfs'), "post_type.$post_type.keywords"),
+                        $post_type === 'page' ?
+                            $this->setting_field(sprintf(__('Predefined %s schema.org type', 'wpfs'), $post_type_sanitized), "post_type.$post_type.schema.PageType", 'dropdown', ['list' => Schema::$webPageGraphs, 'default_value' => 'WebPage']) :
+                            $this->setting_field(sprintf(__('Predefined %s schema.org type', 'wpfs'), $post_type_sanitized), "post_type.$post_type.schema.ArticleType", 'dropdown', ['list' => Schema::$webArticleGraphs, 'default_value' => 'Article']),
+                    )
+                );
+            }
         }
 
         return $this->group_setting_sections($fields, $filter);
@@ -400,9 +412,8 @@ class Mod_seo extends Module
 
     /**
      * Handle the gui for exec-sql panel
-     * @return string
      */
-    public function render_replacers()
+    public function render_replacers(): string
     {
         ob_start();
         ?>
@@ -485,7 +496,7 @@ class Mod_seo extends Module
         return ob_get_clean();
     }
 
-    public function restricted_access($context = 'settings')
+    public function restricted_access($context = 'settings'): bool
     {
         switch ($context) {
 
@@ -497,6 +508,13 @@ class Mod_seo extends Module
             default:
                 return false;
         }
+    }
+
+    protected function init(): void
+    {
+        require_once WPFS_MODULES . 'seo/WPFS_SEO.php';
+
+        WPFS_SEO::Init();
     }
 }
 

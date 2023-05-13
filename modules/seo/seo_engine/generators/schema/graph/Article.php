@@ -7,7 +7,6 @@
 
 namespace FlexySEO\Engine\Generators\Schema\Graphs;
 
-use FlexySEO\Engine\Generators\CommonGraphs;
 use FlexySEO\Engine\Generators\GraphBuilder;
 use FlexySEO\Engine\Helpers\CurrentPage;
 
@@ -24,7 +23,7 @@ class Article extends Graph
      * @param ...$args
      * @return GraphBuilder The graph data.
      */
-    public function get(CurrentPage $currentPage, string $type = 'Article', ...$args)
+    public function get(CurrentPage $currentPage, string $type = 'Article', ...$args): GraphBuilder
     {
         $post = $currentPage->get_queried_object();
 
@@ -42,14 +41,14 @@ class Article extends Graph
         }
 
         $url = $this->generator->get_permalink();
-        $articleID = "{$url}#" . strtolower($type);
+        $articleID = "$url#" . strtolower($type);
 
         $schema = new GraphBuilder([
             '@type'            => $type,
             '@id'              => $articleID,
             'name'             => $this->generator->generate_title(),
             'description'      => $this->generator->get_description(),
-            'inLanguage'       => wpfseo()->language->currentLanguageCodeBCP47(),
+            'inLanguage'       => wpfseo('helpers')->language->currentLanguageCodeBCP47(),
             'headline'         => apply_filters('wpfs_post_title', $this->generator->generate_title(), $post),
             'author'           => [
                 '@id' => Person::getSchemaID($post->post_author),
@@ -67,7 +66,7 @@ class Article extends Graph
             'commentCount'     => wp_count_comments($post->ID)->approved,
         ]);
 
-        if (shzn('wpfs')->settings->get("seo.schema.organization.is", false)) {
+        if (wps('wpfs')->settings->get("seo.schema.organization.is", false)) {
             $schema->set(
                 'publisher',
                 ['@id' => Organization::getSchemaID()]

@@ -19,13 +19,13 @@ class ECommerce
      * @return bool     Whether the current page is the WooCommerce shop page.
      *
      */
-    public function isWooCommerceShopPage($id = 0)
+    public function isWooCommerceShopPage($id = 0): bool
     {
         if (!$this->isWooCommerceActive()) {
             return false;
         }
 
-        if (!is_admin() && !wpfseo()->isAjaxCronRest() && function_exists('is_shop')) {
+        if (!is_admin() && !wpfseo('helpers')->isAjaxCronRest() && function_exists('is_shop')) {
             return is_shop();
         }
 
@@ -38,7 +38,7 @@ class ECommerce
      *
      * @return boolean Whether WooCommerce is active.
      */
-    public function isWooCommerceActive()
+    public function isWooCommerceActive(): bool
     {
         return class_exists('woocommerce');
     }
@@ -49,13 +49,13 @@ class ECommerce
      * @param int $id The post ID to check against (optional).
      * @return bool     Whether the current page is the WooCommerce cart page.
      */
-    public function isWooCommerceCartPage($id = 0)
+    public function isWooCommerceCartPage($id = 0): bool
     {
         if (!$this->isWooCommerceActive()) {
             return false;
         }
 
-        if (!is_admin() && !wpfseo()->isAjaxCronRest() && function_exists('is_cart')) {
+        if (!is_admin() && !wpfseo('helpers')->isAjaxCronRest() && function_exists('is_cart')) {
             return is_cart();
         }
 
@@ -69,13 +69,13 @@ class ECommerce
      * @param int $id The post ID to check against (optional).
      * @return bool     Whether the current page is the WooCommerce checkout page.
      */
-    public function isWooCommerceCheckoutPage($id = 0)
+    public function isWooCommerceCheckoutPage($id = 0): bool
     {
         if (!$this->isWooCommerceActive()) {
             return false;
         }
 
-        if (!is_admin() && !wpfseo()->isAjaxCronRest() && function_exists('is_checkout')) {
+        if (!is_admin() && !wpfseo('helpers')->isAjaxCronRest() && function_exists('is_checkout')) {
             return is_checkout();
         }
 
@@ -89,13 +89,13 @@ class ECommerce
      * @param int $id The post ID to check against (optional).
      * @return bool     Whether the current page is the WooCommerce account page.
      */
-    public function isWooCommerceAccountPage($id = 0)
+    public function isWooCommerceAccountPage($id = 0): bool
     {
         if (!$this->isWooCommerceActive()) {
             return false;
         }
 
-        if (!is_admin() && !wpfseo()->isAjaxCronRest() && function_exists('is_account_page')) {
+        if (!is_admin() && !wpfseo('helpers')->isAjaxCronRest() && function_exists('is_account_page')) {
             return is_account_page();
         }
 

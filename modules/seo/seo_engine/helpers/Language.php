@@ -14,22 +14,16 @@ class Language
 {
     /**
      * Returns the language of the current response in BCP 47 format.
-     *
-     * @return string The language code in BCP 47 format.
-     *
      */
-    public function currentLanguageCodeBCP47()
+    public function currentLanguageCodeBCP47(): string
     {
         return str_replace('_', '-', $this->currentLanguageCode());
     }
 
     /**
      * Returns the language of the current response.
-     *
-     * @return string The language code.
-     *
      */
-    public function currentLanguageCode()
+    public function currentLanguageCode(): string
     {
         global $wp_version;
         if (version_compare($wp_version, '5.0', '<')) {

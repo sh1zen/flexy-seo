@@ -36,13 +36,13 @@ class GraphUtility
 
         if ($authorId) {
             $socialUrls = [
-                'this' => shzn()->utility->home_url,
+                'this' => wps_utils()->home_url,
             ];
         }
         else {
 
-            if (shzn('wpfs')->settings->get("seo.social.sameUsername.enable", false)) {
-                $sameUsername = shzn('wpfs')->settings->get("seo.social.sameUsername.username", '');
+            if (wps('wpfs')->settings->get("seo.social.sameUsername.enable", false)) {
+                $sameUsername = wps('wpfs')->settings->get("seo.social.sameUsername.username", '');
                 if (empty($sameUsername)) {
                     return $socialUrls;
                 }
@@ -51,10 +51,10 @@ class GraphUtility
             foreach ($urls as $name => $value) {
 
                 if ($sameUsername) {
-                    $username = shzn('wpfs')->settings->get("seo.social.{$name}.enable", true) ? $sameUsername : '';
+                    $username = wps('wpfs')->settings->get("seo.social.{$name}.enable", true) ? $sameUsername : '';
                 }
                 else {
-                    $username = shzn('wpfs')->settings->get("seo.social.{$name}.url", '');
+                    $username = wps('wpfs')->settings->get("seo.social.{$name}.url", '');
                 }
 
                 if (!empty($username)) {

@@ -7,10 +7,10 @@
 
 namespace FlexySEO\core;
 
-use SHZN\core\UtilEnv;
+use WPS\core\UtilEnv;
 
 /**
- * Main class, used to setup the plugin
+ * Main class, used to set up the plugin
  */
 class PluginInit
 {
@@ -42,7 +42,7 @@ class PluginInit
             $this->register_actions();
         }
 
-        $this->load_textdomain('wpfs');
+        $this->load_textdomain();
 
         $this->maybe_upgrade();
     }
@@ -59,35 +59,36 @@ class PluginInit
 
     /**
      * Loads text domain for the plugin.
-     *
-     * @param $domain
-     * @return bool
-     * @action plugins_loaded
      */
-    private function load_textdomain($domain)
+    private function load_textdomain(): void
     {
-        $locale = apply_filters('wpfs_plugin_locale', get_locale(), $domain);
+        $locale = apply_filters('wpfs_plugin_locale', get_locale(), 'wpfs');
 
-        $mo_file = $domain . '-' . $locale . '.mo';
+        $mo_file = 'wpfs' . '-' . $locale . '.mo';
 
-        if (load_textdomain($domain, WP_LANG_DIR . '/plugins/flexy-seo/' . $mo_file)) {
-            return true;
+        if (load_textdomain('wpfs', WP_LANG_DIR . '/plugins/flexy-seo/' . $mo_file)) {
+            return;
         }
 
-        return load_textdomain($domain, WPFS_ABSPATH . 'languages/' . $mo_file);
+        load_textdomain('wpfs', WPFS_ABSPATH . 'languages/' . $mo_file);
     }
 
     private function maybe_upgrade()
     {
-        $version = shzn('wpfs')->settings->get('ver', false);
+        $version = wps('wpfs')->settings->get('ver', false);
 
         // need upgrade
         if (!$version or version_compare($version, WPFS_VERSION, '<')) {
-            require_once __DIR__ . '/upgrader.php';
+
+            wps_run_upgrade('wpfs', WPFS_VERSION, WPFS_ADMIN . "upgrades/");
+
+            wps_utils()->is_upgrading(true);
+
+            wps('wpfs')->moduleHandler->upgrade();
         }
     }
 
-    public static function getInstance()
+    public static function getInstance(): PluginInit
     {
         if (!isset(self::$_instance)) {
             return self::Initialize();
@@ -96,7 +97,7 @@ class PluginInit
         return self::$_instance;
     }
 
-    public static function Initialize()
+    public static function Initialize(): PluginInit
     {
         $object = self::$_instance = new self();
 
@@ -109,14 +110,14 @@ class PluginInit
             /**
              * Instancing all modules that need to interact in the Ajax process
              */
-            shzn('wpfs')->moduleHandler->setup_modules('ajax');
+            wps('wpfs')->moduleHandler->setup_modules('ajax');
         }
         elseif (wp_doing_cron()) {
 
             /**
              * Instancing all modules that need to interact in the cron process
              */
-            shzn('wpfs')->moduleHandler->setup_modules('cron');
+            wps('wpfs')->moduleHandler->setup_modules('cron');
         }
         elseif (is_admin()) {
 
@@ -130,20 +131,20 @@ class PluginInit
             /**
              * Instancing all modules that need to interact in admin area
              */
-            shzn('wpfs')->moduleHandler->setup_modules('admin');
+            wps('wpfs')->moduleHandler->setup_modules('admin');
         }
         else {
 
             /**
              * Instancing all modules that need to interact only on the web-view
              */
-            shzn('wpfs')->moduleHandler->setup_modules('web-view');
+            wps('wpfs')->moduleHandler->setup_modules('web-view');
         }
 
         /**
          * Instancing all modules that need to be always loaded
          */
-        shzn('wpfs')->moduleHandler->setup_modules('autoload');
+        wps('wpfs')->moduleHandler->setup_modules('autoload');
 
         return self::$_instance;
     }
@@ -153,8 +154,6 @@ class PluginInit
      *
      * @param boolean $network_wide Is network wide.
      * @return void
-     *
-     * @access public
      */
     public function plugin_activation($network_wide)
     {
@@ -174,7 +173,7 @@ class PluginInit
 
     private function activate()
     {
-        shzn('wpfs')->settings->activate();
+        wps('wpfs')->settings->activate();
 
         /**
          * Hook for the plugin activation
@@ -188,8 +187,6 @@ class PluginInit
      *
      * @param boolean $network_wide Is network wide.
      * @return void
-     *
-     * @access public
      */
     public function plugin_deactivation($network_wide)
     {

@@ -3,17 +3,17 @@ Contributors: sh1zen
 Tags: SEO, Breadcrumbs, Content analysis, Readability, Schema, Ranking, SERP
 Donate link: https://www.paypal.com/donate?business=dev.sh1zen%40outlook.it&item_name=Thank+you+in+advanced+for+the+kind+donations.+You+will+sustain+me+developing+FlexySEO.&currency_code=EUR
 Requires at least: 5.0.0
-Tested up to: 6.2
+Tested up to: 6.4
 Requires PHP: 7.4
-Stable tag: 1.7.0
+Stable tag: 1.8.3
 License: GNU v3.0 License
 URI: https://github.com/sh1zen/flexy-seo/blob/master/LICENSE
 
-Search Engine (SEO) &amp; Performance Optimization plugin.
+Optimize your WordPress website for search engines (SEO) and improve the search engines ranking with this flexible plugin (WPFS).
 
 == Description ==
 
-Flexy SEO contains most requested features for your website seo, carrying many options to optimize and analyze it.
+Flexy SEO contains most requested features for your website seo, carrying many options to optimize and analyze the SEO of your website.
 All customizable in few and easy steps.
 
 **WHY USING Flexy SEO (WPFS)?**
@@ -52,7 +52,7 @@ WordPress plugin.
 
 **1. VIA WORDPRESS DASHBOARD**
   
-* Click on ‘Add New’ in the plugins dashboard
+* Click on 'Add New' in the plugins dashboard
 * Search for 'WP Optimizer'
 * Click ‘Install Now’ button
 * Activate the plugin from the same page or from the Plugins Dashboard
@@ -103,6 +103,18 @@ work! Otherwise, go to the new added module "Setting" and try a reset.
 
 == Changelog ==
 
+= 1.8.3 =
+
+* extended support for WordPress 6.4
+* improved core performances
+
+= 1.8.1 =
+
+* added some SEO options
+* rewritten core
+* improved performances
+* fixed some bugs
+
 = 1.7.0 =
 
 * added support to Redis, Memcached
@@ -117,7 +129,7 @@ work! Otherwise, go to the new added module "Setting" and try a reset.
 * added support notice
 * fixed some bugs
 * improved some core performances
-* updated shzn core
+* updated wps core
 * extended support to php 8.2
 
 = 1.6.0 =
@@ -204,19 +216,3 @@ work! Otherwise, go to the new added module "Setting" and try a reset.
 * improved core performances
 * improved schema generation
 * added snippet in edit-page
-
-= 1.2.3 =
-
-* fixed seo settings saving issue
-* updated hash algorithms
-* added support for custom page schema
-
-= 1.2.0 =
-
-* updated translations
-* added @schema.org support
-* added integration with WordPress media uploader
-* improved user interface
-* rewritten core code to be a shared framework with WP-Optimizer to ensure the best performances if both are installed
-* extended WordPress support to version 5.9
-* moved minimum WordPress support to version 4.6.0

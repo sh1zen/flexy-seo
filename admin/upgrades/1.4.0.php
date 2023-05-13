@@ -7,7 +7,7 @@
 
 global $wpdb;
 
-SHZN\core\UtilEnv::db_create(
+WPS\core\UtilEnv::db_create(
     "flexy_seo",
     [
         "fields"      => [
@@ -23,4 +23,4 @@ SHZN\core\UtilEnv::db_create(
     true
 );
 
-$wpdb->query("ALTER TABLE " . shzn('wpfs')->options->table_name() . " ADD UNIQUE speeder (context, item, obj_id) USING BTREE;");
+$wpdb->query("ALTER TABLE " . wps('wpfs')->options->table_name() . " ADD UNIQUE speeder (context, item, obj_id) USING BTREE;");

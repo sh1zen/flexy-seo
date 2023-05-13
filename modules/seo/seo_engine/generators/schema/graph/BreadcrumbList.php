@@ -22,7 +22,7 @@ class BreadcrumbList extends Graph
      * @param ...$args
      * @return GraphBuilder $data The graph data.
      */
-    public function get(CurrentPage $currentPage, string $type = '', ...$args)
+    public function get(CurrentPage $currentPage, string $type = '', ...$args): GraphBuilder
     {
         $breadcrumbs = \WPFS_Breadcrumb::export();
 

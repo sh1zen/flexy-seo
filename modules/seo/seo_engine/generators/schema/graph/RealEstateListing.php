@@ -27,7 +27,7 @@ class RealEstateListing extends CollectionPage
      * @param mixed ...$args
      * @return GraphBuilder $data The graph data.
      */
-    public function get(CurrentPage $currentPage, string $type = '', ...$args)
+    public function get(CurrentPage $currentPage, string $type = '', ...$args): GraphBuilder
     {
         $schema = parent::get($currentPage, $type, $args);
 

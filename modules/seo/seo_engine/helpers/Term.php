@@ -7,30 +7,30 @@
 
 namespace FlexySEO\Engine\Helpers;
 
-use FlexySEO\Engine\Txt_Replacer;
+use WPS\core\TextReplacer;
+use WPS\core\StringHelper;
 
 class Term
 {
-    public $term;
+    public ?\WP_Term $term;
 
     public function __construct($term)
     {
-        $this->term = shzn_get_term($term);
+        $this->term = wps_get_term($term);
     }
 
-    public function get_description($term = null, $default = '')
+    /**
+     * Get the WordPress Term description
+     */
+    public function get_description($term = null, $default = ''): string
     {
-        $term = shzn_get_term($term ?: $this->term);
+        $term = wps_get_term($term ?: $this->term);
 
-        if (!$term instanceof \WP_Term) {
+        if (!$term) {
             return $default;
         }
 
-        if (($description = $this->get_cache("term_{$term->term_id}")) !== false) {
-            return $description;
-        }
-
-        $description = Txt_Replacer::replace(
+        $description = TextReplacer::replace(
             $term->description,
             $term,
             'term'
@@ -40,18 +40,6 @@ class Term
             $description = $default;
         }
 
-        $this->set_cache("term_{$term->term_id}", $description);
-
-        return $description;
-    }
-
-    protected final function get_cache($cacheKey)
-    {
-        return shzn('wpfs')->cache->get($cacheKey, "term");
-    }
-
-    protected final function set_cache($cacheKey, $data)
-    {
-        return shzn('wpfs')->cache->set($cacheKey, $data, "term", true);
+        return StringHelper::escape_text($description);
     }
 }

@@ -8,15 +8,12 @@
 namespace FlexySEO\Engine\Generators\Templates;
 
 use FlexySEO\Engine\Default_Generator;
-use FlexySEO\Engine\Generators\OpenGraph;
 use FlexySEO\Engine\Helpers\CurrentPage;
+use WPS\core\StringHelper;
 
 class TermArchive_Generator extends Default_Generator
 {
-    /**
-     * @param CurrentPage $current_page
-     */
-    public function __construct($current_page)
+    public function __construct(CurrentPage $current_page)
     {
         parent::__construct($current_page);
 
@@ -26,77 +23,60 @@ class TermArchive_Generator extends Default_Generator
             $type = 'none';
         }
 
-        $this->settings_path = "seo.tax.{$type}.";
+        $this->settings_path = "seo.tax.$type.";
     }
 
-    /**
-     * Generates the robots value.
-     *
-     * @param array $robots
-     * @return array The robots value.
-     */
-    public function get_robots($robots = [])
+    public function redirect(): array
     {
-        $robots = [
-            'index'             => 'noindex',
-            'follow'            => 'follow',
-            'max-snippet'       => 'max-snippet:-1',
-            'max-image-preview' => 'max-image-preview:large',
+        if (wps('wpfs')->settings->get($this->settings_path . "active", true)) {
+            return parent::redirect();
+        }
+
+        return array(home_url('/'), 301);
+    }
+
+    public function get_robots(): array
+    {
+        return [
+            'index' => wps('wpfs')->settings->get($this->settings_path . 'show', true) ? 'index' : 'noindex'
         ];
-
-        if (shzn('wpfs')->settings->get($this->settings_path . 'show', true)) {
-            $robots['index'] = 'index';
-        }
-
-        return $robots;
     }
 
-    /**
-     * Generates the meta keywords.
-     *
-     * @param string $keywords
-     * @return string[] The meta keywords.
-     */
-    public function get_keywords(string $keywords = '')
+    public function generate_title(): string
     {
-        return parent::get_keywords(shzn('wpfs')->settings->get($this->settings_path . 'keywords', ''));
-    }
-
-    /**
-     * Generates the title structure.
-     *
-     * @param string $title
-     * @return string The title.
-     */
-    public function generate_title($title = '')
-    {
-        $value = get_metadata_raw('term', wpfseo('helpers')->term->term->term_id, 'wpfs_metaterm_title', true);
-
-        $value = apply_filters('wpfs_term_meta_title', $value, $title);
+        $value = wpfs_get_term_meta_title(wpfseo('helpers')->term->term);
 
         if (!empty($value)) {
             return $value;
         }
 
-        return parent::generate_title(shzn('wpfs')->settings->get($this->settings_path . 'title', '%%title%%'));
+        return wps('wpfs')->settings->get($this->settings_path . 'title', '%%title%%');
     }
 
-    /**
-     * Generates the title structure.
-     *
-     * @param string $description
-     * @return string The meta description.
-     */
-    public function get_description(string $description = '')
-    {
-        $value = get_metadata_raw('term', wpfseo('helpers')->term->term->term_id, 'wpfs_metaterm_description', true);
 
-        $value = apply_filters('wpfs_term_meta_description', $value, $description);
+    public function get_description(): string
+    {
+        /**
+         * Try to get the term meta description, set in WordPress Term editor and filtered.
+         */
+        $value = wpfs_get_term_meta_description(wpfseo('helpers')->term->term, false);
 
         if (!empty($value)) {
             return $value;
         }
 
-        return parent::get_description(shzn('wpfs')->settings->get($this->settings_path . 'meta_desc', $description));
+        /**
+         * Try to get the built-in WordPress Term description, set in WordPress Term editor.
+         */
+        $value = StringHelper::truncate($this->queried_object->description ?? '', 150);
+
+        if (!empty($value)) {
+            return $value;
+        }
+
+        /**
+         * Get default Term description.
+         */
+        return wps('wpfs')->settings->get($this->settings_path . 'meta_desc', '%%description%%');
     }
 }

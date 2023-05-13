@@ -9,61 +9,11 @@ namespace FlexySEO\Engine\Helpers;
 
 class Post
 {
-    public \WP_Post|null $post;
+    public ?\WP_Post $post;
 
     public function __construct($post)
     {
-        $this->post = shzn_get_post($post);
-    }
-
-    public static function get_url($post)
-    {
-        global $pagenow;
-
-        $post = shzn_get_post($post);
-
-        if (!$post) {
-            return false;
-        }
-
-        $url = false;
-
-        $file = get_post_meta($post->ID, '_wp_attached_file', true);
-
-        if ($file) {
-            // Get upload directory.
-            $uploads = wp_get_upload_dir();
-            if ($uploads && false === $uploads['error']) {
-                // Check that the upload base exists in the file location.
-                if (str_starts_with($file, $uploads['basedir'])) {
-                    // Replace file location with url location.
-                    $url = str_replace($uploads['basedir'], $uploads['baseurl'], $file);
-                }
-                elseif (str_contains($file, 'wp-content/uploads')) {
-                    // Get the directory name relative to the basedir (back compat for pre-2.7 uploads).
-                    $url = trailingslashit($uploads['baseurl'] . '/' . _wp_get_attachment_relative_path($file)) . wp_basename($file);
-                }
-                else {
-                    // It's a newly-uploaded file, therefore $file is relative to the basedir.
-                    $url = $uploads['baseurl'] . "/$file";
-                }
-            }
-        }
-
-        /*
-         * If any of the above options failed, Fallback on the GUID as used pre-2.7,
-         * not recommended to rely upon this.
-         */
-        if (!$url) {
-            $url = get_the_guid($post->ID);
-        }
-
-        // On SSL front end, URLs should be HTTPS.
-        if (is_ssl() && !is_admin() && 'wp-login.php' !== $pagenow) {
-            $url = set_url_scheme($url);
-        }
-
-        return $url;
+        $this->post = wps_get_post($post);
     }
 
     /**
@@ -73,7 +23,7 @@ class Post
      * @param null $post
      * @return array|mixed|string
      */
-    public function get_first_usable_image($size = 'large', $useContent = true, $post = null)
+    public function get_first_usable_image($size = 'large', bool $useContent = true, $post = null)
     {
         return self::mainImage($post ?: $this->post, $size, $useContent);
     }
@@ -85,14 +35,16 @@ class Post
      * @param bool $useContent
      * @return array|mixed|string
      */
-    public static function mainImage($post, $size = 'large', $useContent = true)
+    public static function mainImage($post, $size = 'large', bool $useContent = true)
     {
-        $post = shzn_get_post($post);
+        $post = wps_get_post($post);
 
-        $mainImage = shzn('wpfs')->options->get($post->ID, "mainImage", "cache", false);
+        if (is_string($size)) {
+            $mainImage = wps('wpfs')->options->get($post->ID, "mainImage-$size", "cache", false);
 
-        if ($mainImage) {
-            return $mainImage;
+            if ($mainImage) {
+                return $mainImage;
+            }
         }
 
         $mediaURL = '';
@@ -133,24 +85,17 @@ class Post
         }
         elseif ($useContent) {
 
-            $images = wpfseo()->images->get_images_from_content($post->post_content);
+            $images = wpfseo('helpers')->images->get_images_from_content($post->post_content);
 
             if ($images) {
-                $mediaURL = wpfseo()->images->removeImageDimensions($images[0]);
+                $mediaURL = wpfseo('helpers')->images->removeImageDimensions($images[0]);
             }
         }
 
-        shzn('wpfs')->options->add($post->ID, "mainImage", [$mediaID, $mediaURL], "cache", WEEK_IN_SECONDS);
-
-        return [$mediaID, $mediaURL];
-    }
-
-    public function get_thumbnail()
-    {
-        if (has_post_thumbnail($this->post)) {
-            return get_post_thumbnail_id($this->post);
+        if (is_string($size)) {
+            wps('wpfs')->options->add($post->ID, "mainImage-$size", [$mediaID, $mediaURL], "cache", MONTH_IN_SECONDS);
         }
 
-        return false;
+        return [$mediaID, $mediaURL];
     }
 }

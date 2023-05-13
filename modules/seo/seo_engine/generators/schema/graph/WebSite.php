@@ -23,9 +23,9 @@ class WebSite extends Graph
      * @param ...$args
      * @return GraphBuilder $data The graph data.
      */
-    public function get(CurrentPage $currentPage, string $type = '', ...$args)
+    public function get(CurrentPage $currentPage, string $type = '', ...$args): GraphBuilder
     {
-        $homeUrl = shzn()->utility->home_url;
+        $homeUrl = wps_utils()->home_url;
 
         $schema = new GraphBuilder([
                 '@type'       => 'WebSite',
@@ -33,18 +33,18 @@ class WebSite extends Graph
                 'url'         => $homeUrl,
                 'name'        => html_entity_decode((string)get_bloginfo('name'), ENT_QUOTES),
                 'description' => html_entity_decode((string)get_bloginfo('description'), ENT_QUOTES),
-                'inLanguage'  => wpfseo()->language->currentLanguageCodeBCP47()
+                'inLanguage'  => wpfseo('helpers')->language->currentLanguageCodeBCP47()
             ]
         );
 
         $schema->set(
             'publisher',
-            shzn('wpfs')->settings->get("seo.schema.organization.is", false) ?
+            wps('wpfs')->settings->get("seo.schema.organization.is", false) ?
                 ['@id' => Organization::getSchemaID()] :
                 Person::build(get_user_by('email', get_bloginfo('admin_email'))->ID)->export()
         );
 
-        if (shzn('wpfs')->settings->get('seo.schema.sitelink', false)) {
+        if (wps('wpfs')->settings->get('seo.schema.sitelink', false)) {
 
             $schema->set('potentialAction',
                 [
@@ -63,6 +63,6 @@ class WebSite extends Graph
 
     public static function getSchemaID()
     {
-        return shzn()->utility->home_url . '#website';
+        return wps_utils()->home_url . '#website';
     }
 }

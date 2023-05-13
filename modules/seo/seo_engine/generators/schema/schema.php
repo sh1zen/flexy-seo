@@ -84,7 +84,7 @@ class Schema
 
         if ($this->generator->getContext()->is_homepage()) {
 
-            if (shzn('wpfs')->settings->get("seo.schema.organization.is", false)) {
+            if (wps('wpfs')->settings->get("seo.schema.organization.is", false)) {
                 $this->add('Organization');
             }
 
@@ -95,7 +95,7 @@ class Schema
                 $this->add('WebPage');
             }
         }
-        elseif ($this->generator->getContext()->is_posts_page() or $this->generator->getContext()->is_home_posts_page() or wpfseo()->ecommerce->isWooCommerceShopPage()) {
+        elseif ($this->generator->getContext()->is_posts_page() or $this->generator->getContext()->is_home_posts_page() or wpfseo('helpers')->ecommerce->isWooCommerceShopPage()) {
 
             $this->add('CollectionPage');
         }
@@ -177,7 +177,7 @@ class Schema
      * @param  $post \WP_Post  The post object.
      * @return string[] The graph name(s).
      */
-    public function getPostGraphs($post)
+    public function getPostGraphs($post): array
     {
         $postGraphs = [];
 
@@ -200,12 +200,7 @@ class Schema
     {
         $for = $post->post_type === 'page' ? 'Page' : 'Article';
 
-        return shzn('wpfs')->options->get(
-            $post->ID,
-            "graph{$for}Type",  //graphArticleType or graphPageType
-            "customMeta",
-            shzn('wpfs')->settings->get("seo.post_type.{$post->post_type}.schema.{$for}Type", $post->post_type === 'page' ? "WebPage" : "Article")
-        );
+        return wpfs_get_post_meta_graphType($post, false, '') ?: wps('wpfs')->settings->get("seo.post_type.{$post->post_type}.schema.{$for}Type", $post->post_type === 'page' ? "WebPage" : "Article");
     }
 
     private function parse_graphs()
@@ -224,12 +219,8 @@ class Schema
      *
      * Ensure the values are unique.
      * Only 1 value? Use that value without the array wrapping.
-     *
-     * @param array $piece The graph piece.
-     *
-     * @return array The graph piece.
      */
-    private function validate_type($piece)
+    private function validate_type(array $piece): array
     {
         if (!isset($piece['@type']) or !\is_array($piece['@type'])) {
             // No type to validate.
@@ -252,11 +243,8 @@ class Schema
 
     /**
      * Strips HTML and removes all blank properties in each of our graphs.
-     *
-     * @param array $data The graph data.
-     * @return array       The cleaned graph data.
      */
-    private function cleanData($data)
+    private function cleanData(array $data): array
     {
         foreach ($data as $k => $v) {
 
@@ -280,18 +268,15 @@ class Schema
         return $data;
     }
 
-    public function __toString()
+    public function __toString(): string
     {
         return "<script type=application/ld+json>" . $this->export() . "</script>";
     }
 
     /**
      * Returns the JSON schema for the requested page.
-     *
-     * @return \string The JSON schema.
-     *
      */
-    public function export()
+    public function export(): string
     {
         return WPFS_DEBUG ? wp_json_encode($this->schema, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) : wp_json_encode($this->schema);
     }

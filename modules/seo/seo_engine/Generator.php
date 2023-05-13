@@ -10,27 +10,37 @@ namespace FlexySEO\Engine;
 use FlexySEO\Engine\Generators\OpenGraph;
 use FlexySEO\Engine\Generators\TwitterCard;
 use FlexySEO\Engine\Helpers\CurrentPage;
+use WPS\core\StringHelper;
+use WPS\core\TextReplacer;
 
 class Generator
 {
-    protected CurrentPage $current_page;
+    private static int $instances_created = 0;
 
-    /**
-     * @var \FlexySEO\Engine\Default_Generator
-     */
-    private $template;
+    private CurrentPage $current_page;
+
+    private Default_Generator $template;
+
+    private string $cache_key;
+
+    private string $query_type;
 
     public function __construct(CurrentPage $current_page)
     {
         $this->current_page = $current_page;
+
+        // different caches for different instances
+        $this->cache_key = 'generator-' . self::$instances_created++;
+
+        $this->query_type = $this->current_page->get_query_type();
     }
 
-    public function getContext()
+    public function getContext(): CurrentPage
     {
         return $this->current_page;
     }
 
-    public function redirect()
+    public function redirect(): array
     {
         return $this->template->redirect();
     }
@@ -72,23 +82,23 @@ class Generator
         $this->template = $generator;
     }
 
-    public function site_verification_codes()
+    public function site_verification_codes(): array
     {
         $codes = [];
 
-        if (!empty($code = shzn('wpfs')->settings->get('seo.webmaster.google.vercode', ''))) {
+        if (!empty($code = wps('wpfs')->settings->get('seo.webmaster.google.vercode', ''))) {
             $codes['google-site-verification'] = $code;
         }
 
-        if (!empty($code = shzn('wpfs')->settings->get('seo.webmaster.baidu.vercode', ''))) {
+        if (!empty($code = wps('wpfs')->settings->get('seo.webmaster.baidu.vercode', ''))) {
             $codes['baidu-site-verification'] = $code;
         }
 
-        if (!empty($code = shzn('wpfs')->settings->get('seo.webmaster.bing.vercode', ''))) {
+        if (!empty($code = wps('wpfs')->settings->get('seo.webmaster.bing.vercode', ''))) {
             $codes['msvalidate.01'] = $code;
         }
 
-        if (!empty($code = shzn('wpfs')->settings->get('seo.webmaster.yandex.vercode', ''))) {
+        if (!empty($code = wps('wpfs')->settings->get('seo.webmaster.yandex.vercode', ''))) {
             $codes['yandex-verification'] = $code;
         }
 
@@ -97,109 +107,125 @@ class Generator
 
     /**
      * Generates the robots value.
-     *
-     * @param array $robots
-     * @return array The robots value.
      */
-    public function get_robots($robots = array())
+    public function get_robots(): array
     {
-        return $this->template->get_robots($robots);
+        $robots = array_merge(
+            [
+                'index'             => 'index',
+                'follow'            => 'follow',
+                'max-snippet'       => 'max-snippet:-1',
+                'max-image-preview' => 'max-image-preview:large',
+                'max-video-preview' => 'max-video-preview:-1',
+            ],
+            $this->template->get_robots()
+        );
+
+        return apply_filters('wpfs_robots', $robots, $this->current_page->get_page_type(), $this->current_page);
     }
 
     /**
      * Generates the meta keywords.
-     *
-     * @param string $keywords
-     * @return string[] The meta keywords.
      */
-    public function get_keywords(string $keywords = '')
+    public function get_keywords(): string
     {
-        if (($keys = $this->get_cache("keywords")) !== false) {
-            return maybe_unserialize($keys);
+        if (($cached = $this->get_cache("keywords")) !== false) {
+            return $cached;
         }
 
-        $keywords = $this->template->get_keywords($keywords);
+        $keywords_pre = $this->template->get_keywords();
 
-        if (is_array($keywords)) {
-            $keywords = implode(',', $keywords);
-        }
+        // filter general generation
+        $keywords_pre = apply_filters('wpfs_keywords', $keywords_pre, $this->current_page->get_page_type(), $this->current_page);
 
-        $keywords = preg_split("/[\s,]+/", trim($keywords, " ,\t\n\r\0\x0B"));
+        // filter typed generation
+        $keywords_pre = apply_filters("wpfs_keywords_$this->query_type", $keywords_pre);
 
-        $keywords = array_filter((array)$keywords);
+        // remove white multiple spaces new lines...
+        $keywords = StringHelper::clear($keywords_pre);
 
-        $this->set_cache("keywords", maybe_serialize($keywords));
+        $keywords = TextReplacer::replace(
+            $keywords,
+            $this->current_page->get_queried_object(),
+            $this->query_type
+        );
+
+        $keywords = StringHelper::filter_text($keywords, true);
+
+        // keep just words and commas
+        $keywords = preg_replace('#\W*,+\W*#', ', ', $keywords);
+        $keywords = trim($keywords, ' ,');
+
+        $keywords = StringHelper::escape_text($keywords);
+
+        $this->set_cache("keywords", $keywords);
 
         return $keywords;
     }
 
-    protected final function get_cache($cacheKey)
+    private function get_cache($cacheKey)
     {
-        return shzn('wpfs')->cache->get($cacheKey, "generator");
+        return wps('wpfs')->cache->get($cacheKey, $this->cache_key);
     }
 
-    protected final function set_cache($cacheKey, $data)
+    private function set_cache($cacheKey, $data, $expiration = false): bool
     {
-        return shzn('wpfs')->cache->set($cacheKey, $data, "generator", true);
-    }
-
-    /**
-     * Generates the canonical.
-     *
-     * @return string The canonical.
-     */
-    public function generate_canonical()
-    {
-        if (($permalink = $this->get_cache("permalink")) !== false) {
-            return $permalink;
-        }
-
-        $permalink = $this->template->generate_canonical();
-
-        $this->set_cache("permalink", $permalink);
-
-        if ($permalink) {
-            return $permalink;
-        }
-
-        return '';
+        return wps('wpfs')->cache->set($cacheKey, $data, $this->cache_key, true, $expiration);
     }
 
     /**
-     * Gets the permalink from the indexable or generates it if dynamic permalinks are enabled.
-     *
-     * @param int $shift
-     * @return string The permalink.
+     * Gets the permalink from the Indexable or generates it if dynamic permalinks are enabled.
      */
-    public function get_permalink($shift = 0)
+    public function get_permalink(): string
     {
-        return $this->template->get_permalink($shift);
+        if (($permalink = $this->get_cache("get_permalink")) !== false) {
+            return $permalink;
+        }
+
+        $permalink = $this->template->get_permalink();
+
+        $this->set_cache("get_permalink", $permalink);
+
+        return $permalink;
     }
 
     /**
      * Generates the rel prev.
-     *
-     * @return string The rel prev value.
      */
-    public function generate_rel_prev()
+    public function generate_rel_prev(): string
     {
-        return $this->template->generate_rel_prev();
+        if (($permalink = $this->get_cache("rel_prev")) !== false) {
+            return $permalink;
+        }
+
+        $permalink = $this->template->generate_rel_prev();
+
+        $permalink = apply_filters('wpfs_relprev', $permalink, $this->current_page->get_page_type(), $this->current_page);
+
+        $this->set_cache("rel_prev", $permalink);
+
+        return $permalink;
     }
 
     /**
      * Generates the rel next.
-     *
-     * @return string The rel prev next.
      */
-    public function generate_rel_next()
+    public function generate_rel_next(): string
     {
-        return $this->template->generate_rel_next();
+        if (($permalink = $this->get_cache("rel_next")) !== false) {
+            return $permalink;
+        }
+
+        $permalink = $this->template->generate_rel_next();
+
+        $permalink = apply_filters('wpfs_relnext', $permalink, $this->current_page->get_page_type(), $this->current_page);
+
+        $this->set_cache("rel_next", $permalink);
+
+        return $permalink;
     }
 
-    /**
-     * @return OpenGraph
-     */
-    public function openGraph()
+    public function openGraph(): OpenGraph
     {
         $og = new OpenGraph();
 
@@ -220,30 +246,63 @@ class Generator
         }
 
         $og->description($this->get_description());
-        $og->url($this->template->get_paged_permalink());
+        $og->url($this->generate_canonical());
         $og->locale();
         $og->siteName(get_bloginfo('name'));
 
         return $this->template->openGraph($og);
     }
 
-    public function generate_title($title = '')
+    public function generate_title($default = ''): string
     {
-        if (($_title = $this->get_cache("title")) !== false) {
-            return $_title;
+        if (($cached = $this->get_cache("title")) !== false) {
+            return $cached ?: $default;
         }
 
-        $title = $this->template->generate_title($title);
+        $title_pre = $this->template->generate_title();
+
+        // filter general generation
+        $title_pre = apply_filters("wpfs_title", $title_pre, $this->current_page->get_page_type(), $this->current_page);
+
+        // filter typed generation
+        $title_pre = apply_filters("wpfs_title_$this->query_type", $title_pre);
+
+        $title = TextReplacer::replace(
+            $title_pre,
+            $this->current_page->get_queried_object(),
+            $this->current_page->get_query_type()
+        );
+
+        /**
+         * Pre-filter title to not have problems in trailing blog name
+        */
+        $title = StringHelper::filter_text($title, true);
+
+        // if active force trailing blog name
+        if(wps('wpfs')->settings->get('seo.title.blogname', false) and !str_ends_with($title, get_bloginfo('name', 'display'))) {
+
+            $title_sep = wps('wpfs')->settings->get('seo.title.separator', '-');
+
+            $preg_quote = preg_quote(get_bloginfo('name', 'display'), '#');
+
+            $title = preg_replace("#\W*$preg_quote\W*#si", ' ', $title);
+
+            $title .= " $title_sep " . get_bloginfo('name', 'display');
+
+            $title = preg_replace('#\s+#', ' ', $title);
+        }
+
+        $title = StringHelper::escape_text($title);
 
         $this->set_cache("title", $title);
 
-        return $title;
+        return $title ?: $default;
     }
 
     public function get_snippet_image($size = 'thumbnail', $use_default = true)
     {
-        if (($_image = $this->get_cache("snippet_image")) !== false) {
-            return $_image;
+        if (($cached = $this->get_cache("snippet_image")) !== false) {
+            return $cached;
         }
 
         $snippet_data = $this->template->get_snippet_image($size, $use_default);
@@ -255,38 +314,60 @@ class Generator
 
     /**
      * Generates the meta description.
-     *
-     * @param string $description
-     * @return string The meta description.
      */
-    public function get_description(string $description = '')
+    public function get_description(string $default = ''): string
     {
-        if (($dsc = $this->get_cache("description")) !== false) {
-            return $dsc;
+        if (($cashed = $this->get_cache("description")) !== false) {
+            return $cashed ?: $default;
         }
 
-        $description = $this->template->get_description($description);
+        $description_pre = $this->template->get_description();
 
-        $description = strip_tags($description);
+        // filter general generation
+        $description_pre = apply_filters('wpfs_description', $description_pre, $this->current_page->get_page_type(), $this->current_page);
 
-        $description = strip_shortcodes($description);
+        // filter typed generation
+        $description_pre = apply_filters("wpfs_description_$this->query_type", $description_pre);
 
-        $description = esc_attr($description);
+        $description = TextReplacer::replace(
+            $description_pre,
+            $this->current_page->get_queried_object(),
+            $this->query_type
+        );
 
-        $description = trim($description);
+        $description = StringHelper::escape_text($description, false, true);
 
         $this->set_cache("description", $description);
 
-        return $description;
+        return $description ?: $default;
     }
 
-    public function twitterCard()
+    /**
+     * Generates the canonical.
+     */
+    public function generate_canonical(): string
+    {
+        if (($permalink = $this->get_cache("canonical")) !== false) {
+            return $permalink;
+        }
+
+        // generate the canonical address from the current without any query args
+        $permalink = $this->template->get_paged_permalink();
+
+        $permalink = apply_filters('wpfs_canonical', $permalink, $this->current_page->get_page_type(), $this->current_page);
+
+        $this->set_cache("canonical", $permalink);
+
+        return $permalink;
+    }
+
+    public function twitterCard(): TwitterCard
     {
         $tc = new TwitterCard();
 
-        if (shzn('wpfs')->settings->get("seo.social.twitter.card", false)) {
+        if (wps('wpfs')->settings->get("seo.social.twitter.card", false)) {
 
-            $tc->add_card(shzn('wpfs')->settings->get("seo.social.twitter.large_images", true) ? 'summary_large_image' : 'summary');
+            $tc->add_card(wps('wpfs')->settings->get("seo.social.twitter.large_images", true) ? 'summary_large_image' : 'summary');
 
             $image_metadata = $this->get_snippet_image(['medium', 'large', 'full'], true);
 
@@ -298,7 +379,7 @@ class Generator
 
             $tc->add_description($this->get_description());
 
-            preg_match('#(https?://twitter\.com/)?(?<name>[^?]+)(\??.*)#i', shzn('wpfs')->settings->get("seo.social.twitter.url", ''), $m);
+            preg_match('#(https?://twitter\.com/)?(?<name>[^?]+)(\??.*)#i', wps('wpfs')->settings->get("seo.social.twitter.url", ''), $m);
 
             if (!isset($m['name'])) {
                 return $tc;

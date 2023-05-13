@@ -75,10 +75,14 @@ class GraphBuilder
             $value = array_filter($value);
         }
 
+        if (empty($value)) {
+            return;
+        }
+
         $this->graph[$name] = $value;
     }
 
-    public function export()
+    public function export(): array
     {
         return array_filter($this->graph);
     }
