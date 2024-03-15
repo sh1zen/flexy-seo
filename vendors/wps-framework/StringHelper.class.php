@@ -1,7 +1,7 @@
 <?php
 /**
  * @author    sh1zen
- * @copyright Copyright (C) 2023.
+ * @copyright Copyright (C) 2024.
  * @license   http://www.gnu.org/licenses/gpl.html GNU/GPL
  */
 
@@ -9,7 +9,7 @@ namespace WPS\core;
 
 class StringHelper
 {
-    const REPLACER_HASH = 'e8c6d78284cffb10afdfeea37929bd75';
+    private static string $REPLACER_HASH = 'e8c6d78284cffb10afdfeea37929bd75';
 
     /**
      * Internal helper function to escape a string before usage
@@ -203,7 +203,7 @@ class StringHelper
     public static function build_marker(string $name, string $data, string $hash = null): string
     {
         // Start the marker, add the data.
-        $marker = '%%' . $name . self::REPLACER_HASH . '%%' . base64_encode($data);
+        $marker = '%%' . $name . self::$REPLACER_HASH . '%%' . base64_encode($data);
 
         // Add the hash if provided.
         if (null !== $hash) {
@@ -226,7 +226,7 @@ class StringHelper
     {
         if (str_contains($content, $marker)) {
             $content = preg_replace_callback(
-                '#%%' . $marker . self::REPLACER_HASH . '%%(.*?)%%' . $marker . '%%#is',
+                '#%%' . $marker . self::$REPLACER_HASH . '%%(.*?)%%' . $marker . '%%#is',
                 function ($matches) {
                     return base64_decode($matches[1]);
                 },
@@ -473,6 +473,23 @@ class StringHelper
     }
 
     /**
+     * Truncates a given string.
+     */
+    public static function truncateWords($string, int $numWords, $ellipsis = ''): string
+    {
+        $words = str_word_count($string, 2); // Get an array of words
+
+        if (count($words) <= $numWords) {
+            return $string;
+        }
+
+        $truncatedWords = array_slice($words, 0, $numWords);
+        $truncatedText = implode(' ', $truncatedWords);
+
+        return $truncatedText. $ellipsis;
+     }
+
+    /**
      * Check if a string is JSON encoded or not.
      */
     public static function isJson(string $string): bool
@@ -506,7 +523,7 @@ class StringHelper
 
     private static function pre_kses_less_than_callback($matches)
     {
-        if (false === strpos($matches[0], '>')) {
+        if (!str_contains($matches[0], '>')) {
             return htmlspecialchars($matches[0], ENT_QUOTES, self::get_charset());
         }
         return $matches[0];

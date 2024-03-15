@@ -1,7 +1,7 @@
 <?php
 /**
  * @author    sh1zen
- * @copyright Copyright (C) 2023.
+ * @copyright Copyright (C) 2024.
  * @license   http://www.gnu.org/licenses/gpl.html GNU/GPL
  */
 
@@ -60,7 +60,7 @@ class CronActions
         $this->callback = $callback;
         $this->args = $args ?: [];
 
-        $this->timestamp = self::is_valid($hook, $callback, $next_execution_time, $interval);
+        $this->timestamp = self::parse_timestamp($hook, $callback, $next_execution_time, $interval);
 
         if ($this->timestamp === false) {
             return;
@@ -89,7 +89,7 @@ class CronActions
         }
     }
 
-    private static function is_valid($hook, $callback, $timestamp, $interval)
+    private static function parse_timestamp($hook, $callback, $timestamp, $interval)
     {
         if (self::$suspended) {
             return false;
@@ -248,7 +248,7 @@ class CronActions
 
                 spawn_cron();
 
-                usleep(50000);
+                usleep(1000);
 
                 return true;
             }
@@ -298,7 +298,7 @@ class CronActions
 
     public static function schedule_function(string $hook, callable $callback, $timestamp = 1, array ...$args): bool
     {
-        $timestamp = self::is_valid($hook, $callback, $timestamp);
+        $timestamp = self::parse_timestamp($hook, $callback, $timestamp, false);
 
         if ($timestamp === false) {
             return false;
@@ -358,9 +358,7 @@ class CronActions
         // used to add CronActions custom schedules in one shot
         add_filter('cron_schedules', ['WPS\core\CronActions', 'add_schedule']);
 
-        $events = get_option('wps#cron-events', false);
-
-        if (!$events) {
+        if (!($events = get_option('wps#cron-events', false))) {
             return;
         }
 
@@ -388,7 +386,7 @@ class CronActions
         return $schedules;
     }
 
-    public static function handle(string $hook, callable $callback)
+    public static function handle(string $hook, callable $callback): void
     {
         add_action($hook, $callback);
     }

@@ -1,7 +1,7 @@
 <?php
 /**
  * @author    sh1zen
- * @copyright Copyright (C) 2023.
+ * @copyright Copyright (C) 2024.
  * @license   http://www.gnu.org/licenses/gpl.html GNU/GPL
  */
 
@@ -10,6 +10,7 @@ namespace FlexySEO\Engine\Generators\Schema\Graphs;
 use FlexySEO\Engine\Generators\GraphBuilder;
 use FlexySEO\Engine\Generators\GraphUtility;
 use FlexySEO\Engine\Helpers\CurrentPage;
+use WPS\core\StringHelper;
 
 /**
  * Person graph class.
@@ -38,10 +39,13 @@ class Person extends Graph
         }
 
         $schema = new GraphBuilder([
-            '@type'  => 'Person',
-            '@id'    => self::getSchemaID($user),
-            'name'   => $user->display_name,
-            'sameAs' => GraphUtility::socialUrls($user->ID)
+            '@type'       => 'Person',
+            '@id'         => self::getSchemaID($user),
+            'name'        => $user->display_name,
+            'description' => StringHelper::truncate(StringHelper::escape_text($user->description), 300, '...'),
+            'url'         => $user->user_url,
+            'email'       => $user->user_email,
+            'sameAs'      => GraphUtility::socialUrls($user->ID)
         ]);
 
         $snippet_data = wpfseo('helpers')->images->get_user_snippet_image($user->ID, 'full');
@@ -49,11 +53,11 @@ class Person extends Graph
         if ($snippet_data) {
             $schema->set('image',
                 [
-                    '@type'   => 'ImageObject',
-                    'url'     => $snippet_data['url'],
-                    'width'   => $snippet_data['width'],
-                    'height'  => $snippet_data['height'],
-                    'caption' => $user->display_name,
+                    '@type'  => 'ImageObject',
+                    'url'    => $snippet_data['url'],
+                    'width'  => $snippet_data['width'],
+                    'height' => $snippet_data['height'],
+                    //'caption' => $user->display_name,
                 ]
             );
         }

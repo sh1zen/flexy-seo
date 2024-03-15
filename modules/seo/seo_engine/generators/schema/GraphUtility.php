@@ -1,7 +1,7 @@
 <?php
 /**
  * @author    sh1zen
- * @copyright Copyright (C) 2023.
+ * @copyright Copyright (C) 2024.
  * @license   http://www.gnu.org/licenses/gpl.html GNU/GPL
  */
 
@@ -15,7 +15,7 @@ class GraphUtility
      * @param int $authorId The author ID.
      * @return array $socialUrls The social media URLs.
      */
-    public static function socialUrls($authorId = false)
+    public static function socialUrls($authorId = false): array
     {
         $socialUrls = [];
 

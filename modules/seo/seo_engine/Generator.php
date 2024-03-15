@@ -1,7 +1,7 @@
 <?php
 /**
  * @author    sh1zen
- * @copyright Copyright (C) 2023.
+ * @copyright Copyright (C) 2024.
  * @license   http://www.gnu.org/licenses/gpl.html GNU/GPL
  */
 
@@ -45,7 +45,7 @@ class Generator
         return $this->template->redirect();
     }
 
-    public function load_template()
+    public function load_template(): void
     {
         $current_page = $this->current_page;
 
@@ -253,7 +253,7 @@ class Generator
         return $this->template->openGraph($og);
     }
 
-    public function generate_title($default = ''): string
+    public function generate_title($default = '', $suppress_filters = false): string
     {
         if (($cached = $this->get_cache("title")) !== false) {
             return $cached ?: $default;
@@ -261,11 +261,14 @@ class Generator
 
         $title_pre = $this->template->generate_title();
 
-        // filter general generation
-        $title_pre = apply_filters("wpfs_title", $title_pre, $this->current_page->get_page_type(), $this->current_page);
+        if (!$suppress_filters) {
 
-        // filter typed generation
-        $title_pre = apply_filters("wpfs_title_$this->query_type", $title_pre);
+            // filter general generation
+            $title_pre = apply_filters("wpfs_title", $title_pre, $this->current_page->get_page_type(), $this->current_page);
+
+            // filter typed generation
+            $title_pre = apply_filters("wpfs_title_$this->query_type", $title_pre);
+        }
 
         $title = TextReplacer::replace(
             $title_pre,
@@ -275,11 +278,11 @@ class Generator
 
         /**
          * Pre-filter title to not have problems in trailing blog name
-        */
+         */
         $title = StringHelper::filter_text($title, true);
 
         // if active force trailing blog name
-        if(wps('wpfs')->settings->get('seo.title.blogname', false) and !str_ends_with($title, get_bloginfo('name', 'display'))) {
+        if (wps('wpfs')->settings->get('seo.title.blogname', false) and !str_ends_with($title, get_bloginfo('name', 'display'))) {
 
             $title_sep = wps('wpfs')->settings->get('seo.title.separator', '-');
 

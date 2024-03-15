@@ -1,13 +1,14 @@
 <?php
 /**
  * @author    sh1zen
- * @copyright Copyright (C) 2023.
+ * @copyright Copyright (C) 2024.
  * @license   http://www.gnu.org/licenses/gpl.html GNU/GPL
  */
 
 namespace FlexySEO\Engine\Generators;
 
 use FlexySEO\Engine\Generator;
+use FlexySEO\Engine\Helpers\CurrentPage;
 
 class Schema
 {
@@ -51,6 +52,8 @@ class Schema
 
     private array $schema;
 
+    private array $graphTypes;
+
     private array $graphs;
 
     private Generator $generator;
@@ -65,53 +68,61 @@ class Schema
         ];
 
         $this->graphs = [];
+        $this->graphTypes = [];
     }
 
-    public function build()
+    public function build(): void
     {
         $this->load_graphs();
+
+        do_action_ref_array('wpfs_schema', array(&$this));
+
+        $this->build_graphs();
 
         $this->parse_graphs();
     }
 
-    private function load_graphs()
+    private function load_graphs(): void
     {
-        if ($this->generator->getContext()->is_404()) {
+        if ($this->getContext()->is_404()) {
             return;
         }
 
         $this->add('WebSite');
 
-        if ($this->generator->getContext()->is_homepage()) {
+        if ($this->getContext()->is_homepage()) {
 
             if (wps('wpfs')->settings->get("seo.schema.organization.is", false)) {
                 $this->add('Organization');
             }
 
-            if ($this->generator->getContext()->is_home_posts_page()) {
+            if ($this->getContext()->is_home_posts_page()) {
                 $this->add('CollectionPage');
             }
             else {
                 $this->add('WebPage');
             }
         }
-        elseif ($this->generator->getContext()->is_posts_page() or $this->generator->getContext()->is_home_posts_page() or wpfseo('helpers')->ecommerce->isWooCommerceShopPage()) {
+        elseif ($this->getContext()->is_posts_page() or $this->getContext()->is_home_posts_page() or wpfseo('helpers')->ecommerce->isWooCommerceShopPage()) {
 
             $this->add('CollectionPage');
         }
-        elseif ($this->generator->getContext()->is_simple_page()) {
+        elseif ($this->getContext()->is_simple_page()) {
 
-            $this->add($this->getPostGraphs($this->generator->getContext()->get_queried_object()), 'page');
+            foreach ($this->getPostGraphs($this->getContext()->get_queried_object()) as $postGraph) {
+                $this->add($postGraph);
+            }
         }
-        elseif ($this->generator->getContext()->is_author_archive()) {
+        elseif ($this->getContext()->is_author_archive()) {
 
-            $this->add(['ProfilePage', 'Person']);
+            $this->add('ProfilePage');
+            $this->add('Person');
         }
-        elseif ($this->generator->getContext()->is_search()) {
+        elseif ($this->getContext()->is_search()) {
 
             $this->add('SearchResultsPage');
         }
-        elseif ($this->generator->getContext()->is_post_type_archive() or $this->generator->getContext()->is_date_archive() or $this->generator->getContext()->is_term_archive()) {
+        elseif ($this->getContext()->is_post_type_archive() or $this->getContext()->is_date_archive() or $this->getContext()->is_term_archive()) {
 
             $this->add('CollectionPage');
         }
@@ -119,62 +130,39 @@ class Schema
         $this->add('BreadcrumbList');
     }
 
-    public function add($graphType)
+    public function getContext(): CurrentPage
     {
-        if (is_array($graphType)) {
-
-            foreach ($graphType as $graph) {
-                $this->add($graph);
-            }
-            return;
-        }
-
-        $namespace = $this->get_graph_generator($graphType);
-
-        if ($namespace) {
-
-            //if graph is actually a fully qualified class name lets use it
-            if (class_exists($graphType)) {
-                $namespace = $graphType;
-            }
-
-            $graphBuild = (new $namespace($this->generator))->get($this->generator->getContext(), $graphType);
-
-            $graphBuild = apply_filters("wpfs_schema_" . strtolower($graphType), $graphBuild, $this->generator->getContext());
-
-            $this->graphs[] = $graphBuild->export();
-        }
+        return $this->generator->getContext();
     }
 
-    private function get_graph_generator($graphType)
+    public function add($graphType, $build = null, $position = 0): void
     {
-        $namespace = false;
+        if ($position) {
 
-        if (file_exists(WPFS_SEO_ENGINE . 'generators/schema/graph/' . $graphType . '.php')) {
+            // make position human like countable
+            $position--;
 
-            require_once WPFS_SEO_ENGINE . "generators/schema/graph/{$graphType}.php";
+            // If associative, use the key and value directly
+            $keys = array_keys($this->graphTypes);
+            $values = array_values($this->graphTypes);
 
-            if (class_exists("FlexySEO\Engine\Generators\Schema\Graphs\\$graphType")) {
-                $namespace = "FlexySEO\Engine\Generators\Schema\Graphs\\$graphType";
-            }
+            // Insert the key and value at the specified position
+            array_splice($keys, $position, 0, [$graphType]);
+            array_splice($values, $position, 0, [$build]);
+
+            // Combine the modified keys and values into a new associative array
+            $this->graphTypes = array_combine($keys, $values);
         }
-        elseif (in_array($graphType, self::$webPageGraphs)) {
-
-            $namespace = "FlexySEO\Engine\Generators\Schema\Graphs\WebPage";
-
+        else {
+            // this ensure uniqueness
+            $this->graphTypes[$graphType] = $build;
         }
-        elseif (in_array($graphType, self::$webArticleGraphs)) {
-
-            $namespace = "FlexySEO\Engine\Generators\Schema\Graphs\Article";
-        }
-
-        return $namespace;
     }
 
     /**
      * Returns the graph types that are set for the current post.
      *
-     * @param  $post \WP_Post  The post object.
+     * @param $post \WP_Post The post object.
      * @return string[] The graph name(s).
      */
     public function getPostGraphs($post): array
@@ -203,11 +191,66 @@ class Schema
         return wpfs_get_post_meta_graphType($post, false, '') ?: wps('wpfs')->settings->get("seo.post_type.{$post->post_type}.schema.{$for}Type", $post->post_type === 'page' ? "WebPage" : "Article");
     }
 
-    private function parse_graphs()
+    private function build_graphs(): void
     {
-        $graphs = apply_filters('wpfs_schema_parse_' . $this->generator->getContext()->get_page_type(), $this->graphs, $this->generator->getContext());
+        foreach ($this->graphTypes as $graphType => $graphBuild) {
 
-        $graphs = $this->validate_type($graphs);
+            if (is_object($graphBuild) and $graphBuild instanceof GraphBuilder) {
+                $this->graphs[] = $graphBuild->export();
+            }
+            else {
+                $namespace = $this->get_graph_generator($graphType);
+
+                if ($namespace) {
+
+                    //if graph is actually a fully qualified class name lets use it
+                    if (class_exists($graphType)) {
+                        $namespace = $graphType;
+                    }
+
+                    $graphBuild = (new $namespace($this->generator))->get($this->getContext(), $graphType);
+
+                    $this->graphs[] = $graphBuild->export();
+                }
+            }
+        }
+    }
+
+    /**
+     * Returns the JSON schema for the requested page.
+     */
+    public function export(): string
+    {
+        return WPFS_DEBUG ? wp_json_encode($this->schema, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) : wp_json_encode($this->schema);
+    }
+
+    private function get_graph_generator($graphType)
+    {
+        $namespace = false;
+
+        if (file_exists(WPFS_SEO_ENGINE . 'generators/schema/graph/' . $graphType . '.php')) {
+
+            require_once WPFS_SEO_ENGINE . "generators/schema/graph/$graphType.php";
+
+            if (class_exists("FlexySEO\Engine\Generators\Schema\Graphs\\$graphType")) {
+                $namespace = "FlexySEO\Engine\Generators\Schema\Graphs\\$graphType";
+            }
+        }
+        elseif (in_array($graphType, self::$webPageGraphs)) {
+
+            $namespace = "FlexySEO\Engine\Generators\Schema\Graphs\WebPage";
+        }
+        elseif (in_array($graphType, self::$webArticleGraphs)) {
+
+            $namespace = "FlexySEO\Engine\Generators\Schema\Graphs\Article";
+        }
+
+        return $namespace;
+    }
+
+    private function parse_graphs(): void
+    {
+        $graphs = $this->validate_type($this->graphs);
 
         $graphs = array_values($this->cleanData($graphs));
 
@@ -268,17 +311,14 @@ class Schema
         return $data;
     }
 
+    public function remove($graphType): void
+    {
+        unset($this->graphTypes[$graphType]);
+    }
+
     public function __toString(): string
     {
         return "<script type=application/ld+json>" . $this->export() . "</script>";
-    }
-
-    /**
-     * Returns the JSON schema for the requested page.
-     */
-    public function export(): string
-    {
-        return WPFS_DEBUG ? wp_json_encode($this->schema, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) : wp_json_encode($this->schema);
     }
 }
 

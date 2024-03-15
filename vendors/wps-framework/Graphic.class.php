@@ -1,7 +1,7 @@
 <?php
 /**
  * @author    sh1zen
- * @copyright Copyright (C) 2023.
+ * @copyright Copyright (C) 2024.
  * @license   http://www.gnu.org/licenses/gpl.html GNU/GPL
  */
 
@@ -307,6 +307,45 @@ class Graphic
         }
 
         return $o_inner;
+    }
+
+    public static function newField($name, $id = false, $type = 'text', $args = []): array
+    {
+        if (!is_array($args)) {
+            $args = ['value' => $args];
+        }
+
+        $args = array_merge([
+            'value'         => null,
+            'default_value' => '',
+            'allow_empty'   => true,
+            'parent'        => false,
+            'depend'        => false,
+            'placeholder'   => '',
+            'list'          => ''
+        ], $args);
+
+        if ($id or $type === 'link') {
+            $value = is_null($args['value']) ? $args['default_value'] : $args['value'];
+        }
+        else {
+            $value = $args['value'] ?: '';
+        }
+
+        if (empty($value) and !$args['allow_empty']) {
+            $value = $args['default_value'];
+        }
+
+        return [
+            'type'        => $type,
+            'name'        => $name,
+            'id'          => $id,
+            'value'       => $value,
+            'parent'      => $args['parent'],
+            'depend'      => $args['depend'],
+            'placeholder' => $args['placeholder'],
+            'list'        => $args['list']
+        ];
     }
 
     public static function buildField($type, $props = [], $content = ''): string

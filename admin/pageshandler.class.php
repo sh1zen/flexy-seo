@@ -1,7 +1,7 @@
 <?php
 /**
  * @author    sh1zen
- * @copyright Copyright (C) 2023.
+ * @copyright Copyright (C) 2024.
  * @license   http://www.gnu.org/licenses/gpl.html GNU/GPL
  */
 
@@ -35,9 +35,9 @@ class PagesHandler
 
         if (isset($_GET['wpfs-dismiss-notice'])) {
 
-            wps('wpfs')->options->add(wps_utils()->cu_id, 'dismissed', true, 'admin-notice', MONTH_IN_SECONDS);
+            wps('wpfs')->options->add(wps_utils()->get_cuID(), 'dismissed', true, 'admin-notice', MONTH_IN_SECONDS);
         }
-        elseif ($pagenow == 'index.php' and !wps('wpfs')->options->get(wps_utils()->cu_id, 'dismissed', 'admin-notice', false)) {
+        elseif ($pagenow == 'index.php' and !wps('wpfs')->options->get(wps_utils()->get_cuID(), 'dismissed', 'admin-notice', false)) {
             ?>
             <div class="notice notice-info is-dismissible">
                 <h3>Help me to build <a href="<?php echo admin_url('admin.php?page=wp-flexyseo'); ?>">Flexy SEO</a>.

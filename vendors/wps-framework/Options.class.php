@@ -1,7 +1,7 @@
 <?php
 /**
  * @author    sh1zen
- * @copyright Copyright (C) 2023.
+ * @copyright Copyright (C) 2024.
  * @license   http://www.gnu.org/licenses/gpl.html GNU/GPL
  */
 
@@ -21,7 +21,7 @@ class Options
         $this->cache = wps($context)->cache;
 
         if (empty($table_name)) {
-            trigger_error("WPS Framework >> Options has not defined table name.", E_USER_WARNING);
+            wps_debug_log("WPS Framework >> Options has not defined table name");
         }
 
         $this->table_name = $table_name;

@@ -1,7 +1,7 @@
 <?php
 /**
  * @author    sh1zen
- * @copyright Copyright (C) 2023.
+ * @copyright Copyright (C) 2024.
  * @license   http://www.gnu.org/licenses/gpl.html GNU/GPL
  */
 
@@ -193,7 +193,7 @@ class Presenter
         }
     }
 
-    private function schema_presenter()
+    private function schema_presenter(): void
     {
         $schema = new Schema($this->generator);
 
@@ -201,12 +201,12 @@ class Presenter
 
         $schemaGraph = $schema->export();
 
-        $schemaGraph = apply_filters('wpfs_schema', $schemaGraph, $this->generator->getContext()->get_page_type(), $this->generator->getContext());
+        $schemaGraph = apply_filters('wpfs_schema_presenter', $schemaGraph, $this->generator->getContext()->get_page_type(), $this->generator->getContext());
 
         $this->add_script(new SEOScriptTag($schemaGraph, "application/ld+json"));
     }
 
-    private function add_script($script)
+    private function add_script($script): void
     {
         $this->scripts[] = $script;
     }

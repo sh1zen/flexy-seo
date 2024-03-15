@@ -1,11 +1,11 @@
 === Flexy SEO === 
 Contributors: sh1zen 
-Tags: SEO, Breadcrumbs, Content analysis, Readability, Schema, Ranking, SERP
+Tags: SEO, Breadcrumbs, Schema, Ranking, SERP, Content analysis, Readability
 Donate link: https://www.paypal.com/donate?business=dev.sh1zen%40outlook.it&item_name=Thank+you+in+advanced+for+the+kind+donations.+You+will+sustain+me+developing+FlexySEO.&currency_code=EUR
 Requires at least: 5.0.0
 Tested up to: 6.4
 Requires PHP: 7.4
-Stable tag: 1.8.3
+Stable tag: 1.9.4
 License: GNU v3.0 License
 URI: https://github.com/sh1zen/flexy-seo/blob/master/LICENSE
 
@@ -103,7 +103,12 @@ work! Otherwise, go to the new added module "Setting" and try a reset.
 
 == Changelog ==
 
-= 1.8.3 =
+= 1.9.4 =
+
+* improved core performances
+* updated translations
+
+= 1.9.2 =
 
 * extended support for WordPress 6.4
 * improved core performances
@@ -197,22 +202,3 @@ work! Otherwise, go to the new added module "Setting" and try a reset.
 * improved core performances
 * improved SEO
 * improved breadcrumbs
-
-= 1.3.4 =
-
-* added support for PHP 8.1 and WordPress 5.9
-
-= 1.3.3 =
-
-* upgraded core dependencies
-
-= 1.3.2 =
-
-* fixed cache bug
-* updated translations
-
-= 1.3.0 =
-
-* improved core performances
-* improved schema generation
-* added snippet in edit-page

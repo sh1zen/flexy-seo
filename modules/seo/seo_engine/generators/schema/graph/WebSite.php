@@ -1,7 +1,7 @@
 <?php
 /**
  * @author    sh1zen
- * @copyright Copyright (C) 2023.
+ * @copyright Copyright (C) 2024.
  * @license   http://www.gnu.org/licenses/gpl.html GNU/GPL
  */
 
@@ -44,7 +44,7 @@ class WebSite extends Graph
                 Person::build(get_user_by('email', get_bloginfo('admin_email'))->ID)->export()
         );
 
-        if (wps('wpfs')->settings->get('seo.schema.sitelink', false)) {
+        if (wps('wpfs')->settings->get('seo.schema.sitelink', false) and $currentPage->is_homepage()) {
 
             $schema->set('potentialAction',
                 [
@@ -61,7 +61,7 @@ class WebSite extends Graph
         return $schema;
     }
 
-    public static function getSchemaID()
+    public static function getSchemaID(): string
     {
         return wps_utils()->home_url . '#website';
     }

@@ -1,7 +1,7 @@
 <?php
 /**
  * @author    sh1zen
- * @copyright Copyright (C) 2023.
+ * @copyright Copyright (C) 2024.
  * @license   http://www.gnu.org/licenses/gpl.html GNU/GPL
  */
 
@@ -29,7 +29,7 @@ class GraphBuilder
         }
     }
 
-    public function remove($name, $value = null)
+    public function remove($name, $value = null): void
     {
         if ($value) {
             if (($key = array_search($value, $this->graph[$name])) !== false) {
@@ -41,7 +41,7 @@ class GraphBuilder
         }
     }
 
-    public function add($name, $value)
+    public function add($name, $value): void
     {
         $value = array_filter($value);
 
@@ -66,7 +66,7 @@ class GraphBuilder
         return $default;
     }
 
-    public function set($name, $value)
+    public function set($name, $value): void
     {
         if ($value instanceof GraphBuilder) {
             $value = $value->export();
@@ -87,7 +87,7 @@ class GraphBuilder
         return array_filter($this->graph);
     }
 
-    public function join($graph)
+    public function join($graph): void
     {
         if ($graph instanceof GraphBuilder) {
             $graph = $graph->export();
@@ -99,8 +99,13 @@ class GraphBuilder
         $this->graph = array_merge($this->graph, $graph);
     }
 
-    public function empty()
+    public function empty(): void
     {
         $this->graph = [];
+    }
+
+    public function set_type($type): void
+    {
+        $this->graph['@type'] = $type;
     }
 }

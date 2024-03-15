@@ -1,7 +1,7 @@
 <?php
 /**
  * @author    sh1zen
- * @copyright Copyright (C) 2023.
+ * @copyright Copyright (C) 2024.
  * @license   http://www.gnu.org/licenses/gpl.html GNU/GPL
  */
 
@@ -13,10 +13,10 @@
  * Author URI: https://sh1zen.github.io/
  * Text Domain: wpfs
  * Domain Path: /languages
- * Version: 2.0.0
+ * Version: 1.9.4
  */
 
-const WPFS_VERSION = '2.0.0';
+const WPFS_VERSION = '1.9.4';
 
 const WPFS_FILE = __FILE__;
 const WPFS_ABSPATH = __DIR__ . '/';

@@ -1,7 +1,7 @@
 <?php
 /**
  * @author    sh1zen
- * @copyright Copyright (C) 2023.
+ * @copyright Copyright (C) 2024.
  * @license   http://www.gnu.org/licenses/gpl.html GNU/GPL
  */
 
@@ -137,7 +137,7 @@ class UtilEnv
         if ($filter_key_format) {
             $res = array();
             foreach ($items as $key => $value) {
-                
+
                 if ($filter_key_format !== true and !call_user_func("is_{$filter_key_format}", $key)) {
                     $key = array();
                 }
@@ -404,56 +404,99 @@ class UtilEnv
     /**
      * Returns the apache, nginx version
      */
-    public static function get_server_version()
+    public static function get_server_version(): string
     {
         $sig = explode('/', $_SERVER['SERVER_SOFTWARE']);
         $temp = isset($sig[1]) ? explode(' ', $sig[1]) : array('0');
         return $temp[0];
     }
 
-    public static function get_server_load()
+    public static function get_server_load($now = true): float
     {
-        if (function_exists('sys_getloadavg')) {
-            return sys_getloadavg()[0];
+        if ($now and function_exists('sys_getloadavg')) {
+            return round(sys_getloadavg()[0], 2);
         }
 
-        if (PHP_OS !== 'WINNT' and PHP_OS !== 'WIN32') {
-            if (@file_exists('/proc/loadavg')) {
+        $server_load = 0;
 
-                if ($fh = @fopen('/proc/loadavg', 'r')) {
-                    $data = @fread($fh, 6);
-                    @fclose($fh);
-                    $load_avg = explode(" ", $data);
-                    $server_load = trim($load_avg[0]);
-                }
-            }
-            else {
-
-                $data = @system('uptime');
-                preg_match('/(.*):(.*)/', $data, $matches);
-                $load_arr = explode(',', $matches[2]);
-                $server_load = trim($load_arr[0]);
-            }
-        }
-        else {
+        if (stristr(PHP_OS, "win")) {
             $cmd = "wmic cpu get loadpercentage /all";
             @exec($cmd, $output);
 
             if ($output) {
                 foreach ($output as $line) {
-                    if ($line && preg_match("/^\d+\$/", $line)) {
+                    if ($line && preg_match("/^[0-9]+\$/", $line)) {
                         $server_load = $line;
                         break;
                     }
                 }
             }
         }
+        else {
+            if (is_readable("/proc/stat")) {
 
-        if (empty($server_load)) {
-            $server_load = 'N/A';
+                // Collect 2 samples - each with 1 second period
+                // See: https://de.wikipedia.org/wiki/Load#Der_Load_Average_auf_Unix-Systemen
+                $stats = @file_get_contents("/proc/stat");
+
+                if ($stats !== false) {
+                    // Remove double spaces to make it easier to extract values with explode()
+                    $stats = preg_replace("/[[:blank:]]+/", " ", $stats);
+
+                    // Separate lines
+                    $stats = preg_replace("#\n+#", "\n", str_replace("\r", "\n", $stats));
+                    $stats = explode("\n", $stats);
+
+                    // Separate values and find line for main CPU load
+                    foreach ($stats as $statLine) {
+
+                        $statLine = trim($statLine);
+
+                        if (!str_starts_with($statLine, 'cpu')) {
+                            continue;
+                        }
+
+                        $statLineData = explode(" ", trim($statLine));
+
+                        if (isset($statLineData[4])) {
+
+                            // Sum up the 4 values for User, Nice, System and Idle and calculate
+                            // the percentage of idle time (which is part of the 4 values!)
+                            $cpuTime = (int)$statLineData[1] + (int)$statLineData[2] + (int)$statLineData[3] + (int)$statLineData[4];
+
+                            // Invert percentage to get CPU time, not idle time
+                            $server_load = 100 - ((int)$statLineData[4] * 100 / $cpuTime);
+                            break;
+                        }
+                    }
+                }
+            }
+
+            if (!$server_load) {
+                if (@file_exists('/proc/loadavg')) {
+
+                    if ($fh = @fopen('/proc/loadavg', 'r')) {
+                        $data = @fread($fh, 6);
+                        @fclose($fh);
+                        $load_avg = explode(" ", $data);
+                        $server_load = trim($load_avg[0]);
+                    }
+                }
+                else {
+
+                    $data = @system('uptime');
+                    preg_match('/(.*):(.*)/', $data, $matches);
+                    $load_arr = explode(',', $matches[2]);
+                    $server_load = trim($load_arr[0]);
+                }
+            }
         }
 
-        return $server_load;
+        if (empty($server_load)) {
+            $server_load = 0;
+        }
+
+        return round((int)$server_load, 2);
     }
 
     public static function size2bytes($val): int
@@ -723,7 +766,7 @@ class UtilEnv
 
         // Also honor PageSpeed=off parameter as used by mod_pagespeed, in use by some pagebuilders,
         // see https://www.modpagespeed.com/doc/experiment#ModPagespeed for info on that.
-        if (false === $noOptimize and \array_key_exists('PageSpeed', $_GET) and 'off' === $_GET['PageSpeed']) {
+        if (false === $noOptimize and isset($_GET['PageSpeed']) and 'off' === $_GET['PageSpeed']) {
             $noOptimize = true;
         }
 
@@ -800,5 +843,58 @@ class UtilEnv
     public static function is_https(): bool
     {
         return isset($_SERVER['HTTPS']) and self::to_boolean($_SERVER['HTTPS']) or (isset($_SERVER['SERVER_PORT']) and (int)$_SERVER['SERVER_PORT'] == 443) or (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) and $_SERVER['HTTP_X_FORWARDED_PROTO'] == 'https');
+    }
+
+    public static function normalize_url(string $url): string
+    {
+        // Parse the URL into its components
+        $urlComponents = parse_url($url);
+
+        // Make sure the scheme and host are in lowercase
+        $urlComponents['scheme'] = strtolower($urlComponents['scheme']);
+        $urlComponents['host'] = strtolower($urlComponents['host']);
+
+        // Remove default ports (e.g., :80 for HTTP, :443 for HTTPS)
+        if (isset($urlComponents['port'])) {
+            $defaultPorts = [
+                'http' => 80,
+                'https' => 443,
+                // Add other default ports if necessary
+            ];
+
+            if (isset($defaultPorts[$urlComponents['scheme']]) && $urlComponents['port'] == $defaultPorts[$urlComponents['scheme']]) {
+                unset($urlComponents['port']);
+            }
+        }
+
+        // Remove consecutive double slashes in the path
+        if (isset($urlComponents['path'])) {
+            $urlComponents['path'] = preg_replace('#/+#', '/', $urlComponents['path']);
+        }
+
+        // Reassemble the normalized URL
+        $normalizedUrl = $urlComponents['scheme'] . '://';
+        if (isset($urlComponents['user'])) {
+            $normalizedUrl .= $urlComponents['user'];
+            if (isset($urlComponents['pass'])) {
+                $normalizedUrl .= ':' . $urlComponents['pass'];
+            }
+            $normalizedUrl .= '@';
+        }
+        $normalizedUrl .= $urlComponents['host'];
+        if (isset($urlComponents['port'])) {
+            $normalizedUrl .= ':' . $urlComponents['port'];
+        }
+        if (isset($urlComponents['path'])) {
+            $normalizedUrl .= $urlComponents['path'];
+        }
+        if (isset($urlComponents['query'])) {
+            $normalizedUrl .= '?' . $urlComponents['query'];
+        }
+        if (isset($urlComponents['fragment'])) {
+            $normalizedUrl .= '#' . $urlComponents['fragment'];
+        }
+
+        return $normalizedUrl;
     }
 }

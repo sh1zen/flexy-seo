@@ -1,7 +1,7 @@
 <?php
 /**
  * @author    sh1zen
- * @copyright Copyright (C) 2023.
+ * @copyright Copyright (C) 2024.
  * @license   http://www.gnu.org/licenses/gpl.html GNU/GPL
  */
 
@@ -54,8 +54,7 @@ require_once WPS_FRAMEWORK . 'ModuleHandler.class.php';
 
 add_action('admin_enqueue_scripts', 'wps_admin_enqueue_scripts', 10, 0);
 
-\WPS\core\CronActions::Initialize();
-
+add_action('init', ['\WPS\core\CronActions', 'Initialize']);
 
 function wps_admin_enqueue_scripts(): void
 {
@@ -71,14 +70,19 @@ function wps_admin_enqueue_scripts(): void
     ]);
 }
 
-function wps($context = 'common', $args = false, $components = [])
+function wps_loaded(string $context = 'common'): bool
+{
+    $debug = wps_utils()->debug;
+    wps_utils()->debug = false;
+    $loaded = wps($context);
+    wps_utils()->debug = $debug;
+
+    return $loaded != false;
+}
+
+function wps(string $context = 'common', $args = false, $components = [])
 {
     static $cached = [];
-
-    if (!is_string($context)) {
-        $fn = wps_debug_backtrace(2);
-        trigger_error("WPS Framework >> not valid context type in {$fn}.", E_USER_ERROR);
-    }
 
     if ($args or !empty($components)) {
 
@@ -91,8 +95,7 @@ function wps($context = 'common', $args = false, $components = [])
         }
     }
     elseif (!isset($cached[$context])) {
-        $fn = wps_debug_backtrace(2);
-        trigger_error("WPS Framework >> object $context not defined in {$fn}.", E_USER_WARNING);
+        wps_debug_log("WPS Framework >> object '$context' not defined");
         return false;
     }
 
@@ -102,7 +105,7 @@ function wps($context = 'common', $args = false, $components = [])
 /**
  * must be used only after init hook is fired
  */
-function wps_utils(): ?Utility
+function wps_utils(): Utility
 {
     return Utility::getInstance();
 }

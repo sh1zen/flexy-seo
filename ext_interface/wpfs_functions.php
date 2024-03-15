@@ -1,7 +1,7 @@
 <?php
 /**
  * @author    sh1zen
- * @copyright Copyright (C) 2023.
+ * @copyright Copyright (C) 2024.
  * @license   http://www.gnu.org/licenses/gpl.html GNU/GPL
  */
 
@@ -42,7 +42,7 @@ function wpfs_get_post_excerpt($post = null, $length = 32, $more = '...'): strin
     return $post_excerpt;
 }
 
-function wpfs_get_the_description($post = null, string $default = ''): string
+function wpfs_get_post_description($post = null, string $default = ''): string
 {
     if ($post) {
 
@@ -95,13 +95,13 @@ function wpfs_replace_vars(string $string, int $object_id = 0, string $type = 'p
  *
  * @param string $rule The rule ex. `%%custom_replace%%`
  * @param String|callable $replacement
- * @param string|string[] $type
+ * @param string $type
  */
-function wpfs_add_replacement_rule(string $rule, $replacement, $type = []): void
+function wpfs_add_replacement_rule(string $rule, $replacement, string $type = ''): void
 {
     if (defined("WPFS_SEO_ENGINE_LOADED") and WPFS_SEO_ENGINE_LOADED) {
 
-        TextReplacer::add_replacer($rule, $replacement, $type ?: CurrentPage::get_page_types());
+        TextReplacer::add_replacer($rule, $replacement, $type);
     }
 }
 
@@ -110,13 +110,13 @@ function wpfs_term_description($term, $default = ''): string
     return wpfseo('helpers')->term->get_description($term, $default);
 }
 
-function wpfs_the_title(): string
+function wpfs_the_title($suppress_filters = false): string
 {
     $title = '';
     $generator = wpfseo('generator');
 
     if ($generator) {
-        $title = wpfseo('generator')->generate_title();
+        $title = wpfseo('generator')->generate_title('', $suppress_filters);
     }
 
     return $title;

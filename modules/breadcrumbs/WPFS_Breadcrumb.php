@@ -1,7 +1,7 @@
 <?php
 /**
  * @author    sh1zen
- * @copyright Copyright (C) 2023.
+ * @copyright Copyright (C) 2024.
  * @license   http://www.gnu.org/licenses/gpl.html GNU/GPL
  */
 
@@ -463,7 +463,7 @@ class WPFS_Breadcrumb
 
             case 'title':
                 $replaces[] = array(
-                    'text' => wpfs_document_title(),
+                    'text' => wpfs_the_title(), // todo verify wpfs_document_title
                     'url'  => get_permalink($this->queried_object->ID)
                 );
                 break;
@@ -645,14 +645,14 @@ class WPFS_Breadcrumb
 
         /* As we could still have two subcategories, from different parent categories,
            let's pick the one with the lowest ordered ancestor. */
-        $parents_count = 0;
+        $max_parents_count = 0;
         $deepest_term = reset($terms_by_id);
 
         foreach ($terms_by_id as $term) {
-            $parents = $this->get_term_parents($term);
+            $parents_count = count($this->get_term_parents($term));
 
-            if (count($parents) >= $parents_count) {
-                $parents_count = count($parents);
+            if ($parents_count >= $max_parents_count) {
+                $max_parents_count = $parents_count;
                 $deepest_term = $term;
             }
         }
@@ -678,7 +678,7 @@ class WPFS_Breadcrumb
     /**
      * Add Blog crumb to the crumbs property
      */
-    private function add_blog_crumb()
+    private function add_blog_crumb(): void
     {
         $this->add_crumb($this->page_for_posts, 'postId');
     }
@@ -687,7 +687,7 @@ class WPFS_Breadcrumb
      * Add hierarchical ancestor crumbs to the crumbs property for a single post
      * @param WP_Post $post
      */
-    private function add_post_ancestor_crumbs(WP_Post $post)
+    private function add_post_ancestor_crumbs(WP_Post $post): void
     {
         $ancestors = $this->get_post_ancestors($post);
         if (!empty($ancestors)) {
@@ -726,7 +726,7 @@ class WPFS_Breadcrumb
     /**
      * Add taxonomy crumbs to the crumbs property for a single post
      */
-    private function maybe_add_taxonomy_crumbs_for_post()
+    private function maybe_add_taxonomy_crumbs_for_post(): void
     {
         $main_tax = $this->get_option("post_type.{$this->queried_object->post_type}.maintax", 'category');
 
@@ -738,9 +738,7 @@ class WPFS_Breadcrumb
 
                 $deepest_term = $this->find_deepest_term($terms);
 
-                $is_hierarchical = is_taxonomy_hierarchical($main_tax);
-
-                if ($is_hierarchical and $deepest_term->parent) {
+                if (is_taxonomy_hierarchical($main_tax) and $deepest_term->parent) {
                     $parent_terms = $this->get_term_parents($deepest_term);
                     foreach ($parent_terms as $parent_term) {
                         $this->add_crumb($parent_term, 'term');
@@ -842,7 +840,7 @@ class WPFS_Breadcrumb
      * Add month crumb to crumbs property
      * @param bool $link
      */
-    private function add_day_crumb(bool $link = true)
+    private function add_day_crumb(bool $link = true): void
     {
         $wp_query = $this->get_wp_query();
 
@@ -856,7 +854,7 @@ class WPFS_Breadcrumb
     /**
      * Add month-year crumb to crumbs property
      */
-    private function add_linked_month_year_crumb()
+    private function add_linked_month_year_crumb(): void
     {
         global $wp_locale;
 
@@ -893,7 +891,7 @@ class WPFS_Breadcrumb
     /**
      * Take the crumbs array and convert each crumb to ['type' => 'crumb', 'value' => ...]
      */
-    private function transform_crumbs()
+    private function transform_crumbs(): void
     {
         foreach ($this->crumbs as $i => $crumb) {
 
@@ -1017,7 +1015,7 @@ class WPFS_Breadcrumb
 
             unset($link['list']);
 
-            $link_output = "<{$this->element} data-role='links'>";
+            $link_output = "<$this->element data-role='links'>";
 
             $link_output .= "<a role='button' data-action='toggle'><span>Cascade</span><span></span></a>";
 
@@ -1028,27 +1026,29 @@ class WPFS_Breadcrumb
             }
 
             $link_output .= "</ul>";
-            $link_output .= "</{$this->element}>";
+            $link_output .= "</$this->element>";
 
         }
         elseif (!empty($link['text']) and is_string($link['text'])) {
 
-            $link['text'] = ucfirst(trim($link['text']));
+            $link['text'] = trim($link['text']);
+
+            if ($position > 1) {
+                $link['text'] = ucfirst($link['text']);
+            }
 
             if (!isset($link['allow_html']) or !$link['allow_html']) {
                 $link['text'] = esc_html($link['text']);
             }
 
-            $link_output = "<{$this->element} class='wpfs-breadcrumb-item' itemprop='itemListElement' itemscope='' itemtype='http://schema.org/ListItem'>";
+            $link_output = "<$this->element class='wpfs-breadcrumb-item' itemprop='itemListElement' itemtype='https://schema.org/ListItem'>";
 
             if (!empty($link['url']) and (!$current or !$this->get_option('last_page'))):
 
                 // remove multiple slashes
                 $url = preg_replace('/([^:])(\/+)/', '$1/', $link['url']);
 
-                $url = esc_url($url);
-
-                $url = StringHelper::strtolower($url);
+                $url = StringHelper::strtolower(esc_url($url));
 
                 $alternative = "href='" . $url . "'";
             else :
@@ -1061,7 +1061,7 @@ class WPFS_Breadcrumb
                 $link_output .= "<meta itemprop='position' content='{$position}'>";
             }
 
-            $link_output .= "</{$this->element}>";
+            $link_output .= "</$this->element>";
         }
 
         return $link_output;
@@ -1079,10 +1079,10 @@ class WPFS_Breadcrumb
 
             $separator = trim($this->get_option('separator', '>'));
 
-            $output = implode("{$separator}", $links);
+            $output = implode($separator, $links);
 
             if (!empty($output)) {
-                $this->output = "<{$this->wrapper} class='wpfs-breadcrumb' itemscope='' itemtype='http://schema.org/BreadcrumbList'>{$output}</{$this->wrapper}>";
+                $this->output = "<{$this->wrapper} class='wpfs-breadcrumb' itemtype='https://schema.org/BreadcrumbList'>{$output}</{$this->wrapper}>";
             }
         }
     }
