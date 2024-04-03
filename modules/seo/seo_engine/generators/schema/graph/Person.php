@@ -11,6 +11,7 @@ use FlexySEO\Engine\Generators\GraphBuilder;
 use FlexySEO\Engine\Generators\GraphUtility;
 use FlexySEO\Engine\Helpers\CurrentPage;
 use WPS\core\StringHelper;
+use WPS\core\Images;
 
 /**
  * Person graph class.
@@ -48,7 +49,7 @@ class Person extends Graph
             'sameAs'      => GraphUtility::socialUrls($user->ID)
         ]);
 
-        $snippet_data = wpfseo('helpers')->images->get_user_snippet_image($user->ID, 'full');
+        $snippet_data = Images::get_user_snippet_image($user->ID, 'full');
 
         if ($snippet_data) {
             $schema->set('image',
@@ -70,7 +71,7 @@ class Person extends Graph
         $user = wps_get_user($user);
 
         if ($user) {
-            return wps_utils()->home_url . '#/schema/person/' . md5($user->ID . wpfseo('salt'));
+            return wps_core()->home_url . '#/schema/person/' . md5($user->ID . wpfseo('salt'));
         }
 
         return '';

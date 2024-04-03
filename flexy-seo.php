@@ -13,10 +13,10 @@
  * Author URI: https://sh1zen.github.io/
  * Text Domain: wpfs
  * Domain Path: /languages
- * Version: 1.9.4
+ * Version: 1.9.7
  */
 
-const WPFS_VERSION = '1.9.4';
+const WPFS_VERSION = '1.9.7';
 
 const WPFS_FILE = __FILE__;
 const WPFS_ABSPATH = __DIR__ . '/';
@@ -59,6 +59,8 @@ define("WPFS_DEBUG", $_SERVER["SERVER_ADDR"] === '127.0.0.1');
 
 // main class
 require_once WPFS_ADMIN . 'PluginInit.class.php';
+
+require_once WPFS_ABSPATH . 'ext_interface/fine-tune.php';
 
 /**
  * Starts the plugin.

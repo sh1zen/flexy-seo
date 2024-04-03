@@ -35,9 +35,9 @@ class PagesHandler
 
         if (isset($_GET['wpfs-dismiss-notice'])) {
 
-            wps('wpfs')->options->add(wps_utils()->get_cuID(), 'dismissed', true, 'admin-notice', MONTH_IN_SECONDS);
+            wps('wpfs')->options->add(wps_core()->get_cuID(), 'dismissed', true, 'admin-notice', MONTH_IN_SECONDS);
         }
-        elseif ($pagenow == 'index.php' and !wps('wpfs')->options->get(wps_utils()->get_cuID(), 'dismissed', 'admin-notice', false)) {
+        elseif ($pagenow == 'index.php' and !wps('wpfs')->options->get(wps_core()->get_cuID(), 'dismissed', 'admin-notice', false)) {
             ?>
             <div class="notice notice-info is-dismissible">
                 <h3>Help me to build <a href="<?php echo admin_url('admin.php?page=wp-flexyseo'); ?>">Flexy SEO</a>.
@@ -117,7 +117,7 @@ class PagesHandler
     {
         $assets_url = PluginInit::getInstance()->plugin_base_url;
 
-        $min = wps_utils()->online ? '.min' : '';
+        $min = wps_core()->online ? '.min' : '';
 
         wp_register_style('wpfs_css', "{$assets_url}assets/style{$min}.css", ['vendor-wps-css']);
 

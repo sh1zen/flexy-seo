@@ -13,8 +13,6 @@ class Helpers
 {
     public \WP_Query $main_query;
 
-    public Images $images;
-
     public CurrentPage $currentPage;
 
     public Post $post;
@@ -42,8 +40,6 @@ class Helpers
         $this->term = new Term($this->currentPage->get_term());
 
         $this->ecommerce = new ECommerce();
-
-        $this->images = new Images();
     }
 
     public function __get($key)

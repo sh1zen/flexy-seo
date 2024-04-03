@@ -16,7 +16,6 @@ require_once WPFS_SEO_ENGINE . 'functions.php';
 
 // load core helpers
 require_once WPFS_SEO_ENGINE_HELPERS . 'ECommerce.php';
-require_once WPFS_SEO_ENGINE_HELPERS . 'Images.php';
 require_once WPFS_SEO_ENGINE_HELPERS . 'Post.php';
 require_once WPFS_SEO_ENGINE_HELPERS . 'Term.php';
 require_once WPFS_SEO_ENGINE_HELPERS . 'CurrentPage.php';
@@ -72,5 +71,3 @@ function wpfseo(string $context)
 
     return null;
 }
-
-const WPFS_SEO_ENGINE_LOADED = true;

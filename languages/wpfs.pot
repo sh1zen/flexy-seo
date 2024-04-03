@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: wpfs-translation\n"
 "Report-Msgid-Bugs-To: https://github.com/sh1zen/flexy-seo/issues\n"
-"POT-Creation-Date: 2024-03-15 12:34+0100\n"
+"POT-Creation-Date: 2024-04-03 02:30+0200\n"
 "PO-Revision-Date: 2020-05-13 02:34+0200\n"
 "Last-Translator: sh1zen\n"
 "Language-Team: sh1zen\n"
@@ -260,34 +260,34 @@ msgstr ""
 msgid "Buy me a beer"
 msgstr ""
 
-#: ext_interface/wpfs_functions.php:139
+#: ext_interface/wpfs_functions.php:96
 #, php-format
 msgid "Protected: %s"
 msgstr ""
 
-#: ext_interface/wpfs_functions.php:144
+#: ext_interface/wpfs_functions.php:101
 #, php-format
 msgid "Private: %s"
 msgstr ""
 
-#: ext_interface/wpfs_functions.php:150
+#: ext_interface/wpfs_functions.php:107
 msgid "Page not found"
 msgstr ""
 
-#: ext_interface/wpfs_functions.php:154
+#: ext_interface/wpfs_functions.php:111
 #, php-format
 msgid "Search Results for &#8220;%s&#8221;"
 msgstr ""
 
-#: ext_interface/wpfs_functions.php:181
+#: ext_interface/wpfs_functions.php:138
 msgid "Y"
 msgstr ""
 
-#: ext_interface/wpfs_functions.php:186
+#: ext_interface/wpfs_functions.php:143
 msgid "F Y"
 msgstr ""
 
-#: ext_interface/wpfs_functions.php:195
+#: ext_interface/wpfs_functions.php:152
 #, php-format
 msgid "Page %s"
 msgstr ""
@@ -637,7 +637,7 @@ msgid "Name"
 msgstr ""
 
 #: modules/seo.class.php:333 modules/seo.class.php:425
-#: modules/seo/seo_engine/extensions/XRE_MetaBox.php:117
+#: modules/seo/seo_engine/extensions/XRE_MetaBox.php:114
 msgid "Description"
 msgstr ""
 
@@ -788,11 +788,11 @@ msgstr ""
 msgid "Flexy SEO custom term meta title."
 msgstr ""
 
-#: modules/seo/seo_engine/extensions/XRE_MetaBox.php:110
+#: modules/seo/seo_engine/extensions/XRE_MetaBox.php:107
 msgid "Keyword phrase"
 msgstr ""
 
-#: modules/seo/seo_engine/extensions/XRE_MetaBox.php:124
+#: modules/seo/seo_engine/extensions/XRE_MetaBox.php:121
 msgid "Schema.org graph type"
 msgstr ""
 

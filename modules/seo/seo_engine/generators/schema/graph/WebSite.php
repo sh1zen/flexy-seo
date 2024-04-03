@@ -25,7 +25,7 @@ class WebSite extends Graph
      */
     public function get(CurrentPage $currentPage, string $type = '', ...$args): GraphBuilder
     {
-        $homeUrl = wps_utils()->home_url;
+        $homeUrl = wps_core()->home_url;
 
         $schema = new GraphBuilder([
                 '@type'       => 'WebSite',
@@ -63,6 +63,6 @@ class WebSite extends Graph
 
     public static function getSchemaID(): string
     {
-        return wps_utils()->home_url . '#website';
+        return wps_core()->home_url . '#website';
     }
 }

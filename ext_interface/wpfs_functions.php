@@ -5,9 +5,6 @@
  * @license   http://www.gnu.org/licenses/gpl.html GNU/GPL
  */
 
-use FlexySEO\Engine\Helpers\CurrentPage;
-use FlexySEO\Engine\Helpers\Images;
-use FlexySEO\Engine\Helpers\Post;
 use WPS\core\TextReplacer;
 use WPS\core\StringHelper;
 
@@ -63,46 +60,6 @@ function wpfs_get_post_description($post = null, string $default = ''): string
     }
 
     return $description ?: $default;
-}
-
-function wpfs_get_mainImageURL($post = null, $size = 'large'): string
-{
-    list($id, $url) = Post::mainImage($post, $size, false);
-
-    return $url;
-}
-
-function wpfs_get_image($attachment, $size = 'thumbnail')
-{
-    return Images::get_image($attachment, $size);
-}
-
-/**
- * Replace `%%variable_placeholders%%` with their real value based on the current requested page/post/cpt.
- *
- * @param string $string The string to replace the variables in.
- * @param int $object_id
- * @param string $type
- * @return string
- */
-function wpfs_replace_vars(string $string, int $object_id = 0, string $type = 'post'): string
-{
-    return TextReplacer::replace($string, $object_id, $type);
-}
-
-/**
- * Add a custom replacement rule with query type support
- *
- * @param string $rule The rule ex. `%%custom_replace%%`
- * @param String|callable $replacement
- * @param string $type
- */
-function wpfs_add_replacement_rule(string $rule, $replacement, string $type = ''): void
-{
-    if (defined("WPFS_SEO_ENGINE_LOADED") and WPFS_SEO_ENGINE_LOADED) {
-
-        TextReplacer::add_replacer($rule, $replacement, $type);
-    }
 }
 
 function wpfs_term_description($term, $default = ''): string

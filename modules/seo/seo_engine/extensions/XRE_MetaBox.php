@@ -24,7 +24,7 @@ class XRE_MetaBox
         }
     }
 
-    public static function Init()
+    public static function Init(): void
     {
         if (isset(self::$Instance)) {
             return;
@@ -33,12 +33,7 @@ class XRE_MetaBox
         self::$Instance = new self();
     }
 
-    public static function get_value($id, $item, $default = false)
-    {
-        return wps('wpfs')->options->get($id, $item, self::$context, $default);
-    }
-
-    public function enqueue_scripts()
+    public function enqueue_scripts(): void
     {
         wp_enqueue_style('vendor-wps-css');
     }
@@ -46,7 +41,7 @@ class XRE_MetaBox
     /**
      * Set up and add the meta box.
      */
-    public function add()
+    public function add(): void
     {
         add_meta_box(
             'wpfs_metabox',
@@ -61,24 +56,26 @@ class XRE_MetaBox
     /**
      * Save the meta box selections.
      */
-    public function save($post_id, $post, $update)
+    public function save($post_id, $post, $update): void
     {
-        if (!isset($_POST['wpfs_metabox']))
+        // not updating revision
+        if (!isset($_POST['wpfs_metabox']) or $post->post_type == 'revision') {
             return;
+        }
 
         $metas = array_filter($_POST['wpfs_metabox']);
 
         foreach ($this->fields($post) as $field_meta) {
-            $meta_name = $field_meta['name'];
 
-            if (empty($metas[$meta_name])) {
-                wps('wpfs')->options->remove($post_id, $meta_name, self::$context);
-                continue;
-            }
+            $meta_name = $field_meta['name'];
 
             $value = $metas[$meta_name];
 
-            if (isset($field_meta['sanitize_callback']) and is_callable($field_meta['sanitize_callback'])) {
+            if ($value == self::get_default_GraphType($post->post_type)) {
+                $value = '';
+            }
+
+            if (!empty($value) and isset($field_meta['sanitize_callback']) and is_callable($field_meta['sanitize_callback'])) {
                 $value = call_user_func($field_meta['sanitize_callback'], $value);
             }
 
@@ -124,9 +121,26 @@ class XRE_MetaBox
                 'label'  => __('Schema.org graph type', 'wpfs'),
                 'type'   => 'select',
                 'values' => $supportedGraphs,
-                'value'  => wpfs_get_post_meta_graphType($post, true)
+                'value'  => self::get_value($post->ID, 'graphType', self::get_default_GraphType($post->post_type))
             ]
         ];
+    }
+
+    public static function get_value($id, $item, $default = false)
+    {
+        return wps('wpfs')->options->get($id, $item, self::$context, $default);
+    }
+
+    public static function get_default_GraphType($post_type): string
+    {
+        if (!empty($post_type)) {
+
+            $for = $post_type === 'page' ? 'Page' : 'Article';
+
+            return wps('wpfs')->settings->get("seo.post_type.$post_type.schema.{$for}Type", $post_type === 'page' ? "WebPage" : "Article");
+        }
+
+        return '';
     }
 
     public function sanitize_text($str): string
@@ -139,7 +153,7 @@ class XRE_MetaBox
      *
      * @param \WP_Post $post Post object.
      */
-    public function print_html(\WP_Post $post)
+    public function print_html(\WP_Post $post): void
     {
         ?>
         <style>
@@ -206,7 +220,7 @@ class XRE_MetaBox
                             }
 
                             $checked = $value['checked'] ? 'checked' : '';
-                            echo "<input autocomplete='off' type='{$field['type']}' class='wpfs_input' name='wpfs_metabox[{$field['name']}]' value='{$value['value']}' id='{$field['name']}_{$index}' {$checked}>";
+                            echo "<input autocomplete='off' type='{$field['type']}' class='wpfs_input' name='wpfs_metabox[{$field['name']}]' value='{$value['value']}' id='{$field['name']}_{$index}' $checked>";
                         }
                     }
                 }

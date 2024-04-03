@@ -7,7 +7,7 @@
 
 namespace FlexySEO\Engine\Generators;
 
-use FlexySEO\Engine\Helpers\Images;
+use WPS\core\Images;
 
 class CommonGraphs
 {
@@ -35,7 +35,7 @@ class CommonGraphs
             $attachmentId = true;
         }
         else {
-            $attachmentId = wpfseo('helpers')->images->attachmentUrlToPostId($imageUrlId);
+            $attachmentId = Images::attachmentUrlToPostId($imageUrlId);
             $imageData = Images::get_image($attachmentId, $size);
 
             if (!$imageData) {
@@ -52,7 +52,7 @@ class CommonGraphs
         }
 
         if ($graphId and !str_contains($graphId, '#')) {
-            $graphId = wps_utils()->home_url . '#' . $graphId;
+            $graphId = wps_core()->home_url . '#' . $graphId;
         }
 
         $schema = new GraphBuilder(

@@ -9,6 +9,7 @@ namespace FlexySEO\Engine\Generators;
 
 use FlexySEO\Engine\Generator;
 use FlexySEO\Engine\Helpers\CurrentPage;
+use FlexySEO\Engine\Helpers\XRE_MetaBox;
 
 class Schema
 {
@@ -184,11 +185,9 @@ class Schema
      * requires for page / article
      * return graphArticleType or graphPageType
      */
-    public static function get_post_graphType($post)
+    public static function get_post_graphType($post): string
     {
-        $for = $post->post_type === 'page' ? 'Page' : 'Article';
-
-        return wpfs_get_post_meta_graphType($post, false, '') ?: wps('wpfs')->settings->get("seo.post_type.{$post->post_type}.schema.{$for}Type", $post->post_type === 'page' ? "WebPage" : "Article");
+        return wpfs_get_post_meta_graphType($post, false, '') ?: XRE_MetaBox::get_default_GraphType($post->post_type);
     }
 
     private function build_graphs(): void

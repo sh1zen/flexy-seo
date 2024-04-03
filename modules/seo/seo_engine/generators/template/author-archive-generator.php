@@ -10,6 +10,7 @@ namespace FlexySEO\Engine\Generators\Templates;
 use FlexySEO\Engine\Default_Generator;
 use FlexySEO\Engine\Generators\OpenGraph;
 use FlexySEO\Engine\Helpers\CurrentPage;
+use WPS\core\Images;
 
 class AuthorArchive_Generator extends Default_Generator
 {
@@ -52,6 +53,6 @@ class AuthorArchive_Generator extends Default_Generator
 
     public function get_snippet_image($size = 'thumbnail', $use_default = true)
     {
-        return wpfseo('helpers')->images->get_user_snippet_image($this->current_page->get_queried_object_id(), $size);
+        return Images::get_user_snippet_image($this->current_page->get_queried_object_id(), $size);
     }
 }

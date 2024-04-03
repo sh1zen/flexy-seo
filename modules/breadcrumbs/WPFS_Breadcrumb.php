@@ -136,7 +136,7 @@ class WPFS_Breadcrumb
 
         $this->options = array_merge($this->get_option('.'), $args);
 
-        $this->home_url = wps_utils()->home_url;
+        $this->home_url = wps_core()->home_url;
 
         $this->show_on_front = get_option('show_on_front');
         $this->page_for_posts = get_option('page_for_posts');

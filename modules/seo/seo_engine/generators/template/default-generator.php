@@ -164,20 +164,7 @@ class Default_Generator
             return false;
         }
 
-        $snippet_data = wps('wpfs')->options->get($url, "snippet_data", "cache", false);
-
-        if (!$snippet_data) {
-
-            $snippet_data = wpfseo('helpers')->images->get_snippet_data($url, $size);
-
-            if (!$snippet_data) {
-                return false;
-            }
-
-            wps('wpfs')->options->add($url, "snippet_data", $snippet_data, "cache", WEEK_IN_SECONDS);
-        }
-
-        return $snippet_data;
+        return wps_get_snippet_data($url, $size);
     }
 
     /**

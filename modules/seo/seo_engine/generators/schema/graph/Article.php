@@ -10,7 +10,6 @@ namespace FlexySEO\Engine\Generators\Schema\Graphs;
 use FlexySEO\Engine\Generators\GraphBuilder;
 use FlexySEO\Engine\Helpers\CurrentPage;
 
-
 /**
  * Article graph class.
  */
@@ -79,7 +78,7 @@ class Article extends Graph
             $schema->set('pagination', $pageNumber);
         }
 
-        list($imageId, $imageUrl) = wpfseo('helpers')->post->get_first_usable_image('large', false, $post);
+        $imageUrl = wps_get_mainImageURL($post, 'large', false);
 
         if ($imageUrl) {
             $schema->set('thumbnailUrl', $imageUrl);

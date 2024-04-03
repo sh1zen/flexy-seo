@@ -36,7 +36,7 @@ class GraphUtility
 
         if ($authorId) {
             $socialUrls = [
-                'this' => wps_utils()->home_url,
+                'this' => wps_core()->home_url,
             ];
         }
         else {

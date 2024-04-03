@@ -5,10 +5,7 @@
  * @license   http://www.gnu.org/licenses/gpl.html GNU/GPL
  */
 
-namespace FlexySEO\Engine\Helpers;
-
-use WPS\core\Cache;
-use WPS\core\UtilEnv;
+namespace WPS\core;
 
 /**
  * Image_Utils.
@@ -19,13 +16,13 @@ class Images
      * @param string $url The attachment URL for which we want to know the Post ID.
      * @return int The Post ID belonging to the attachment, 0 if not found.
      */
-    public function attachmentUrlToPostId(string $url): int
+    public static function attachmentUrlToPostId(string $url): int
     {
         if (is_numeric($url)) {
             return intval($url);
         }
 
-        $id = wps('wpfs')->options->get($url, 'attachmentUrlToPostId', 'cache');
+        $id = wps()->options->get($url, 'attachmentUrlToPostId', 'cache');
 
         if ($id === 'not_found') {
             return 0;
@@ -39,17 +36,17 @@ class Images
         $id = wps_attachment_url_to_postid($url);
 
         if (empty($id)) {
-            wps('wpfs')->options->update($url, 'attachmentUrlToPostId', 'not_found', 'cache', WEEK_IN_SECONDS);
+            wps()->options->update($url, 'attachmentUrlToPostId', 'not_found', 'cache', WEEK_IN_SECONDS);
             return 0;
         }
 
         // We have the Post ID, but it's not in the cache yet.
-        wps('wpfs')->options->update($url, 'attachmentUrlToPostId', $id, 'cache', WEEK_IN_SECONDS);
+        wps()->options->update($url, 'attachmentUrlToPostId', $id, 'cache', WEEK_IN_SECONDS);
 
         return $id;
     }
 
-    public function getSiteLogoId()
+    public static function getSiteLogoId()
     {
         if (!get_theme_support('custom-logo')) {
             return [];
@@ -65,11 +62,11 @@ class Images
      *
      * @return array The different variations possible for this attachment ID.
      */
-    public function get_variations($attachment_id): array
+    public static function get_variations($attachment_id): array
     {
         $variations = [];
 
-        foreach ($this->get_sizes() as $size) {
+        foreach (static::get_sizes() as $size) {
             $variation = self::get_image($attachment_id, $size);
 
             // The get_image function returns false if the size doesn't exist for this attachment.
@@ -86,7 +83,7 @@ class Images
      *
      * @return array $image_sizes An array of image sizes.
      */
-    public function get_sizes(): array
+    private static function get_sizes(): array
     {
         return apply_filters('wpfs_image_sizes', ['thumbnail', 'medium', 'medium_large', 'large', 'full']);
     }
@@ -145,7 +142,7 @@ class Images
 
         $cacheKey = Cache::generate_key($is_url ? $attachment : $attachment_id, $size);
 
-        $image = wps('wpfs')->options->get($cacheKey, 'schema.images.get_image', 'cache');
+        $image = wps()->options->get($cacheKey, 'schema.images.get_image', 'cache');
 
         if ($image !== false) {
             return $image;
@@ -206,7 +203,7 @@ class Images
                     }
                 }
                 else {
-                    list($width, $height) = wps_utils()->online ? getimagesize($file_url) : [0, 0];
+                    list($width, $height) = wps_core()->online ? getimagesize($file_url) : [0, 0];
                 }
 
                 $metadata = [
@@ -255,18 +252,17 @@ class Images
         }
 
         // Deals with non-set keys and values being null or false.
-        if (wps_utils()->online and (empty($image['width']) or empty($image['height']))) {
+        if (wps_core()->online and (empty($image['width']) or empty($image['height']))) {
             return false;
         }
 
         $image['pixels'] = ((int)$image['width'] * (int)$image['height']);
-        $image['filesize'] = $external ? 0 : @filesize(UtilEnv::url_to_path($image['url']));
+        $image['filesize'] = $external ? 0 : UtilEnv::filesize(UtilEnv::url_to_path($image['url']));
 
-        wps('wpfs')->options->update($cacheKey, 'schema.images.get_image', $image, 'cache', MONTH_IN_SECONDS, $attachment_id);
+        wps()->options->update($cacheKey, 'schema.images.get_image', $image, 'cache', MONTH_IN_SECONDS, $attachment_id);
 
         return $image;
     }
-
 
     /**
      * Grabs an image alt text.
@@ -280,6 +276,59 @@ class Images
         return (string)get_post_meta($attachment_id, '_wp_attachment_image_alt', true);
     }
 
+    public static function get_images($attachments, $size = 'full', $allowExternal = true): array
+    {
+        if (empty($attachments)) {
+            return [];
+        }
+
+        if (is_array($size)) {
+
+            foreach ($size as $_size) {
+
+                $image = self::get_images($attachments, $_size, $allowExternal);
+
+                if (!empty($image)) {
+                    return $image;
+                }
+            }
+
+            return [];
+        }
+
+        $cacheKeys = [];
+        $images = [];
+
+        foreach ($attachments as $attachment) {
+
+            $is_url = UtilEnv::is_url($attachment);
+
+            if ($is_url) {
+                $attachment_id = $attachment;
+            }
+            else {
+                $attachment = wps_get_post($attachment);
+
+                if (!$attachment) {
+                    continue;
+                }
+
+                $attachment_id = $attachment->ID;
+            }
+
+            $cacheKeys[Cache::generate_key($attachment_id, $size)] = $attachment;
+        }
+
+        $cached_images = wps()->options->get_list(array_keys($cacheKeys), 'schema.images.get_image', 'cache');
+
+        foreach ($cacheKeys as $cache_key => $attachment) {
+            $images[$cache_key] = $cached_images[$cache_key] ?? self::get_image($attachment, $size, $allowExternal);
+        }
+
+        // fixing bug of images with array of false
+        return array_filter($images);
+    }
+
     /**
      * Grabs the images from the content.
      *
@@ -287,10 +336,10 @@ class Images
      *
      * @return array An array of image URLs.
      */
-    public function get_images_from_content(string $content): array
+    public static function get_images_from_content(string $content): array
     {
-        $content_images = $this->get_img_tags_from_content($content);
-        $images = array_map([$this, 'get_img_tag_source'], $content_images);
+        $content_images = self::get_img_tags_from_content($content);
+        $images = array_map([self::class, 'get_img_tag_source'], $content_images);
         $images = array_filter(array_unique($images));
 
         // Reset the array keys.
@@ -303,7 +352,7 @@ class Images
      * @param string $content The content to search for image tags.
      * @return array An array of `<img>` tags.
      */
-    private function get_img_tags_from_content(string $content): array
+    private static function get_img_tags_from_content(string $content): array
     {
         if (!str_contains($content, '<img')) {
             return [];
@@ -325,12 +374,12 @@ class Images
      * @return string      The formatted image URL.
      *
      */
-    public function removeImageDimensions(string $url): string
+    public static function removeImageDimensions(string $url): string
     {
         return preg_replace('#(.*)(-\d+x\d+)\.([a-z]{1,5})$#', '$1.$3', $url);
     }
 
-    public function get_user_snippet_image($userID, $size)
+    public static function get_user_snippet_image($userID, $size)
     {
         $url = get_avatar_url($userID);
 
@@ -340,13 +389,13 @@ class Images
 
         $url = apply_filters("wpfs_author_avatar", $url, $userID);
 
-        $snippet_data = wps('wpfs')->options->get($url, "snippet_data", "cache", false);
+        $snippet_data = wps()->options->get($url, "snippet_data", "cache", false);
 
         if (!$snippet_data) {
 
-            $snippet_data = wpfseo('helpers')->images->get_snippet_data($url, $size);
+            $snippet_data = self::get_snippet_data($url, $size);
 
-            wps('wpfs')->options->add($url, "snippet_data", $snippet_data, "cache", WEEK_IN_SECONDS);
+            wps()->options->add($url, "snippet_data", $snippet_data, "cache", WEEK_IN_SECONDS);
         }
 
         return $snippet_data;
@@ -357,7 +406,7 @@ class Images
      * @param string $size
      * @return array|false
      */
-    public function get_snippet_data($object, $size = 'thumbnail')
+    public static function get_snippet_data($object, $size = 'thumbnail')
     {
         $width = 0;
         $height = 0;
@@ -397,7 +446,7 @@ class Images
      *
      * @return string|bool The image URL on success, false on failure.
      */
-    private function get_img_tag_source($image)
+    private static function get_img_tag_source($image)
     {
         preg_match('#src=(["\'])(.*?)\1#', $image, $matches);
         if (isset($matches[2])) {

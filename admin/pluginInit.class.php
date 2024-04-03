@@ -82,7 +82,7 @@ class PluginInit
 
             wps_run_upgrade('wpfs', WPFS_VERSION, WPFS_ADMIN . "upgrades/");
 
-            wps_utils()->is_upgrading(true);
+            wps_core()->is_upgrading(true);
 
             wps('wpfs')->moduleHandler->upgrade();
         }
