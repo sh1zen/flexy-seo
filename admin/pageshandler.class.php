@@ -49,7 +49,7 @@ class PagesHandler
         }
     }
 
-    public function add_plugin_pages()
+    public function add_plugin_pages(): void
     {
         add_menu_page('Flexy SEO', 'Flexy SEO', 'customize', 'wp-flexyseo', array($this, 'render_main'), 'dashicons-admin-site');
 
@@ -57,8 +57,7 @@ class PagesHandler
          * Modules - sub pages
          */
         foreach (wps('wpfs')->moduleHandler->get_modules(array('scopes' => 'admin-page')) as $module) {
-
-            add_submenu_page('wp-flexyseo', 'WPFS ' . $module['name'], $module['name'], 'customize', $module['slug'], array($this, 'render_module'));
+            wps('wpfs')->moduleHandler->get_module_instance($module)->register_panel('wp-flexyseo');
         }
 
         /**
@@ -70,50 +69,30 @@ class PagesHandler
          * Plugin core settings
          */
         add_submenu_page('wp-flexyseo', __('WPFS FAQ', 'wpfs'), __('FAQ', 'wpfs'), 'edit_posts', 'wpfs-faqs', array($this, 'render_faqs'));
+
+        add_action('wpfs_enqueue_panel_scripts', [$this, 'enqueue_scripts']);
     }
 
-    public function render_modules_settings()
-    {
-        $this->enqueue_scripts();
-
-        wps('wpfs')->settings->render_modules_settings();
-    }
-
-    public function enqueue_scripts()
+    public function enqueue_scripts(): void
     {
         wp_enqueue_style('wpfs_css');
         wp_enqueue_script('vendor-wps-js');
     }
 
-    public function enqueue_scripts_edit_page()
+    public function enqueue_scripts_edit_page(): void
     {
         wp_enqueue_style('wpfs_css');
         wp_enqueue_script('vendor-wps-js');
     }
 
-    public function render_core_settings()
+    public function render_core_settings(): void
     {
         $this->enqueue_scripts();
 
         wps('wpfs')->settings->render_core_settings();
     }
 
-    public function render_module()
-    {
-        $module_slug = StringHelper::sanitize_text($_GET['page']);
-
-        $object = wps('wpfs')->moduleHandler->get_module_instance($module_slug);
-
-        if (is_null($object)) {
-            return;
-        }
-
-        $this->enqueue_scripts();
-
-        $object->render_admin_page();
-    }
-
-    public function register_assets()
+    public function register_assets(): void
     {
         $assets_url = PluginInit::getInstance()->plugin_base_url;
 
@@ -130,7 +109,7 @@ class PagesHandler
         ]);
     }
 
-    public function render_faqs()
+    public function render_faqs(): void
     {
         $this->enqueue_scripts();
         ?>

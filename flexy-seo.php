@@ -13,59 +13,20 @@
  * Author URI: https://sh1zen.github.io/
  * Text Domain: wpfs
  * Domain Path: /languages
- * Version: 1.9.7
+ * Version: 1.9.8
  */
 
-const WPFS_VERSION = '1.9.7';
-
+const WPFS_VERSION = '1.9.8';
 const WPFS_FILE = __FILE__;
-const WPFS_ABSPATH = __DIR__ . '/';
-const WPFS_MODULES = WPFS_ABSPATH . 'modules/';
-const WPFS_ADMIN = WPFS_ABSPATH . 'admin/';
 
-
-// wps-framework commons
-if (!defined('WPS_FRAMEWORK')) {
-
-    if (defined('WPS_FRAMEWORK_SOURCE') and file_exists(WPS_FRAMEWORK_SOURCE . 'loader.php')) {
-        require_once WPS_FRAMEWORK_SOURCE . 'loader.php';
-    }
-    else {
-        if (!file_exists(WPFS_ABSPATH . 'vendors/wps-framework/loader.php')) {
-            return;
-        }
-        require_once WPFS_ABSPATH . 'vendors/wps-framework/loader.php';
-    }
-}
-
-wps(
-    'wpfs',
-    [
-        'modules_path' => WPFS_MODULES,
-        'table_name'   => "wp_flexy_seo",
-    ],
-    [
-        'meter'         => false,
-        'cron'          => false,
-        'cache'         => true,
-        'storage'       => true,
-        'settings'      => true,
-        'moduleHandler' => true,
-        'options'       => true
-    ]
-);
-
-define("WPFS_DEBUG", $_SERVER["SERVER_ADDR"] === '127.0.0.1');
-
-// main class
+require_once __DIR__ . '/inc/wps_and_constants.php';
 require_once WPFS_ADMIN . 'PluginInit.class.php';
-
-require_once WPFS_ABSPATH . 'ext_interface/fine-tune.php';
+require_once WPFS_INC_PATH . 'fine-tune.php';
 
 /**
  * Starts the plugin.
  */
 FlexySEO\core\PluginInit::Initialize();
 
-require_once WPFS_ABSPATH . 'ext_interface/wpfs_functions.php';
-require_once WPFS_ABSPATH . 'ext_interface/wp-hooks.php';
+require_once WPFS_ABSPATH . 'inc/wpfs_functions.php';
+require_once WPFS_ABSPATH . 'inc/wp-hooks.php';

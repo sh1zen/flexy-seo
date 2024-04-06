@@ -56,8 +56,6 @@ class PostType_Generator extends Default_Generator
          *
          * @api string $attachment_url The attachment URL for the queried object.
          * @api object $queried_object The queried object.
-         *
-         * @since 1.0.0
          */
         return apply_filters(
             'wpfs_template_redirect_url',

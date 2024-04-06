@@ -5,6 +5,7 @@
  * @license   http://www.gnu.org/licenses/gpl.html GNU/GPL
  */
 
+use WPS\core\StringHelper;
 use WPS\core\UtilEnv;
 
 function wps_time($format = 'timestamp', $offset = 0, $zoned = true, $basetime = false)
@@ -19,10 +20,6 @@ function wps_time($format = 'timestamp', $offset = 0, $zoned = true, $basetime =
 
     $time = $basetime + intval($offset);
 
-    if ('timestamp' === $format || 'U' === $format) {
-        return $time;
-    }
-
     if ('mysql' === $format) {
         $format = 'Y-m-d H:i:s';
     }
@@ -31,14 +28,18 @@ function wps_time($format = 'timestamp', $offset = 0, $zoned = true, $basetime =
         $time += (int)(get_option('gmt_offset')) * HOUR_IN_SECONDS;
     }
 
+    if ('timestamp' === $format || 'U' === $format) {
+        return $time;
+    }
+
     return date($format, $time);
 }
 
-function wps_str_to_time(string $timestamp, $gmt = true)
+function wps_str_to_time(string $timestamp, $gmt = true): int
 {
     $gmt_offset = $gmt ? (int)(get_option('gmt_offset')) * HOUR_IN_SECONDS : 0;
 
-    return strtotime($timestamp, time() + $gmt_offset) - $gmt_offset;
+    return (int)(strtotime($timestamp, time() + $gmt_offset) - $gmt_offset);
 }
 
 function wps_get_user($user): ?WP_User
@@ -141,6 +142,23 @@ function wps_get_term_meta($meta_key, $default = '', $term_id = 0, $single = tru
     }
 
     return $default;
+}
+
+function wps_get_post_excerpt($post = null, $length = 32, $more = '...'): string
+{
+    $post = wps_get_post($post);
+
+    $post_excerpt = $post->post_excerpt ?: $post->post_content;
+
+    $post_excerpt = StringHelper::filter_text($post_excerpt, true);
+
+    $post_excerpt = preg_replace("#\s([.,:;])\s#", "$1 ", $post_excerpt);
+
+    if ($length) {
+        $post_excerpt = StringHelper::truncate($post_excerpt, $length, $more);
+    }
+
+    return $post_excerpt;
 }
 
 function wps_convert_to_javascript_object(array $arr, $sequential_keys = false, $quotes = false, $beautiful_json = false): string
@@ -394,6 +412,34 @@ function wps_user_has_role($role, $user): bool
     $roles = ($user instanceof WP_User) ? $user->roles : [];
 
     return !empty(array_intersect(array($role), $roles));
+}
+
+function wps_get_page_args($item = null, $default = false)
+{
+    $args = maybe_unserialize($_REQUEST['wpsargs'] ?? '');
+
+    if (is_string($args)) {
+        $n_args = [];
+        // parse wps format
+        // key1:value1,key2:value2
+        foreach (explode(',', $args) as $arg) {
+            $parsed_arg = explode(':', $arg, 2);
+            if (isset($parsed_arg[0])) {
+                $n_args[$parsed_arg[0]] = $parsed_arg[1] ?? '';
+            }
+        }
+        $args = $n_args;
+    }
+
+    if (empty($args)) {
+        return $default;
+    }
+
+    if (!is_null($item)) {
+        return $args[$item] ?? $default;
+    }
+
+    return $args;
 }
 
 function wps_log($message, $file_name = 'wps-debug.log', $skip_frames = 1, $mode = FILE_APPEND): void

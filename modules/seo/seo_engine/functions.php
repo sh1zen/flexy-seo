@@ -12,7 +12,11 @@ function wpfs_paged_link($pagenum = 0, $url = ''): string
 {
     global $wp_rewrite;
 
-    $rewriter = Rewriter::getClone($url);
+    if (is_null($wp_rewrite)) {
+        $wp_rewrite = new WP_Rewrite();
+    }
+
+    $rewriter = Rewriter::getInstance($url);
 
     $rewriter->remove_query_args();
 

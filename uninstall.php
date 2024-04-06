@@ -5,30 +5,26 @@
  * @license   http://www.gnu.org/licenses/gpl.html GNU/GPL
  */
 
-// Make sure that we are uninstalling
+/**
+ * Uninstall Procedure
+ */
+global $wpdb;
+
+// if uninstall.php is not called by WordPress, die
 if (!defined('WP_UNINSTALL_PLUGIN')) {
-    exit();
+    die();
 }
+
+// setup constants
+require_once __DIR__ . '/inc/wps_and_constants.php';
 
 // Leave no trail
 $option_names = array('wpfs');
 
-if (!is_multisite()) {
-    foreach ($option_names as $option_name) {
-        delete_option($option_name);
-    }
+foreach ($option_names as $option_name) {
+    delete_option($option_name);
 }
-else {
-    global $wpdb;
 
-    $blog_ids = $wpdb->get_col("SELECT blog_id FROM $wpdb->blogs");
-    $original_blog_id = get_current_blog_id();
+$wpdb->query("DROP TABLE IF EXISTS " . wps('wpfs')->options->table_name());
 
-    foreach ($blog_ids as $blog_id) {
-        switch_to_blog($blog_id);
-        foreach ($option_names as $option_name) {
-            delete_option($option_name);
-        }
-    }
-    switch_to_blog($original_blog_id);
-}
+wps_uninstall();

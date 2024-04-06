@@ -622,7 +622,6 @@ class WPFS_Breadcrumb
          *
          * @param string $rule The rule.
          * @param array $replaces The currently generated replacements.
-         * @since 1.0.0
          */
         return apply_filters('wpfs_breadcrumb_replacements', $replaces, $rule);
     }

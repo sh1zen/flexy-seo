@@ -9,13 +9,14 @@ namespace WPS\core;
 
 class Cache
 {
+    public int $hits = 0;
+    public int $miss = 0;
+
     private $driver = null;
     private array $cache = [];
     private int $cached_data = 0;
-    private int $hits = 0;
-    private int $miss = 0;
     private bool $is_multisite;
-    private string $blog_prefix;
+    private string $blog_prefix = '';
     private string $context;
     private array $global_groups = [];
     private array $non_persistent_groups = [];
@@ -24,7 +25,9 @@ class Cache
     {
         $this->is_multisite = is_multisite();
 
-        $this->switch_to_blog();
+        if ($this->is_multisite) {
+            $this->switch_to_blog();
+        }
 
         $this->context = $context;
 

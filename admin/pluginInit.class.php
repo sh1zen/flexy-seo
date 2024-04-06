@@ -44,10 +44,10 @@ class PluginInit
 
         $this->load_textdomain();
 
-        $this->maybe_upgrade();
+        wps_maybe_upgrade('wpfs', WPFS_VERSION, WPFS_ADMIN . "upgrades/");
     }
 
-    private function register_actions()
+    private function register_actions(): void
     {
         // Plugin Activation/Deactivation.
         register_activation_hook(WPFS_FILE, array($this, 'plugin_activation'));
@@ -71,21 +71,6 @@ class PluginInit
         }
 
         load_textdomain('wpfs', WPFS_ABSPATH . 'languages/' . $mo_file);
-    }
-
-    private function maybe_upgrade()
-    {
-        $version = wps('wpfs')->settings->get('ver', false);
-
-        // need upgrade
-        if (!$version or version_compare($version, WPFS_VERSION, '<')) {
-
-            wps_run_upgrade('wpfs', WPFS_VERSION, WPFS_ADMIN . "upgrades/");
-
-            wps_core()->is_upgrading(true);
-
-            wps('wpfs')->moduleHandler->upgrade();
-        }
     }
 
     public static function getInstance(): PluginInit
@@ -153,9 +138,8 @@ class PluginInit
      * What to do when the plugin on plugin activation
      *
      * @param boolean $network_wide Is network wide.
-     * @return void
      */
-    public function plugin_activation($network_wide)
+    public function plugin_activation($network_wide): void
     {
         if (is_multisite() and $network_wide) {
             $ms_sites = (array)get_sites();
@@ -171,13 +155,12 @@ class PluginInit
         }
     }
 
-    private function activate()
+    private function activate(): void
     {
         wps('wpfs')->settings->activate();
 
         /**
          * Hook for the plugin activation
-         * @since 1.0.0
          */
         do_action('wpfs-activate');
     }
@@ -186,9 +169,8 @@ class PluginInit
      * What to do when the plugin on plugin deactivation
      *
      * @param boolean $network_wide Is network wide.
-     * @return void
      */
-    public function plugin_deactivation($network_wide)
+    public function plugin_deactivation($network_wide): void
     {
         if (is_multisite() and $network_wide) {
             $ms_sites = (array)get_sites();
@@ -204,25 +186,18 @@ class PluginInit
         }
     }
 
-    private function deactivate()
+    private function deactivate(): void
     {
         /**
          * Hook for the plugin deactivation
-         * @since 1.0.0
          */
         do_action('wpfs-deactivate');
     }
 
     /**
      * Add donate link to plugin description in /wp-admin/plugins.php
-     *
-     * @param array $plugin_meta
-     * @param string $plugin_file
-     * @param string $plugin_data
-     * @param string $status
-     * @return array
      */
-    public function donate_link($plugin_meta, $plugin_file, $plugin_data, $status)
+    public function donate_link($plugin_meta, $plugin_file, $plugin_data, $status): array
     {
         if ($plugin_file == $this->plugin_basename) {
             $plugin_meta[] = '&hearts; <a target="_blank" href="https://www.paypal.com/donate/?business=dev.sh1zen%40outlook.it&item_name=Thank+you+in+advanced+for+the+kind+donations.+You+will+sustain+me+developing+FlexySEO.&currency_code=EUR">' . __('Buy me a beer', 'wpfs') . ' :o)</a>';
@@ -234,11 +209,6 @@ class PluginInit
 
     /**
      * Add link to settings in Plugins list page
-     *
-     * @wp-hook plugin_action_links
-     * @param $links
-     * @param $file
-     * @return mixed
      */
     public function extra_plugin_link($links, $file)
     {

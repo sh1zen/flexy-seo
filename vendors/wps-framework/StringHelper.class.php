@@ -18,7 +18,6 @@ class StringHelper
      * @param bool $keep_newlines Optional. Whether to keep newlines. Default: false.
      * @param bool $pre_filter
      * @return string
-     * @since 1.3.0
      */
     public static function escape_text(string $str, bool $keep_newlines = false, bool $pre_filter = false): string
     {
@@ -41,7 +40,6 @@ class StringHelper
      * Internal helper function to sanitize a string from user input
      * Removes php code, script, style and html comments
      * strip_tags
-     * @since 1.3.0
      */
     public static function filter_text($text, $strip_new_lines = false): string
     {
@@ -62,11 +60,11 @@ class StringHelper
             $text = preg_replace('#<(script|style)[^>]*?>.*?</\\1>#si', '', $text);
 
             // Remove PHP code
-            $text = preg_replace('#<\?php.*?\?>#s', '', $text);
+            $text = preg_replace('#<\?php.*?\?>#si', '', $text);
 
-            // Remove HTML tags but
-            // todo try to keep < and > if there is space
-            $text = preg_replace('#<[^><]+>#s', '', $text);
+            // Remove HTML tags but try to keep < and > if there is space
+            // $text = preg_replace('#<[^><]+>#s', '', $text);
+            $text = preg_replace('#<(?!\s)[^><]+>#s', '', $text);
         }
 
         // Remove WordPress shortcodes raw and dirty method, but fine in most cases
@@ -109,7 +107,6 @@ class StringHelper
      * @param string $str String to sanitize.
      * @param bool $keep_newlines Optional. Whether to keep newlines. Default: false.
      * @return string Sanitized string.
-     * @since 1.0.0
      */
     public static function sanitize_text(string $str, bool $keep_newlines = false): string
     {
@@ -125,7 +122,7 @@ class StringHelper
 
         if (str_contains($str, '<')) {
 
-            $str = preg_replace_callback('#<[^>]*?((?=<)|>|$)#', ['self', 'pre_kses_less_than_callback'], $str);
+            $str = preg_replace_callback('#<[^>]*?((?=<)|>|$)#', 'self::pre_kses_less_than_callback', $str);
 
             // remove also style and scripts
             $str = preg_replace('#<(script|style)[^>]*?>.*?</\\1>#si', '', $str);
@@ -486,8 +483,8 @@ class StringHelper
         $truncatedWords = array_slice($words, 0, $numWords);
         $truncatedText = implode(' ', $truncatedWords);
 
-        return $truncatedText. $ellipsis;
-     }
+        return $truncatedText . $ellipsis;
+    }
 
     /**
      * Check if a string is JSON encoded or not.
@@ -498,6 +495,16 @@ class StringHelper
 
         // Return a boolean whether the last error matches.
         return json_last_error() === JSON_ERROR_NONE;
+    }
+
+    public static function make_regex($regex, $delimiter): string
+    {
+        return str_replace($delimiter, "\\$delimiter", $regex);
+    }
+
+    public static function stringBuilder(...$strings): string
+    {
+        return implode("\n", $strings);
     }
 
     /**

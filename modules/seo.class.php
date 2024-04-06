@@ -15,6 +15,8 @@ use FlexySEO\Engine\WPFS_SEO;
 
 class Mod_seo extends Module
 {
+    public static ?string $name = 'SEO';
+
     public array $scopes = array('admin-page', 'settings', 'autoload');
 
     protected string $context = 'wpfs';

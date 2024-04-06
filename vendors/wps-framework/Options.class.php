@@ -238,7 +238,7 @@ class Options
             return $default;
         }
 
-        $rows = $wpdb->get_results($wpdb->prepare("SELECT * FROM " . $this->table_name() . " WHERE item = %s AND context = %s " . ($limiter ? "LIMIT {$limiter}" : "") . " OFFSET {$offset}", $option, $context));
+        $rows = $wpdb->get_results($wpdb->prepare("SELECT * FROM " . $this->table_name() . " WHERE item = %s AND context = %s " . ($limiter ? "LIMIT $limiter" : "") . " OFFSET {$offset}", $option, $context));
 
         if (!$rows) {
             return $default;
@@ -270,7 +270,7 @@ class Options
         return $values;
     }
 
-    public function remove_by_id($id)
+    public function remove_by_id($id): bool
     {
         global $wpdb;
 
@@ -318,11 +318,12 @@ class Options
         return $res;
     }
 
-    public function remove_by_container($container)
+    public function remove_by_container($container): bool
     {
-        global $wpdb;
-
-        return boolval($wpdb->query($wpdb->prepare("DELETE FROM " . $this->table_name() . " WHERE container = %s", $container)));
+        if (empty($container)) {
+            return true;
+        }
+        return (bool)Query::getInstance()->delete(['container' => $container], $this->table_name())->query();
     }
 
     public function remove_by_value($value, $regex = false)

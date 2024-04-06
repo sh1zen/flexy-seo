@@ -22,23 +22,6 @@ function wpfs_breadcrumb(string $before, string $after, bool $display = true, ar
     return WPFS_Breadcrumb::breadcrumb($before, $after, $display, $args);
 }
 
-function wpfs_get_post_excerpt($post = null, $length = 32, $more = '...'): string
-{
-    $post = wps_get_post($post);
-
-    $post_excerpt = $post->post_excerpt ?: $post->post_content;
-
-    $post_excerpt = StringHelper::filter_text($post_excerpt, true);
-
-    $post_excerpt = preg_replace("#\s([.,:;])\s#", "$1 ", $post_excerpt);
-
-    if ($length) {
-        $post_excerpt = StringHelper::truncate($post_excerpt, $length, $more);
-    }
-
-    return $post_excerpt;
-}
-
 function wpfs_get_post_description($post = null, string $default = ''): string
 {
     if ($post) {

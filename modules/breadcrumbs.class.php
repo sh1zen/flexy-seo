@@ -11,6 +11,8 @@ use WPS\modules\Module;
 
 class Mod_breadcrumbs extends Module
 {
+    public static ?string $name = 'Breadcrumbs';
+
     public array $scopes = array('settings', 'admin-page', 'autoload');
 
     protected string $context = 'wpfs';
@@ -49,7 +51,7 @@ class Mod_breadcrumbs extends Module
         <?php
     }
 
-    public function render_admin_page(): void
+    protected function render_sub_modules(): void
     {
         ?>
         <section class="wps-wrap">
