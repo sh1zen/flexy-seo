@@ -15,9 +15,9 @@ class Helpers
 
     public CurrentPage $currentPage;
 
-    public Post $post;
+    public Post $postHandler;
 
-    public Term $term;
+    public Term $termHandler;
 
     public ECommerce $ecommerce;
 
@@ -35,9 +35,9 @@ class Helpers
 
         $this->currentPage = new CurrentPage($main_query);
 
-        $this->post = new Post($this->currentPage->get_post());
+        $this->postHandler = new Post($this->currentPage->get_post());
 
-        $this->term = new Term($this->currentPage->get_term());
+        $this->termHandler = new Term($this->currentPage->get_term());
 
         $this->ecommerce = new ECommerce();
     }

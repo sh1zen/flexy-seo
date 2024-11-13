@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: wpfs-translation\n"
 "Report-Msgid-Bugs-To: https://github.com/sh1zen/flexy-seo/issues\n"
-"POT-Creation-Date: 2024-04-22 15:11+0200\n"
+"POT-Creation-Date: 2024-11-13 15:00+0100\n"
 "PO-Revision-Date: 2020-05-13 02:34+0200\n"
 "Last-Translator: sh1zen\n"
 "Language-Team: sh1zen\n"
@@ -12,7 +12,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"X-Generator: Poedit 3.4.2\n"
+"X-Generator: Poedit 3.5\n"
 "X-Poedit-Basepath: ..\n"
 "X-Poedit-SourceCharset: UTF-8\n"
 "X-Poedit-KeywfsrdsList: __;_e;_ex;_x;_n;_nx;_n_noop;_nx_noop;esc_html__;"
@@ -292,11 +292,11 @@ msgstr ""
 msgid "Page %s"
 msgstr ""
 
-#: modules/breadcrumbs.class.php:81
+#: modules/breadcrumbs.class.php:82
 msgid "Status:"
 msgstr ""
 
-#: modules/breadcrumbs.class.php:82 modules/seo.class.php:220
+#: modules/breadcrumbs.class.php:83 modules/seo.class.php:220
 #: modules/seo.class.php:226 modules/seo.class.php:232
 #: modules/seo.class.php:237 modules/seo.class.php:243
 #: modules/seo.class.php:248 modules/seo.class.php:253
@@ -305,60 +305,60 @@ msgstr ""
 msgid "Active"
 msgstr ""
 
-#: modules/breadcrumbs.class.php:87
+#: modules/breadcrumbs.class.php:88
 msgid "Flexed Breadcrumbs"
 msgstr ""
 
-#: modules/breadcrumbs.class.php:88
+#: modules/breadcrumbs.class.php:89
 msgid "Highlight last page"
 msgstr ""
 
-#: modules/breadcrumbs.class.php:89
+#: modules/breadcrumbs.class.php:90
 msgid "Separator"
 msgstr ""
 
-#: modules/breadcrumbs.class.php:94 modules/seo.class.php:193
+#: modules/breadcrumbs.class.php:95 modules/seo.class.php:193
 msgid "Home:"
 msgstr ""
 
-#: modules/breadcrumbs.class.php:95 modules/breadcrumbs.class.php:101
-#: modules/breadcrumbs.class.php:107 modules/breadcrumbs.class.php:113
-#: modules/breadcrumbs.class.php:118
+#: modules/breadcrumbs.class.php:96 modules/breadcrumbs.class.php:102
+#: modules/breadcrumbs.class.php:108 modules/breadcrumbs.class.php:114
+#: modules/breadcrumbs.class.php:119
 msgid "Prefix"
 msgstr ""
 
-#: modules/breadcrumbs.class.php:96 modules/breadcrumbs.class.php:102
-#: modules/breadcrumbs.class.php:108 modules/breadcrumbs.class.php:119
+#: modules/breadcrumbs.class.php:97 modules/breadcrumbs.class.php:103
+#: modules/breadcrumbs.class.php:109 modules/breadcrumbs.class.php:120
 msgid "Format"
 msgstr ""
 
-#: modules/breadcrumbs.class.php:100
+#: modules/breadcrumbs.class.php:101
 msgid "Author:"
 msgstr ""
 
-#: modules/breadcrumbs.class.php:106
+#: modules/breadcrumbs.class.php:107
 msgid "Search:"
 msgstr ""
 
-#: modules/breadcrumbs.class.php:112
+#: modules/breadcrumbs.class.php:113
 msgid "Archive:"
 msgstr ""
 
-#: modules/breadcrumbs.class.php:117
+#: modules/breadcrumbs.class.php:118
 msgid "404:"
-msgstr ""
-
-#: modules/breadcrumbs.class.php:135
-#, php-format
-msgid "%s archive format"
 msgstr ""
 
 #: modules/breadcrumbs.class.php:136
 #, php-format
+msgid "%s archive format"
+msgstr ""
+
+#: modules/breadcrumbs.class.php:137
+#, php-format
 msgid "Show post type for %s"
 msgstr ""
 
-#: modules/breadcrumbs.class.php:142
+#: modules/breadcrumbs.class.php:143
 msgid "Breadcrumb Taxonomies Archive format:"
 msgstr ""
 

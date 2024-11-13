@@ -21,7 +21,7 @@ class Mod_breadcrumbs extends Module
     {
         $style = apply_filters("wpfs_breadcrumb_style", false);
 
-        if ($style and is_string($style)) {
+        if (is_string($style)) {
             echo $style;
             return;
         }
@@ -67,7 +67,8 @@ class Mod_breadcrumbs extends Module
 
     protected function init(): void
     {
-        if (!(wp_doing_cron() or wp_doing_ajax() or is_admin())) {
+        if (wps_core()->doing_webview()) {
+
             require_once WPFS_MODULES . 'breadcrumbs/WPFS_Breadcrumb.php';
 
             add_action('wp_head', array($this, 'print_style'));

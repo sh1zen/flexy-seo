@@ -17,11 +17,7 @@ class TermArchive_Generator extends Default_Generator
     {
         parent::__construct($current_page);
 
-        $type = $this->current_page->get_queried_object()->taxonomy;
-
-        if (!$type) {
-            $type = 'none';
-        }
+        $type = $this->current_page->get_queried_object()->taxonomy ?? 'none';
 
         $this->settings_path = "seo.tax.$type.";
     }
@@ -44,7 +40,7 @@ class TermArchive_Generator extends Default_Generator
 
     public function generate_title(): string
     {
-        $value = wpfs_get_term_meta_title(wpfseo('helpers')->term->term);
+        $value = wpfs_get_term_meta_title(wpfseo('helpers')->termHandler->term);
 
         if (!empty($value)) {
             return $value;
@@ -59,7 +55,7 @@ class TermArchive_Generator extends Default_Generator
         /**
          * Try to get the term meta description, set in WordPress Term editor and filtered.
          */
-        $value = wpfs_get_term_meta_description(wpfseo('helpers')->term->term, false);
+        $value = wpfs_get_term_meta_description(wpfseo('helpers')->termHandler->term, false);
 
         if (!empty($value)) {
             return $value;

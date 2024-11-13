@@ -231,7 +231,7 @@ class CurrentPage
         elseif ($this->is_date_archive()):
             $page_type = 'date_archive';
         elseif ($this->is_404()):
-            $page_type = 'E404_page';
+            $page_type = '404_page';
         else:
             $page_type = 'none';
         endif;

@@ -121,7 +121,7 @@ class Generator
             $this->template->get_robots()
         );
 
-        return apply_filters('wpfs_robots', $robots, $this->current_page->get_page_type(), $this->current_page);
+        return apply_filters('wpfs_robots_' . $this->current_page->get_page_type(), $robots, $this->current_page);
     }
 
     /**

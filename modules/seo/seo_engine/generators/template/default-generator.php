@@ -147,7 +147,7 @@ class Default_Generator
     {
         if ($this->current_page->is_simple_page()) {
 
-            list($id, $url) = wpfseo('helpers')->post->get_first_usable_image($size);
+            list($id, $url) = wpfseo('helpers')->postHandler->get_first_usable_image($size);
         }
 
         if (empty($url) and $use_default) {

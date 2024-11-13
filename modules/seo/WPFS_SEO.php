@@ -40,24 +40,25 @@ class WPFS_SEO
 
     private function register_actions(): void
     {
-        if (!is_admin()) {
-
-            add_action('wp', array($this, 'set_up'), 10, 0);
-
-            remove_action('wp_head', 'rel_canonical');
-            remove_action('wp_head', 'index_rel_link');
-            remove_action('wp_head', 'start_post_rel_link');
-            remove_action('wp_head', 'adjacent_posts_rel_link_wp_head');
-            remove_action('wp_head', 'noindex', 1);
-            remove_action('wp_head', '_wp_render_title_tag', 1);
-            remove_action('wp_head', 'gutenberg_render_title_tag', 1);
-            remove_action('wp_head', 'wp_robots', 1);
-
-            remove_filter('wp_robots', 'wp_robots_noindex');
-            remove_filter('wp_robots', 'wp_robots_noindex_embeds');
-            remove_filter('wp_robots', 'wp_robots_noindex_search');
-            remove_filter('wp_robots', 'wp_robots_max_image_preview_large');
+        if (is_admin()) {
+            return;
         }
+
+        add_action('wp', [$this, 'set_up'], 1000, 0);
+
+        remove_action('wp_head', 'rel_canonical');
+        remove_action('wp_head', 'index_rel_link');
+        remove_action('wp_head', 'start_post_rel_link');
+        remove_action('wp_head', 'adjacent_posts_rel_link_wp_head');
+        remove_action('wp_head', 'noindex', 1);
+        remove_action('wp_head', '_wp_render_title_tag', 1);
+        remove_action('wp_head', 'gutenberg_render_title_tag', 1);
+        remove_action('wp_head', 'wp_robots', 1);
+
+        remove_filter('wp_robots', 'wp_robots_noindex');
+        remove_filter('wp_robots', 'wp_robots_noindex_embeds');
+        remove_filter('wp_robots', 'wp_robots_noindex_search');
+        remove_filter('wp_robots', 'wp_robots_max_image_preview_large');
     }
 
     public static function getInstance(): WPFS_SEO
@@ -77,9 +78,13 @@ class WPFS_SEO
         return self::$_instance;
     }
 
-    public function set_up()
+    public function set_up(): void
     {
         global $wp_the_query;
+
+        if ($wp_the_query->is_feed()) {
+            return;
+        }
 
         //pass the main query reference
         $this->helpers = new Helpers($wp_the_query);

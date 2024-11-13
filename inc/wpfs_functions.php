@@ -47,7 +47,7 @@ function wpfs_get_post_description($post = null, string $default = ''): string
 
 function wpfs_term_description($term, $default = ''): string
 {
-    return wpfseo('helpers')->term->get_description($term, $default);
+    return wpfseo('helpers')->termHandler->get_description($term, $default);
 }
 
 function wpfs_the_title($suppress_filters = false): string

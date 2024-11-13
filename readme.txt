@@ -3,9 +3,9 @@ Contributors: sh1zen
 Tags: SEO, Breadcrumbs, Schema, Ranking, SERP, Content analysis, Readability
 Donate link: https://www.paypal.com/donate?business=dev.sh1zen%40outlook.it&item_name=Thank+you+in+advanced+for+the+kind+donations.+You+will+sustain+me+developing+FlexySEO.&currency_code=EUR
 Requires at least: 5.0.0
-Tested up to: 6.5
+Tested up to: 6.7
 Requires PHP: 7.4
-Stable tag: 1.9.8
+Stable tag: 1.9.9
 License: GNU v3.0 License
 URI: https://github.com/sh1zen/flexy-seo/blob/master/LICENSE
 
@@ -103,12 +103,12 @@ work! Otherwise, go to the new added module "Setting" and try a reset.
 
 == Changelog ==
 
-= 1.9.8 =
+= 1.9.9 =
 
 * improved uninstallation
 * improved core performances
 * updated translations
-* extended support for WordPress 6.5
+* extended support to WordPress 6.7
 
 = 1.9.2 =
 

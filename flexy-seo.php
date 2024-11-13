@@ -13,10 +13,10 @@
  * Author URI: https://sh1zen.github.io/
  * Text Domain: wpfs
  * Domain Path: /languages
- * Version: 1.9.8
+ * Version: 1.9.9
  */
 
-const WPFS_VERSION = '1.9.8';
+const WPFS_VERSION = '1.9.9';
 const WPFS_FILE = __FILE__;
 
 require_once __DIR__ . '/inc/wps_and_constants.php';
