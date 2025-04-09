@@ -1,7 +1,7 @@
 <?php
 /**
  * @author    sh1zen
- * @copyright Copyright (C) 2024.
+ * @copyright Copyright (C) 2025.
  * @license   http://www.gnu.org/licenses/gpl.html GNU/GPL
  */
 
@@ -13,10 +13,10 @@
  * Author URI: https://sh1zen.github.io/
  * Text Domain: wpfs
  * Domain Path: /languages
- * Version: 1.9.9
+ * Version: 1.9.10
  */
 
-const WPFS_VERSION = '1.9.9';
+const WPFS_VERSION = '1.9.10';
 const WPFS_FILE = __FILE__;
 
 require_once __DIR__ . '/inc/wps_and_constants.php';
