@@ -246,9 +246,7 @@ class PagesHandler
                     <h2><?php _e('Options:', 'wpfs'); ?></h2>
                     <form method="POST">
                         <?php wp_nonce_field('wpfs-nonce'); ?>
-                        <input name="wpfs-clear-cache" type="submit"
-                               value="<?php _e('Reset Flexy SEO cache', 'wpfs') ?>"
-                               class="button button-primary button-large">
+                        <input name="wpfs-clear-cache" type="submit" value="<?php _e('Reset Flexy SEO cache', 'wpfs') ?>" class="button button-primary button-large">
                     </form>
                 </block>
                 <?php
@@ -258,7 +256,7 @@ class PagesHandler
                         <h2><?php _e('Tips:', 'wpfs'); ?></h2>
                         <h3>
                             <?php
-                            echo '<strong>' . __('For a better SEO optimization, it\'s recommended to install also <a href="https://wordpress.org/plugins/wp-optimizer/">this</a> plugin.', 'wpfs') . '</strong>';
+                            echo '<strong>' . sprintf(__('For a better SEO optimization, it\'s recommended to install also <a href="%s">this</a> plugin.', 'wpfs'), "https://wordpress.org/plugins/wp-optimizer/") . '</strong>';
                             ?>
                         </h3>
                     </block>

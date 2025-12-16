@@ -50,7 +50,7 @@ class Mod_seo extends Module
             ?>
             <block class="wps">
                 <section class='wps-header'><h1>SEO / <?php echo __('Settings', 'wpfs'); ?></h1></section>
-                <form id="wps-uoptions" action="options.php" method="post">
+                <form id="wps-options" action="options.php" method="post">
                     <input type="hidden" name="<?php echo wps('wpfs')->settings->get_context() . "[change]" ?>"
                            value="<?php echo $this->slug; ?>">
                     <?php

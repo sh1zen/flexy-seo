@@ -1,13 +1,12 @@
 === Flexy SEO === 
 Contributors: sh1zen 
-Tags: SEO, Breadcrumbs, Schema, Ranking, SERP, Content analysis, Readability
+Tags: SEO, Breadcrumbs, Schema, Ranking, SERP
 Donate link: https://www.paypal.com/donate?business=dev.sh1zen%40outlook.it&item_name=Thank+you+in+advanced+for+the+kind+donations.+You+will+sustain+me+developing+FlexySEO.&currency_code=EUR
 Requires at least: 5.0.0
-Tested up to: 6.8
+Tested up to: 6.9
 Requires PHP: 7.4
-Stable tag: 1.9.10
-License: GNU v3.0 License
-URI: https://github.com/sh1zen/flexy-seo/blob/master/LICENSE
+Stable tag: 1.9.11
+License: GPLv2 or later
 
 Optimize your WordPress website for search engines (SEO) and improve the search engines ranking with this flexible plugin (WPFS).
 
@@ -102,6 +101,12 @@ Deactivate the plugin and reactivate it, if this doesn't work try to uninstall a
 work! Otherwise, go to the new added module "Setting" and try a reset.
 
 == Changelog ==
+
+= 1.9.11 =
+
+* updated translations
+* improved core performances
+* extended support to WordPress 6.9
 
 = 1.9.10 =
 
