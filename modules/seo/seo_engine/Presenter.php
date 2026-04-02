@@ -10,7 +10,6 @@ namespace FlexySEO\Engine;
 use FlexySEO\Engine\Generators\Schema;
 use FlexySEO\Engine\Helpers\SEOScriptTag;
 use FlexySEO\Engine\Helpers\SEOTag;
-
 use WPS\core\Rewriter;
 
 class Presenter

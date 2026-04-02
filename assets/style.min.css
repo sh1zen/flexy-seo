@@ -1,1 +1,1 @@
-:root{--border-color: #41a961;--tabs-bg-selected-color: #379357;--tabs-text-selected-color:#fff;--main-dark-color: #349154;--header-text-color:#fff}
+:root{--wps-border-color:#41a961;--wps-tabs-bg-selected:#379357;--wps-tabs-text-selected:#fff;--wps-main-dark:#349154;--wps-main-light:#efefef;--wps-header-text:#fff;--wps-bg-primary:#f3f4f5;--wps-bg-white:rgb(255 255 255 / 70%);--wps-shadow-light:0 0 4px 1px rgb(0 0 0 / 20%);--wps-shadow-medium:0 0 8px 2px rgb(0 0 0 / 20%);--wps-radius-sm:3px;--wps-radius-md:8px;--wps-transition:250ms ease-in-out}

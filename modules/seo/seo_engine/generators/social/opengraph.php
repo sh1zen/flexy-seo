@@ -7,6 +7,7 @@
 
 namespace FlexySEO\Engine\Generators;
 
+use DateTimeInterface;
 use FlexySEO\Engine\Helpers\SEOTag;
 
 /**
@@ -29,26 +30,24 @@ class OpenGraph
      *
      * @var array (name -> value)
      */
-    private $tags;
+    private array $tags;
 
-    private $tag_index = 0;
+    private int $tag_index = 0;
 
     /**
      * @var bool
      */
-    private $validate;
+    private bool $validate;
 
     /**
      * Constructor call
      * @param bool $validate
      */
-    public function __construct($validate = false)
+    public function __construct(bool $validate = false)
     {
         $this->tags = array();
 
         $this->validate = $validate;
-
-        $this->locale();
     }
 
     /**
@@ -57,8 +56,9 @@ class OpenGraph
      */
     public function locale(string $locale = '')
     {
-        if (empty($locale))
+        if (empty($locale)) {
             $locale = get_locale();
+        }
 
         $locale = apply_filters('wpfs_locale', $locale);
 
@@ -80,13 +80,10 @@ class OpenGraph
         }
 
         // Convert locales like "es" to "es_ES", in case that works for the given locale (sometimes it does).
-        if (strlen($locale) === 2) {
-            $locale = strtolower($locale) . '_' . strtoupper($locale);
-        }
-        else {
+        if (strlen($locale) !== 2) {
             $locale = substr($locale, 0, 2);
-            $locale = strtolower($locale) . '_' . strtoupper($locale);
         }
+        $locale = strtolower($locale) . '_' . strtoupper($locale);
 
         // These are the locales FB supports.
         $fb_valid_fb_locales = [
@@ -269,22 +266,16 @@ class OpenGraph
      * @param string $name
      * @return bool
      */
-    public function has(string $name)
+    public function has(string $name): bool
     {
-        foreach ($this->tags as $tag_name => $value) {
-            if ($tag_name == $name) {
-                return true;
-            }
-        }
-
-        return false;
+        return array_key_exists($name, $this->tags);
     }
 
 
     /**
      * @return  SEOTag[]
      */
-    public function get_tags()
+    public function get_tags(): array
     {
         return $this->tags;
     }
@@ -309,7 +300,7 @@ class OpenGraph
      * @param string $title
      * @return bool
      */
-    public function title(string $title)
+    public function title(string $title): bool
     {
         $title = trim($title);
 
@@ -328,7 +319,7 @@ class OpenGraph
      * @param string $type
      * @return bool
      */
-    public function type(string $type)
+    public function type(string $type): bool
     {
         $types = [
             'music.song',
@@ -362,7 +353,7 @@ class OpenGraph
      * @param array|null $attributes Array with additional attributes (pairs of name and value)
      * @return bool
      */
-    public function image($imageFile, array $attributes = null)
+    public function image(string $imageFile, array $attributes = null): bool
     {
         if ($this->validate and !$imageFile) {
             return false;
@@ -400,7 +391,7 @@ class OpenGraph
      * @param string[] $valid Array with names of valid attributes
      * @param bool $prefixed Add the "og"-prefix?
      */
-    private function attributes($tagName, array $attributes = [], array $valid = [], $prefixed = true)
+    private function attributes(string $tagName, array $attributes = [], array $valid = [], $prefixed = true)
     {
         foreach ($attributes as $name => $value) {
 
@@ -426,7 +417,7 @@ class OpenGraph
     protected function convertDate($date)
     {
         if (is_a($date, 'DateTime')) {
-            return (string)$date->format(\DateTime::ISO8601);
+            return (string)$date->format(DateTimeInterface::ATOM);
         }
 
         return $date;
@@ -435,13 +426,13 @@ class OpenGraph
     /**
      * Adds a description tag
      *
-     * @param int $description If the text is longer than this it is shortened
+     * @param string $description If the text is longer than this it is shortened
      * @param int $maxLength
      */
-    public function description($description, $maxLength = 250)
+    public function description(string $description, int $maxLength = 250)
     {
         $description = trim(strip_tags($description));
-        $description = preg_replace("/\r|\n/", '', $description);
+        $description = preg_replace("/[\r\n]/", '', $description);
 
         $length = mb_strlen($description);
 
@@ -460,7 +451,7 @@ class OpenGraph
      * @param string $url
      * @return bool
      */
-    public function url($url = null)
+    public function url($url = null): bool
     {
         if (!$url) {
             $url = null;
@@ -477,10 +468,10 @@ class OpenGraph
 
                 $url .= '://';
 
-                $httpHost = isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : 'localhost/';
+                $httpHost = $_SERVER['HTTP_HOST'] ?? 'localhost/';
             }
 
-            $requestUri = isset($_SERVER['REQUEST_URI']) ? $_SERVER['REQUEST_URI'] : '';
+            $requestUri = $_SERVER['REQUEST_URI'] ?? '';
 
             $safeRequestURI = htmlentities(strip_tags(urldecode($requestUri)));
 
@@ -502,7 +493,7 @@ class OpenGraph
      * @param string[] $locales An array of alternative locales
      * @return bool
      */
-    public function localeAlternate(array $locales = [])
+    public function localeAlternate(array $locales = []): bool
     {
         if (is_string($locales)) {
             $locales = (array)$locales;
@@ -526,7 +517,7 @@ class OpenGraph
      * @param string $siteName
      * @return bool
      */
-    public function siteName($siteName)
+    public function siteName(string $siteName): bool
     {
         if ($this->validate and !$siteName) {
             return false;
@@ -543,7 +534,7 @@ class OpenGraph
      * @param string $determiner
      * @return bool
      */
-    public function determiner($determiner = '')
+    public function determiner(string $determiner = ''): bool
     {
         $enum = [
             'a',
@@ -570,7 +561,7 @@ class OpenGraph
      * @param array|null $attributes Array with additional attributes (pairs of name and value)
      * @return bool
      */
-    public function audio($audioFile, array $attributes = null)
+    public function audio(string $audioFile, array $attributes = null): bool
     {
         if ($this->validate and !$audioFile) {
             return false;
@@ -645,7 +636,7 @@ class OpenGraph
      * @param string $name The name of the ta
      * @return string|null
      */
-    public function getTag($name)
+    public function getTag(string $name): ?string
     {
         $lastTag = null;
 
@@ -669,7 +660,7 @@ class OpenGraph
      * @param array|null $attributes Array with additional attributes (pairs of name and value)
      * @return bool
      */
-    public function video($videoFile, array $attributes = null)
+    public function video(string $videoFile, array $attributes = null): bool
     {
         if ($this->validate and !$videoFile) {
             return false;
@@ -724,7 +715,7 @@ class OpenGraph
      * @param array $attributes Array with attributes (pairs of name and value)
      * @return bool
      */
-    public function article(array $attributes = [])
+    public function article(array $attributes = []): bool
     {
         if ($this->getTag('type') != 'article') {
             return false;
@@ -750,7 +741,7 @@ class OpenGraph
      * @param array $attributes Array with attributes (pairs of name and value)
      * @return bool
      */
-    public function book(array $attributes = [])
+    public function book(array $attributes = []): bool
     {
         if ($this->getTag('type') != 'book') {
             return false;
@@ -774,7 +765,7 @@ class OpenGraph
      * @param array $attributes Array with attributes (pairs of name and value)
      * @return bool
      */
-    public function profile(array $attributes = [])
+    public function profile(array $attributes = []): bool
     {
         if ($this->getTag('type') != 'profile') {
             return false;
