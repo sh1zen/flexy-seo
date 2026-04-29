@@ -22,6 +22,11 @@ function wpfs_breadcrumb(string $before, string $after, bool $display = true, ar
     return WPFS_Breadcrumb::breadcrumb($before, $after, $display, $args);
 }
 
+function wpfs_breadcrumb_child_dropdown($term = null, array $args = array(), bool $display = true): string
+{
+    return WPFS_Breadcrumb::term_children_dropdown($term, $args, $display);
+}
+
 function wpfs_get_post_description($post = null, string $default = ''): string
 {
     if ($post) {

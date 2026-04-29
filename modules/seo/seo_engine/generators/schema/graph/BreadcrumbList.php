@@ -30,18 +30,44 @@ class BreadcrumbList extends Graph
             return new GraphBuilder();
         }
 
+        $url = $this->generator->generate_canonical() ?: $this->generator->get_permalink();
+
         $graph = new GraphBuilder(
             'BreadcrumbList',
-            $this->generator->get_permalink() . '#breadcrumb'
+            $url . '#breadcrumb'
         );
 
-        foreach ($breadcrumbs as $key => $breadcrumb) {
+        $position = 1;
+
+        foreach ($breadcrumbs as $breadcrumb) {
+            $value = $breadcrumb['value'] ?? [];
+
+            if (!empty($value['list'])) {
+                foreach ($value as $link) {
+                    if (!is_array($link) || empty($link['text']) || !is_string($link['text'])) {
+                        continue;
+                    }
+
+                    $graph->add('itemListElement', [
+                        '@type'    => 'ListItem',
+                        'position' => $position++,
+                        'name'     => $link['text'],
+                        'item'     => $link['url'] ?? ''
+                    ]);
+                }
+
+                continue;
+            }
+
+            if (empty($value['text']) || !is_string($value['text'])) {
+                continue;
+            }
 
             $graph->add('itemListElement', [
                 '@type'    => 'ListItem',
-                'position' => $key + 1,
-                'name'     => $breadcrumb['value']['text'],
-                'item'     => $breadcrumb['value']['url']
+                'position' => $position++,
+                'name'     => $value['text'],
+                'item'     => $value['url'] ?? ''
             ]);
         }
 

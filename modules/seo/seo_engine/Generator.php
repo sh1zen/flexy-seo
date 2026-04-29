@@ -156,6 +156,10 @@ class Generator
         $keywords = preg_replace('#\W*,+\W*#', ', ', $keywords);
         $keywords = trim($keywords, ' ,');
 
+        if (empty($keywords)) {
+            $keywords = $this->get_context_keywords_fallback();
+        }
+
         $keywords = StringHelper::escape_text($keywords);
 
         $this->set_cache("keywords", $keywords);
@@ -279,7 +283,11 @@ class Generator
         /**
          * Pre-filter title to not have problems in trailing blog name
          */
-        $title = StringHelper::filter_text($title, true);
+        $title = $this->normalize_meta_text($title);
+
+        if (empty($title)) {
+            $title = wpfs_document_title(wps('wpfs')->settings->get('seo.title.separator', '-'), false);
+        }
 
         // if active force trailing blog name
         if (wps('wpfs')->settings->get('seo.title.blogname', false) and !str_ends_with($title, get_bloginfo('name', 'display'))) {
@@ -338,6 +346,12 @@ class Generator
             $this->query_type
         );
 
+        $description = $this->normalize_meta_text($description);
+
+        if (empty($description)) {
+            $description = $this->get_context_description_fallback();
+        }
+
         $description = StringHelper::escape_text($description, false, true);
 
         $this->set_cache("description", $description);
@@ -382,18 +396,111 @@ class Generator
 
             $tc->add_description($this->get_description());
 
-            preg_match('#(https?://twitter\.com/)?(?<name>[^?]+)(\??.*)#i', wps('wpfs')->settings->get("seo.social.twitter.url", ''), $m);
+            $twitterName = $this->normalize_social_username(wps('wpfs')->settings->get("seo.social.twitter.url", ''));
 
-            if (!isset($m['name'])) {
+            if (empty($twitterName)) {
                 return $tc;
             }
-
-            $twitterName = '@' . trim($m['name'], ' @');
 
             $tc->add_creator($twitterName);
             $tc->add_site($twitterName);
         }
 
         return $this->template->twitterCard($tc);
+    }
+
+    private function normalize_meta_text(string $text): string
+    {
+        $text = html_entity_decode($text, ENT_QUOTES | ENT_HTML5, get_bloginfo('charset') ?: 'UTF-8');
+        $text = strip_shortcodes($text);
+        $text = wp_strip_all_tags($text, true);
+        $text = preg_replace('/%%[^%]+%%/', '', $text);
+        $text = StringHelper::filter_text($text, true);
+        $text = preg_replace('/\s+/u', ' ', $text);
+
+        return trim($text);
+    }
+
+    private function get_context_description_fallback(): string
+    {
+        $description = '';
+        $object = $this->current_page->get_queried_object();
+
+        if ($object instanceof \WP_Post) {
+            $description = has_excerpt($object) ? $object->post_excerpt : $object->post_content;
+            $description = wp_trim_words($description, 32, '');
+        }
+        elseif ($object instanceof \WP_Term) {
+            $description = $object->description;
+        }
+        elseif ($object instanceof \WP_User) {
+            $description = $object->description;
+        }
+        elseif ($this->current_page->is_search()) {
+            $description = sprintf(__('Search results for "%s"', 'wpfs'), get_search_query());
+        }
+
+        if (empty($description)) {
+            $description = get_bloginfo('description', 'display');
+        }
+
+        $description = apply_filters('wpfs_description_fallback', $description, $this->current_page->get_page_type(), $this->current_page);
+
+        return $this->normalize_meta_text($description);
+    }
+
+    private function get_context_keywords_fallback(): string
+    {
+        $keywords = [];
+        $object = $this->current_page->get_queried_object();
+
+        if ($object instanceof \WP_Post) {
+            foreach (get_post_taxonomies($object) as $taxonomy) {
+                $terms = get_the_terms($object, $taxonomy);
+
+                if (!empty($terms) && !is_wp_error($terms)) {
+                    $keywords = array_merge($keywords, wp_list_pluck($terms, 'name'));
+                }
+            }
+        }
+        elseif ($object instanceof \WP_Term) {
+            $keywords[] = $object->name;
+
+            $taxonomy = get_taxonomy($object->taxonomy);
+
+            if ($taxonomy) {
+                $keywords[] = $taxonomy->labels->singular_name ?? '';
+            }
+        }
+        elseif ($this->current_page->is_search()) {
+            $keywords[] = get_search_query();
+        }
+
+        $keywords = array_filter(array_unique(array_map([$this, 'normalize_meta_text'], $keywords)));
+        $keywords = array_slice($keywords, 0, 20);
+
+        return implode(', ', $keywords);
+    }
+
+    private function normalize_social_username(string $value): string
+    {
+        $value = trim($value);
+
+        if (empty($value)) {
+            return '';
+        }
+
+        $path = wp_parse_url($value, PHP_URL_PATH);
+
+        if (!empty($path)) {
+            $value = trim($path, '/');
+        }
+
+        $value = preg_replace('/[?#].*/', '', $value);
+        $value = preg_replace('/^@+/', '', $value);
+        $value = strtok($value, '/');
+        $value = preg_replace('/[^A-Za-z0-9_]/', '', $value);
+
+        return $value ? '@' . $value : '';
     }
 }

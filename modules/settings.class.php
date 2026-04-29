@@ -7,6 +7,7 @@
 
 namespace FlexySEO\modules;
 
+use WPS\core\Ajax;
 use WPS\core\RequestActions;
 use WPS\core\addon\Exporter;
 use WPS\core\Graphic;
@@ -14,7 +15,7 @@ use WPS\modules\Module;
 
 class Mod_Settings extends Module
 {
-    public array $scopes = array('core-settings', 'admin');
+    public array $scopes = array('core-settings', 'admin', 'ajax');
 
     protected string $context = 'wpfs';
 
@@ -62,7 +63,7 @@ class Mod_Settings extends Module
 
                 case 'import_options':
                     $response = wps('wpfs')->settings->import($_REQUEST['conf_data']);
-                    $response &= wps('wpopt')->moduleHandler->upgrade();
+                    $response &= wps('wpfs')->moduleHandler->upgrade();
                     break;
             }
 
@@ -73,6 +74,135 @@ class Mod_Settings extends Module
                 $this->add_notices('warning', __('Action execution failed', $this->context));
             }
         });
+    }
+
+    protected function init(): void
+    {
+        if (wp_doing_ajax()) {
+            add_action('wp_ajax_wps', [$this, 'intercept_legacy_autosave_ajax'], 0);
+            add_action('wp_ajax_wpfs_autosave_core_settings', [$this, 'autosave_core_settings_ajax']);
+        }
+    }
+
+    public function intercept_legacy_autosave_ajax(): void
+    {
+        if (($_REQUEST['mod'] ?? '') !== 'settings' || ($_REQUEST['mod_action'] ?? '') !== 'autosave_settings') {
+            return;
+        }
+
+        if ($this->restricted_access('ajax')) {
+            Ajax::response([
+                'text'  => __('It seems that you are not allowed to do this request.', 'wpfs'),
+                'title' => __('Autosave error', 'wpfs')
+            ], 'error');
+        }
+
+        $serialized_form = (string)wp_unslash($_REQUEST['mod_form'] ?? '');
+
+        if (!$this->payload_belongs_to_wpfs($serialized_form)) {
+            return;
+        }
+
+        $this->save_autosave_payload($serialized_form);
+    }
+
+    public function ajax_handler($args = array()): void
+    {
+        if (($args['action'] ?? '') !== 'autosave_settings') {
+            parent::ajax_handler($args);
+            return;
+        }
+
+        $this->save_autosave_payload((string)($args['form_data'] ?? ''));
+    }
+
+    public function autosave_core_settings_ajax(): void
+    {
+        $nonce = sanitize_text_field(wp_unslash($_POST['nonce'] ?? ''));
+
+        if (!wp_verify_nonce($nonce, 'wpfs-ajax-nonce') || $this->restricted_access('ajax')) {
+            Ajax::response([
+                'text'  => __('It seems that you are not allowed to do this request.', 'wpfs'),
+                'title' => __('Autosave error', 'wpfs')
+            ], 'error');
+        }
+
+        $this->save_autosave_payload((string)wp_unslash($_POST['form'] ?? ''));
+    }
+
+    private function save_autosave_payload(string $serialized_form): void
+    {
+        parse_str($serialized_form, $form_data);
+
+        $context = wps('wpfs')->settings->get_context();
+        $input = $form_data[$context] ?? [];
+        $module_slug = is_array($input) ? sanitize_key($input['change'] ?? '') : '';
+        $requested_module = sanitize_key(wp_unslash($_POST['module'] ?? $_REQUEST['module'] ?? ''));
+
+        if (!$module_slug && $requested_module) {
+            $module_slug = $requested_module;
+        }
+
+        if (!$module_slug && !empty($form_data['option_panel'])) {
+            $module_slug = sanitize_key(preg_replace('#^settings-#', '', (string)$form_data['option_panel']));
+        }
+
+        if (!$module_slug && is_array($input) && $this->looks_like_modules_handler_payload($input)) {
+            $module_slug = 'modules_handler';
+        }
+
+        if (!$module_slug || !is_array($input)) {
+            Ajax::response([
+                'text'  => __('Invalid settings payload.', 'wpfs'),
+                'title' => __('Autosave error', 'wpfs')
+            ], 'error');
+        }
+
+        $object = wps('wpfs')->moduleHandler->get_module_instance($module_slug);
+
+        if (is_null($object) || $object->restricted_access('settings')) {
+            Ajax::response([
+                'text'  => __('It seems that you are not allowed to do this request.', 'wpfs'),
+                'title' => __('Autosave error', 'wpfs')
+            ], 'error');
+        }
+
+        $valid = $object->validate_settings($input);
+        $saved = wps('wpfs')->settings->get($object->slug, []) == $valid || wps('wpfs')->settings->update($object->slug, $valid, true);
+
+        if (!$saved) {
+            Ajax::response([
+                'text'  => __('Unable to save settings.', 'wpfs'),
+                'title' => __('Autosave error', 'wpfs')
+            ], 'error');
+        }
+
+        Ajax::response([
+            'text'  => __('Changes saved', 'wpfs'),
+            'title' => __('Autosave', 'wpfs')
+        ]);
+    }
+
+    private function looks_like_modules_handler_payload(array $input): bool
+    {
+        foreach (wps('wpfs')->moduleHandler->get_modules('all', false) as $module) {
+            if (array_key_exists($module['slug'], $input)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private function payload_belongs_to_wpfs(string $serialized_form): bool
+    {
+        if ($serialized_form === '') {
+            return false;
+        }
+
+        parse_str($serialized_form, $form_data);
+
+        return isset($form_data[wps('wpfs')->settings->get_context()]) || (isset($form_data['option_page']) && $form_data['option_page'] === 'wpfs-settings');
     }
 
     protected function print_footer(): string

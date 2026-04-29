@@ -9,9 +9,6 @@ use WPS\core\StringHelper;
 
 class WPFS_Breadcrumb
 {
-    public static string $before = '';
-    public static string $after = '';
-
     private static WPFS_Breadcrumb $_Instance;
 
     private string $show_on_front;
@@ -20,7 +17,7 @@ class WPFS_Breadcrumb
     /** @var WP_Term|WP_Post_Type|WP_Post|WP_User|null */
     private $queried_object;
 
-    private array $options;
+    private array $options = [];
     private string $element = 'li';
     private string $wrapper = 'ol';
     private array $crumbs = [];
@@ -37,6 +34,27 @@ class WPFS_Breadcrumb
     /** @var array Memoized options */
     private array $option_cache = [];
 
+    /** @var array Request-local generated breadcrumb state cache */
+    private array $generation_cache = [];
+
+    /** @var array Memoized post link data */
+    private array $post_link_cache = [];
+
+    /** @var array Memoized term link data */
+    private array $term_link_cache = [];
+
+    /** @var array Memoized post type archive link data */
+    private array $post_type_archive_cache = [];
+
+    /** @var array Memoized object term lookups */
+    private array $object_terms_cache = [];
+
+    /** @var array Memoized direct term children */
+    private array $term_children_cache = [];
+
+    /** @var array Memoized taxonomy permastructs */
+    private array $permastruct_cache = [];
+
     private function __construct()
     {
     }
@@ -49,9 +67,6 @@ class WPFS_Breadcrumb
 
         self::$_Instance ??= new self();
         self::$_Instance->generate($args);
-
-        self::$before = $before;
-        self::$after = $after;
 
         $output = $before . self::$_Instance->output . $after;
 
@@ -70,35 +85,174 @@ class WPFS_Breadcrumb
         return array_filter(self::$_Instance->crumbs);
     }
 
+    public static function term_children_dropdown($term = null, array $args = [], bool $display = true): string
+    {
+        self::$_Instance ??= new self();
+
+        if (!self::$_Instance->hydrate_query_context()) {
+            return '';
+        }
+
+        self::$_Instance->load_generation_options($args);
+
+        if (empty($args['dropdown_last']) && !self::$_Instance->get_option('dropdown_last')) {
+            return '';
+        }
+
+        $term = self::$_Instance->normalize_term($term);
+
+        if (!$term instanceof WP_Term && self::$_Instance->queried_object instanceof WP_Term) {
+            $term = self::$_Instance->queried_object;
+        }
+
+        if (!$term instanceof WP_Term) {
+            $term = self::$_Instance->resolve_category_query_term();
+        }
+
+        if (!$term instanceof WP_Term) {
+            return '';
+        }
+
+        $children = self::$_Instance->get_term_children($term);
+        if (empty($children)) {
+            return '';
+        }
+
+        $url_format = self::$_Instance->get_breadcrumb_term_url_format();
+        $output = self::$_Instance->crumb_to_link(self::$_Instance->get_link_info_for_terms($children, $url_format), 0, false);
+
+        if ($display && $output !== '') {
+            echo $output;
+        }
+
+        return $output;
+    }
+
     private function generate(array $args = []): void
     {
-        if ($this->output !== '') {
+        if (!$this->hydrate_query_context()) {
             return;
         }
 
+        $generation_key = $this->make_generation_key($args);
+
+        if ($this->restore_generation_from_cache($generation_key)) {
+            return;
+        }
+
+        $this->load_generation_options($args);
+        $this->reset_generation_state();
+        $this->collect_crumbs();
+        $this->resolve_crumb_values();
+        $this->render_crumb_links();
+        $this->wrap_breadcrumb();
+
+        $this->store_generation_in_cache($generation_key);
+    }
+
+    private function hydrate_query_context(): bool
+    {
         $this->wp_query = $GLOBALS['wp_query'];
 
         if (!$this->wp_query) {
-            _doing_it_wrong(__FUNCTION__, __('Conditional query tags do not work before the query is run. Before then, they always return false.', 'wpfs'), '1.0.0');
-            return;
+            _doing_it_wrong('WPFS_Breadcrumb::generate', __('Conditional query tags do not work before the query is run. Before then, they always return false.', 'wpfs'), '1.0.0');
+            return false;
         }
 
         $this->queried_object = $this->wp_query->get_queried_object();
-        $this->options = array_merge($this->get_option_raw('.'), $args);
+
+        return true;
+    }
+
+    private function restore_generation_from_cache(string $generation_key): bool
+    {
+        if (!isset($this->generation_cache[$generation_key])) {
+            return false;
+        }
+
+        $cached = $this->generation_cache[$generation_key];
+        $this->crumbs = $cached['crumbs'];
+        $this->links = $cached['links'];
+        $this->output = $cached['output'];
+
+        return true;
+    }
+
+    private function load_generation_options(array $args): void
+    {
+        $options = $this->get_option_raw('.', []);
+        $this->options = array_merge(is_array($options) ? $options : [], $args);
         $this->option_cache = [];
-        $this->term_parents_cache = [];
         $this->home_url = wps_core()->home_url;
         $this->show_on_front = get_option('show_on_front');
         $this->page_for_posts = get_option('page_for_posts');
+    }
 
+    private function reset_generation_state(): void
+    {
         $this->crumbs = [];
         $this->links = [];
         $this->output = '';
+    }
 
-        $this->set_crumbs_types();
-        $this->transform_crumbs();
-        $this->prepare_links();
-        $this->wrap_breadcrumb();
+    private function store_generation_in_cache(string $generation_key): void
+    {
+        $this->generation_cache[$generation_key] = [
+            'crumbs' => $this->crumbs,
+            'links'  => $this->links,
+            'output' => $this->output,
+        ];
+    }
+
+    private function make_generation_key(array $args): string
+    {
+        $state = [
+            $this->get_queried_object_cache_key(),
+            $this->wp_query->get('post_type'),
+            $this->wp_query->get('taxonomy'),
+            $this->wp_query->get('term'),
+            $this->wp_query->get('cat'),
+            $this->wp_query->get('category_name'),
+            $this->wp_query->get('year'),
+            $this->wp_query->get('monthnum'),
+            $this->wp_query->get('day'),
+            $this->wp_query->get('paged'),
+            $this->wp_query->get('page'),
+            $this->wp_query->is_home(),
+            $this->wp_query->is_front_page(),
+            $this->wp_query->is_singular(),
+            $this->wp_query->is_archive(),
+            $this->wp_query->is_search(),
+            $this->wp_query->is_404(),
+            $args,
+        ];
+
+        $encoded = function_exists('wp_json_encode') ? wp_json_encode($state) : json_encode($state);
+
+        return md5($encoded ?: serialize($state));
+    }
+
+    private function get_queried_object_cache_key(): string
+    {
+        $q = $this->queried_object;
+
+        if ($q instanceof WP_Post) {
+            return "post:{$q->ID}";
+        }
+
+        if ($q instanceof WP_Term) {
+            return "term:{$q->taxonomy}:{$q->term_id}";
+        }
+
+        if ($q instanceof WP_User) {
+            return "user:{$q->ID}";
+        }
+
+        if ($q instanceof WP_Post_Type) {
+            return "post_type:{$q->name}";
+        }
+
+        return 'none';
     }
 
     /**
@@ -124,7 +278,7 @@ class WPFS_Breadcrumb
         return $res;
     }
 
-    private function set_crumbs_types(): void
+    private function collect_crumbs(): void
     {
         $q = $this->queried_object;
 
@@ -146,6 +300,7 @@ class WPFS_Breadcrumb
                     $this->format_to_crumbs($crumb_structure);
                 }
             }
+            $this->maybe_add_current_term_children_crumbs();
             return;
         }
 
@@ -213,19 +368,13 @@ class WPFS_Breadcrumb
 
         if ($wq->is_author()) {
             $prefix = $this->get_option('author.prefix', '');
-            $this->add_crumb(
-                $this->make_crumb_value($prefix . ' ' . $q->display_name, null),
-                'crumb', true
-            );
+            $this->add_crumb($this->make_crumb_value($prefix . ' ' . $q->display_name, null));
             return;
         }
 
         if ($wq->is_search()) {
             $prefix = $this->get_option('search.prefix', '');
-            $this->add_crumb(
-                $this->make_crumb_value($prefix . ' "' . esc_html(get_search_query()) . '"', null),
-                'crumb', true
-            );
+            $this->add_crumb($this->make_crumb_value($prefix . ' "' . esc_html(get_search_query()) . '"', null));
             return;
         }
 
@@ -275,42 +424,39 @@ class WPFS_Breadcrumb
             }
         }
         else {
-            $this->add_crumb(
-                $this->make_crumb_value($this->get_option('404.prefix', ''), null),
-                'crumb', true
-            );
+            $this->add_crumb($this->make_crumb_value($this->get_option('404.prefix', ''), null));
         }
     }
 
     private function add_home_crumb(): void
     {
-        $this->add_crumb(
-            $this->make_crumb_value($this->get_option('home.prefix', 'Home'), $this->home_url),
-            'crumb', true
-        );
+        $this->add_crumb($this->make_crumb_value($this->get_option('home.prefix', 'Home'), $this->home_url));
     }
 
-    private function add_crumb($value = null, string $type = 'crumb', bool $allow_html = false): void
+    private function add_crumb($value = null, string $type = 'crumb'): void
     {
         $this->crumbs[] = [
-            'type'       => $type,
-            'value'      => $value,
-            'allow_html' => $allow_html,
+            'type'  => $type,
+            'value' => $value,
         ];
     }
 
-    /**
-     * Renamed from generate_crumb_value for brevity; same output.
-     */
     private function make_crumb_value($text, $url): array
     {
         return ['text' => $text, 'url' => $url];
     }
 
-    // Alias to keep compatibility with format_to_crumbs / perform_replace which call it
-    private function generate_crumb_value($text, $url): array
+    private function maybe_add_current_term_children_crumbs(): void
     {
-        return ['text' => $text, 'url' => $url];
+        if (!$this->get_option('dropdown_last')) {
+            return;
+        }
+
+        $term = $this->queried_object instanceof WP_Term ? $this->queried_object : $this->resolve_category_query_term();
+
+        if ($term instanceof WP_Term) {
+            $this->maybe_add_term_children_crumbs($term);
+        }
     }
 
     private function get_breadcrumb_format(): string
@@ -347,6 +493,28 @@ class WPFS_Breadcrumb
         }
 
         return '';
+    }
+
+    private function get_breadcrumb_term_url_format(): string
+    {
+        if (!$this->get_option('flexed')) {
+            return '%%term_url%%';
+        }
+
+        $format = $this->get_breadcrumb_format();
+        if ($format === '') {
+            return '%%term_url%%';
+        }
+
+        foreach (explode('>>', $format) as $crumb_structure) {
+            $crumb_structure = trim($crumb_structure);
+
+            if (preg_match('/%%(?:category|taxonomy)(?:-(?:compact|full))?%%/', $crumb_structure)) {
+                return $crumb_structure;
+            }
+        }
+
+        return '%%term_url%%';
     }
 
     private function format_to_crumbs(string $format): void
@@ -429,10 +597,8 @@ class WPFS_Breadcrumb
 
             case 'post_parent':
                 if (isset($q->post_parent) && $q->post_parent) {
-                    $replaces[] = [
-                        'text' => wps_get_post($q->post_parent)->post_title,
-                        'url'  => get_permalink($q->post_parent),
-                    ];
+                    $parent_link = $this->get_link_info_for_post_id((int)$q->post_parent);
+                    $replaces[] = ['text' => $parent_link['text'], 'url' => $parent_link['url']];
                 }
                 break;
 
@@ -470,7 +636,7 @@ class WPFS_Breadcrumb
     private function generate_queried_object_replacement(WP_Query $wq, $q): array
     {
         if ($wq->is_singular()) {
-            return [['text' => wps_get_post($q)->post_title, 'url' => get_permalink($q->ID)]];
+            return [['text' => $q->post_title, 'url' => get_permalink($q->ID)]];
         }
         if ($wq->is_author() || $wq->is_404()) {
             return [['text' => $q->display_name, 'url' => get_author_posts_url($q->ID)]];
@@ -482,9 +648,37 @@ class WPFS_Breadcrumb
             if ($wq->is_post_type_archive()) {
                 return [['text' => $q->post_type, 'url' => get_post_type_archive_link($q->post_type)]];
             }
-            return [['text' => $q->name, 'url' => get_term_link($q->term_id, $q->taxonomy)]];
+            return [$this->get_link_info_for_term($q)];
         }
         return [];
+    }
+
+    private function get_object_terms(int $object_id, string $taxonomy): array
+    {
+        $cache_key = "{$object_id}:{$taxonomy}";
+
+        if (isset($this->object_terms_cache[$cache_key])) {
+            return $this->object_terms_cache[$cache_key];
+        }
+
+        $terms = wp_get_object_terms($object_id, $taxonomy);
+
+        if (!is_array($terms) || is_wp_error($terms)) {
+            $terms = [];
+        }
+
+        $this->object_terms_cache[$cache_key] = $terms;
+
+        return $terms;
+    }
+
+    private function get_taxonomy_permastruct(string $taxonomy, WP_Rewrite $wp_rewrite): string
+    {
+        if (!isset($this->permastruct_cache[$taxonomy])) {
+            $this->permastruct_cache[$taxonomy] = (string)$wp_rewrite->get_extra_permastruct($taxonomy);
+        }
+
+        return $this->permastruct_cache[$taxonomy];
     }
 
     private function generate_taxonomy_replacements(string $rule, $wp_rewrite): array
@@ -497,14 +691,19 @@ class WPFS_Breadcrumb
         }
         else {
             $main_tax = $this->get_option("post_type.{$q->post_type}.maintax", 'category');
-            $terms = wp_get_object_terms($q->ID, $main_tax);
+            $terms = $this->get_object_terms((int)$q->ID, $main_tax);
 
-            if (!is_array($terms) || empty($terms)) {
+            if (empty($terms)) {
                 return [];
             }
             $deepest_term = $this->find_deepest_term($terms);
         }
 
+        return $this->generate_taxonomy_replacements_for_term($deepest_term, $rule, $wp_rewrite);
+    }
+
+    private function generate_taxonomy_replacements_for_term(WP_Term $deepest_term, string $rule, $wp_rewrite): array
+    {
         $parent_terms = $this->get_term_parents($deepest_term);
         $is_compact = str_contains($rule, "compact");
         $is_full = str_contains($rule, "full");
@@ -514,7 +713,7 @@ class WPFS_Breadcrumb
         $depth = 1;
 
         if ($is_full) {
-            $url = str_replace("%{$deepest_term->taxonomy}%", '', $wp_rewrite->get_extra_permastruct($deepest_term->taxonomy));
+            $url = str_replace("%{$deepest_term->taxonomy}%", '', $this->get_taxonomy_permastruct($deepest_term->taxonomy, $wp_rewrite));
         }
 
         foreach ($parent_terms as $parent_term) {
@@ -647,9 +846,9 @@ class WPFS_Breadcrumb
         }
 
         $main_tax = $this->get_option("post_type.{$q->post_type}.maintax", 'category');
-        $terms = wp_get_object_terms($q->ID, $main_tax);
+        $terms = $this->get_object_terms((int)$q->ID, $main_tax);
 
-        if (!is_array($terms) || empty($terms)) {
+        if (empty($terms)) {
             return;
         }
 
@@ -671,6 +870,49 @@ class WPFS_Breadcrumb
         $this->maybe_add_term_parent_crumbs($q);
         $this->add_crumb($q, 'term');
         $this->maybe_add_term_children_crumbs($q);
+    }
+
+    private function normalize_term($term, string $taxonomy = 'category'): ?WP_Term
+    {
+        if ($term instanceof WP_Term) {
+            return $term;
+        }
+
+        if (is_numeric($term)) {
+            $term = get_term((int)$term, $taxonomy);
+            return $term instanceof WP_Term ? $term : null;
+        }
+
+        if (is_string($term) && $term !== '') {
+            $term = get_term_by('slug', trim($term, '/'), $taxonomy);
+            return $term instanceof WP_Term ? $term : null;
+        }
+
+        return null;
+    }
+
+    private function resolve_category_query_term(): ?WP_Term
+    {
+        $cat_id = absint($this->wp_query->get('cat'));
+
+        if ($cat_id > 0) {
+            return $this->normalize_term($cat_id, 'category');
+        }
+
+        $category_name = trim((string)$this->wp_query->get('category_name'), '/');
+
+        if ($category_name === '') {
+            return null;
+        }
+
+        $term = get_term_by('slug', $category_name, 'category');
+
+        if (!$term instanceof WP_Term && str_contains($category_name, '/')) {
+            $parts = array_filter(explode('/', $category_name));
+            $term = get_term_by('slug', end($parts), 'category');
+        }
+
+        return $term instanceof WP_Term ? $term : null;
     }
 
     private function maybe_add_term_parent_crumbs(WP_Term $term): void
@@ -696,18 +938,42 @@ class WPFS_Breadcrumb
 
     private function get_term_children(WP_Term $term): array
     {
-        $hierarchy = _get_term_hierarchy($term->taxonomy);
-        $tax = $term->taxonomy;
-        $tid = $term->term_id;
+        $hide_empty = (bool)$this->get_option('dropdown_hide_empty', false);
+        $cache_key = "{$term->taxonomy}:{$term->term_id}:" . (int)$hide_empty;
 
-        if (!isset($hierarchy[$tid])) {
-            return [];
+        if (isset($this->term_children_cache[$cache_key])) {
+            return $this->term_children_cache[$cache_key];
         }
 
-        $children = [];
-        foreach ((array)$hierarchy[$tid] as $child) {
-            $children[] = wps_get_term($child, $tax);
+        $children = get_terms([
+            'taxonomy'   => $term->taxonomy,
+            'parent'     => $term->term_id,
+            'hide_empty' => $hide_empty,
+            'orderby'    => 'name',
+            'order'      => 'ASC',
+        ]);
+
+        if (!is_array($children) || is_wp_error($children)) {
+            $children = [];
         }
+
+        if (empty($children)) {
+            $children = get_terms([
+                'taxonomy'   => $term->taxonomy,
+                'child_of'   => $term->term_id,
+                'hide_empty' => $hide_empty,
+                'orderby'    => 'name',
+                'order'      => 'ASC',
+            ]);
+
+            if (!is_array($children) || is_wp_error($children)) {
+                $children = [];
+            }
+        }
+
+        $children = apply_filters('wpfs_breadcrumb_dropdown_terms', $children, $term, $this->options);
+
+        $this->term_children_cache[$cache_key] = $children;
 
         return $children;
     }
@@ -716,8 +982,7 @@ class WPFS_Breadcrumb
     {
         $year = $this->wp_query->get('year');
         $this->add_crumb(
-            $this->make_crumb_value((string)$year, $link ? get_year_link($year) : null),
-            'crumb', true
+            $this->make_crumb_value((string)$year, $link ? get_year_link($year) : null)
         );
     }
 
@@ -729,8 +994,7 @@ class WPFS_Breadcrumb
         $month = $this->wp_query->get('monthnum');
 
         $this->add_crumb(
-            $this->make_crumb_value($wp_locale->get_month($month), $link ? get_month_link($year, $month) : null),
-            'crumb', true
+            $this->make_crumb_value($wp_locale->get_month($month), $link ? get_month_link($year, $month) : null)
         );
     }
 
@@ -742,8 +1006,7 @@ class WPFS_Breadcrumb
         $day = $wq->get('day');
 
         $this->add_crumb(
-            $this->make_crumb_value((string)$day, $link ? get_day_link($year, $month, $day) : null),
-            'crumb', true
+            $this->make_crumb_value((string)$day, $link ? get_day_link($year, $month, $day) : null)
         );
     }
 
@@ -774,26 +1037,26 @@ class WPFS_Breadcrumb
         }
 
         $this->add_crumb(
-            $this->make_crumb_value($this->get_option('archive.prefix', '') . ' ' . esc_html($date), null),
-            'crumb', true
+            $this->make_crumb_value($this->get_option('archive.prefix', '') . ' ' . esc_html($date), null)
         );
     }
 
-    private function transform_crumbs(): void
+    private function resolve_crumb_values(): void
     {
-        foreach ($this->crumbs as $i => &$crumb) {
+        foreach ($this->crumbs as &$crumb) {
             switch ($crumb['type']) {
                 case 'postId':
-                    $crumb['value'] = $this->make_crumb_value(
-                        strip_tags(get_the_title($crumb['value'])),
-                        get_permalink($crumb['value'])
-                    );
+                    $crumb['value'] = $this->get_link_info_for_post_id((int)$crumb['value']);
                     $crumb['type'] = 'crumb';
                     break;
 
                 case 'term':
-                case 'term_list':
                     $crumb['value'] = $this->get_link_info_for_terms($crumb['value']);
+                    $crumb['type'] = 'crumb';
+                    break;
+
+                case 'term_list':
+                    $crumb['value'] = $this->get_link_info_for_terms($crumb['value'], $this->get_breadcrumb_term_url_format());
                     $crumb['type'] = 'crumb';
                     break;
 
@@ -806,25 +1069,137 @@ class WPFS_Breadcrumb
         unset($crumb);
     }
 
-    private function get_link_info_for_terms($terms): array
+    private function get_link_info_for_terms($terms, ?string $url_format = null): array
     {
         if (empty($terms)) {
             return $this->make_crumb_value('', '');
         }
 
         if (is_array($terms)) {
-            $link_info = ['list' => true];
+            $link_info = [
+                'list'  => true,
+                'label' => $this->get_option('dropdown_label', __("Scegli l'area geografica", 'wpfs')),
+            ];
+
             foreach ($terms as $term) {
-                $link_info[] = $this->make_crumb_value($term->name, get_term_link($term));
+                $link_info[] = $this->get_link_info_for_term($term, $url_format);
             }
             return $link_info;
         }
 
-        return $this->make_crumb_value($terms->name, get_term_link($terms));
+        return $this->get_link_info_for_term($terms, $url_format);
+    }
+
+    private function get_link_info_for_post_id(int $post_id): array
+    {
+        if (!isset($this->post_link_cache[$post_id])) {
+            $this->post_link_cache[$post_id] = $this->make_crumb_value(
+                strip_tags(get_the_title($post_id)),
+                get_permalink($post_id)
+            );
+        }
+
+        return $this->post_link_cache[$post_id];
+    }
+
+    private function get_link_info_for_term(WP_Term $term, ?string $url_format = null): array
+    {
+        $cache_key = "{$term->taxonomy}:{$term->term_id}:" . md5((string)$url_format);
+
+        if (!isset($this->term_link_cache[$cache_key])) {
+            $url = $url_format === null ? get_term_link($term) : $this->get_url_for_term($term, $url_format);
+
+            $this->term_link_cache[$cache_key] = $this->make_crumb_value(
+                $term->name,
+                is_wp_error($url) ? '' : $url
+            );
+        }
+
+        return $this->term_link_cache[$cache_key];
+    }
+
+    private function get_url_for_term(WP_Term $term, string $format): string
+    {
+        $format = trim($format);
+
+        if ($format === '' || $format === 'term_url' || $format === '%%term_url%%') {
+            $url = get_term_link($term);
+            return is_wp_error($url) ? '' : $url;
+        }
+
+        $url = $this->replace_term_url_tokens($format, $term);
+        $url = preg_replace("#\[[^]]+]#U", '', str_replace(['(', ')'], '', $url));
+
+        if ($url !== '' && strpos($url, $this->home_url) === false && !filter_var($url, FILTER_VALIDATE_URL)) {
+            $url = $this->home_url . ltrim($url, '/');
+        }
+
+        return preg_replace('#([^:])(/{2,})#U', '$1/', $url);
+    }
+
+    private function replace_term_url_tokens(string $format, WP_Term $term): string
+    {
+        global $wp_rewrite;
+
+        preg_match_all("/%%[^%]*%%/U", $format, $rules);
+
+        foreach ($rules[0] as $placeholder) {
+            $rule = str_replace('%%', '', $placeholder);
+            $replacement = '';
+
+            if ($rule === 'term_url') {
+                $term_link = get_term_link($term);
+                $replacement = is_wp_error($term_link) ? '' : $term_link;
+            }
+            elseif ($rule === 'term_slug') {
+                $replacement = $term->slug;
+            }
+            elseif ($rule === 'term_path') {
+                $replacement = $this->get_term_path($term, false);
+            }
+            elseif ($rule === 'term_path_compact') {
+                $replacement = $this->get_term_path($term, true);
+            }
+            elseif (in_array($rule, ['category', 'taxonomy', 'category-compact', 'taxonomy-compact', 'category-full', 'taxonomy-full'], true)) {
+                $replacements = $this->generate_taxonomy_replacements_for_term($term, $rule, $wp_rewrite);
+                $last = end($replacements);
+                $replacement = is_array($last) ? (string)($last['url'] ?? '') : '';
+            }
+            else {
+                $replacements = $this->generate_replacements($rule);
+                $last = end($replacements);
+                $replacement = is_array($last) ? (string)($last['url'] ?? '') : '';
+            }
+
+            $format = str_replace($placeholder, $replacement, $format);
+        }
+
+        return $format;
+    }
+
+    private function get_term_path(WP_Term $term, bool $compact): string
+    {
+        $segments = [];
+
+        foreach ($this->get_term_parents($term) as $parent_term) {
+            $segments[] = $parent_term->slug;
+        }
+
+        $segments[] = $term->slug;
+
+        if ($compact && count($segments) > 3) {
+            $segments = array_slice($segments, 3);
+        }
+
+        return implode('/', array_filter($segments)) . '/';
     }
 
     private function get_link_info_for_ptarchive(string $post_type): array
     {
+        if (isset($this->post_type_archive_cache[$post_type])) {
+            return $this->post_type_archive_cache[$post_type];
+        }
+
         $pto = get_post_type_object($post_type);
         $title = '';
 
@@ -833,13 +1208,15 @@ class WPFS_Breadcrumb
                 : (($pto->labels->menu_name ?? '') !== '' ? $pto->labels->menu_name : $pto->name);
         }
 
-        return [
+        $this->post_type_archive_cache[$post_type] = [
             'url'  => get_post_type_archive_link($post_type),
             'text' => $title,
         ];
+
+        return $this->post_type_archive_cache[$post_type];
     }
 
-    private function prepare_links(): void
+    private function render_crumb_links(): void
     {
         if (empty($this->crumbs)) {
             return;
@@ -862,15 +1239,21 @@ class WPFS_Breadcrumb
             unset($link['list']);
 
             $el = $this->element;
-            $parts = ["<{$el} data-role='links'>"];
-            $parts[] = "<a role='button' data-action='toggle'><span>Cascade</span><span></span></a>";
+            $label = esc_html($link['label'] ?? $this->get_option('dropdown_label', __("Scegli l'area geografica", 'wpfs')));
+            unset($link['label']);
+
+            $parts = ["<{$el} class='wpfs-breadcrumb-item wpfs-breadcrumb-dropdown' data-role='links'>"];
+            $parts[] = "<details class='wpfs-breadcrumb-dropdown-panel'>";
+            $parts[] = "<summary class='wpfs-breadcrumb-dropdown-toggle'><span>{$label}</span><span aria-hidden='true'></span></summary>";
             $parts[] = "<ul class='wpfs-breadcrumb-list'>";
+            $parts[] = "<li class='wpfs-breadcrumb-search-item'><input type='search' class='wpfs-breadcrumb-search' placeholder='" . esc_attr__('Cerca', 'wpfs') . "' autocomplete='off'></li>";
 
             foreach ($link as $_link) {
-                $parts[] = $this->crumb_to_link($_link, $position, false);
+                $parts[] = $this->crumb_to_menu_item($_link);
             }
 
             $parts[] = "</ul>";
+            $parts[] = "</details>";
             $parts[] = "</{$el}>";
 
             return implode('', $parts);
@@ -885,9 +1268,7 @@ class WPFS_Breadcrumb
             $text = ucfirst($text);
         }
 
-        if (empty($link['allow_html'])) {
-            $text = esc_html($text);
-        }
+        $text = esc_html($text);
 
         $el = $this->element;
         $has_url = !empty($link['url']) && (!$current || !$this->get_option('last_page'));
@@ -904,6 +1285,18 @@ class WPFS_Breadcrumb
             . "<a itemprop='item' {$attr} itemtype='https://schema.org/WebPage'><span itemprop='name'>{$text}</span></a>"
             . "<meta itemprop='position' content='{$position}'>"
             . "</{$el}>";
+    }
+
+    private function crumb_to_menu_item(array $link): string
+    {
+        if (empty($link['text']) || empty($link['url']) || !is_string($link['text'])) {
+            return '';
+        }
+
+        $text = esc_html(ucfirst(trim($link['text'])));
+        $url = StringHelper::strtolower(esc_url(preg_replace('/([^:])(\/+)/', '$1/', $link['url'])));
+
+        return "<li class='wpfs-breadcrumb-list-item'><a href='{$url}'>{$text}</a></li>";
     }
 
     private function wrap_breadcrumb(): void

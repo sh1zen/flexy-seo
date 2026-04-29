@@ -19,6 +19,7 @@ require_once WPFS_SEO_ENGINE_HELPERS . 'ECommerce.php';
 require_once WPFS_SEO_ENGINE_HELPERS . 'Post.php';
 require_once WPFS_SEO_ENGINE_HELPERS . 'Term.php';
 require_once WPFS_SEO_ENGINE_HELPERS . 'CurrentPage.php';
+require_once WPFS_SEO_ENGINE_HELPERS . 'ImageSEO.php';
 require_once WPFS_SEO_ENGINE_HELPERS . 'Language.php';
 
 require_once WPFS_SEO_ENGINE . 'Helpers.php';

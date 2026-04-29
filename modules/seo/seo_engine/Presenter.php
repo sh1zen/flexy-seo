@@ -21,7 +21,7 @@ class Presenter
      *
      * @var SEOTag[]
      */
-    private array $tags;
+    private array $tags = [];
 
     /**
      * Array containing the script tags
@@ -48,9 +48,9 @@ class Presenter
         $this->generator = $generator;
 
         $this->templates = array(
-            'meta'      => "<meta property='{{name}}' content='{{value}}'/>",
-            'meta_name' => "<meta name='{{name}}' content='{{value}}'/>",
-            'link'      => "<link rel='{{name}}' href='{{value}}'>"
+            'meta'      => '<meta property="{{name}}" content="{{value}}">',
+            'meta_name' => '<meta name="{{name}}" content="{{value}}">',
+            'link'      => '<link rel="{{name}}" href="{{value}}">'
         );
     }
 
@@ -112,7 +112,7 @@ class Presenter
         $prev = $this->generator->generate_rel_prev();
 
         if (!empty($prev)) {
-            $this->add_tag('rel:prev', $prev, 'link');
+            $this->add_tag('prev', $prev, 'link');
         }
 
         /**
@@ -121,7 +121,7 @@ class Presenter
         $next = $this->generator->generate_rel_next();
 
         if (!empty($next)) {
-            $this->add_tag('rel:next', $next, 'link');
+            $this->add_tag('next', $next, 'link');
         }
     }
 
@@ -135,7 +135,7 @@ class Presenter
      */
     public function robots_presenter()
     {
-        $robots = $this->generator->get_robots();
+        $robots = array_filter(array_unique($this->generator->get_robots()));
 
         $this->add_tag('robots', implode(", ", $robots), 'meta_name');
     }
@@ -147,7 +147,7 @@ class Presenter
     {
         $keywords = $this->generator->get_keywords();
 
-        $this->add_tag('keywords', $keywords);
+        $this->add_tag('keywords', $keywords, 'meta_name');
     }
 
     /**
@@ -165,9 +165,11 @@ class Presenter
      */
     private function social_presenter()
     {
-        $og = $this->generator->openGraph();
+        if (wps('wpfs')->settings->get('seo.social.facebook.opengraph', true)) {
+            $og = $this->generator->openGraph();
 
-        $this->add_tags($og->get_tags());
+            $this->add_tags($og->get_tags());
+        }
 
         $tc = $this->generator->twitterCard();
 
@@ -225,7 +227,7 @@ class Presenter
             if ($filter_empty and empty($tag->value))
                 continue;
 
-            $output .= str_replace($vars, [$tag->name, $tag->value], $this->templates[$tag->template]);
+            $output .= str_replace($vars, [esc_attr($tag->name), esc_attr($tag->value)], $this->templates[$tag->template]) . "\n";
         }
 
         return $output;
@@ -239,7 +241,7 @@ class Presenter
             if ($filter_empty and empty($script->content))
                 continue;
 
-            $output .= "<script type='$script->template'>$script->content</script>";
+            $output .= "<script type='" . esc_attr($script->template) . "'>$script->content</script>\n";
         }
 
         return $output;

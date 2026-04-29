@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: wpfs-translation\n"
 "Report-Msgid-Bugs-To: https://github.com/sh1zen/flexy-seo/issues\n"
-"POT-Creation-Date: 2025-12-16 18:04+0100\n"
+"POT-Creation-Date: 2026-04-29 12:44+0200\n"
 "PO-Revision-Date: 2020-05-13 02:34+0200\n"
 "Last-Translator: sh1zen\n"
 "Language-Team: sh1zen\n"
@@ -12,765 +12,1944 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"X-Generator: Poedit 3.8\n"
+"X-Generator: Poedit 3.9\n"
 "X-Poedit-Basepath: ..\n"
 "X-Poedit-SourceCharset: UTF-8\n"
-"X-Poedit-KeywfsrdsList: "
-"__;_e;_ex;_x;_n;_nx;_n_noop;_nx_noop;esc_html__;esc_attr__;esc_attr_e;esc_html_e;esc_attr_x;esc_html_x\n"
-"X-Poedit-KeywordsList: "
-"__;_e;_ex;_x;_n;_nx;_n_noop;_nx_noop;esc_html__;esc_attr__;esc_attr_e;esc_html_e;esc_attr_x;esc_html_x\n"
+"X-Poedit-KeywfsrdsList: __;_e;_ex;_x;_n;_nx;_n_noop;_nx_noop;esc_html__;esc_attr__;esc_attr_e;esc_html_e;esc_attr_x;esc_html_x\n"
+"X-Poedit-KeywordsList: __;_e;_ex;_x;_n;_nx;_n_noop;_nx_noop;esc_html__;esc_attr__;esc_attr_e;esc_html_e;esc_attr_x;esc_html_x\n"
 "X-Poedit-SearchPath-0: .\n"
 "X-Poedit-SearchPathExcluded-0: languages\n"
 
-#: admin/PagesHandler.class.php:45
+#: admin/pageshandler.class.php:44
 #, php-format
-msgid ""
-"Buy me a coffe <a href='%s'>here</a> or leave a review <a "
-"href='%s'>here</a>."
+msgid "Donate with PayPal <a href='%s'>here</a> or leave a 5-star review <a href='%s'>here</a>."
 msgstr ""
 
-#: admin/PagesHandler.class.php:46
+#: admin/pageshandler.class.php:45
 msgid "Dismiss"
 msgstr ""
 
-#: admin/PagesHandler.class.php:66
+#: admin/pageshandler.class.php:65
 msgid "WPFS Settings"
 msgstr ""
 
-#: admin/PagesHandler.class.php:66 admin/PluginInit.class.php:215
-#: modules/seo.class.php:52
+#: admin/pageshandler.class.php:65 admin/pluginInit.class.php:329
 msgid "Settings"
 msgstr ""
 
-#: admin/PagesHandler.class.php:71
+#: admin/pageshandler.class.php:70
 msgid "WPFS FAQ"
 msgstr ""
 
-#: admin/PagesHandler.class.php:71
+#: admin/pageshandler.class.php:70 admin/pageshandler.class.php:1535 admin/pageshandler.class.php:1774
 msgid "FAQ"
 msgstr ""
 
-#: admin/PagesHandler.class.php:104
+#: admin/pageshandler.class.php:110 admin/pageshandler.class.php:185
+msgid "Saving changes..."
+msgstr ""
+
+#: admin/pageshandler.class.php:111 admin/pageshandler.class.php:186 admin/pluginInit.class.php:235 modules/breadcrumbs.class.php:469
+#: modules/seo.class.php:649 modules/settings.class.php:181
+msgid "Changes saved"
+msgstr ""
+
+#: admin/pageshandler.class.php:112 admin/pageshandler.class.php:187
+msgid "Autosave failed"
+msgstr ""
+
+#: admin/pageshandler.class.php:113 admin/pageshandler.class.php:188
+msgid "Connection error. Changes are not saved yet."
+msgstr ""
+
+#: admin/pageshandler.class.php:114 admin/pageshandler.class.php:189
+msgid "Unsaved changes"
+msgstr ""
+
+#: admin/pageshandler.class.php:115
+msgid "Autosave unavailable. Reload the page and try again."
+msgstr ""
+
+#: admin/pageshandler.class.php:116
+msgid "Search replacements..."
+msgstr ""
+
+#: admin/pageshandler.class.php:117
+msgid "No replacements found"
+msgstr ""
+
+#: admin/pageshandler.class.php:132
+msgid "Search snippet"
+msgstr ""
+
+#: admin/pageshandler.class.php:133 modules/seo.class.php:77
+msgid "Social preview"
+msgstr ""
+
+#: admin/pageshandler.class.php:134 modules/seo.class.php:67
+msgid "Title length"
+msgstr ""
+
+#: admin/pageshandler.class.php:135 modules/seo.class.php:68
+msgid "Description length"
+msgstr ""
+
+#: admin/pageshandler.class.php:136 modules/seo.class.php:79
+msgid "No image selected"
+msgstr ""
+
+#: admin/pageshandler.class.php:137
+msgid "Social preview image"
+msgstr ""
+
+#: admin/pageshandler.class.php:138
+msgid "example-page"
+msgstr ""
+
+#: admin/pageshandler.class.php:148
+msgid "example search"
+msgstr ""
+
+#: admin/pageshandler.class.php:158
+msgid "Default WordPress title of the current object."
+msgstr ""
+
+#: admin/pageshandler.class.php:159
+msgid "Default description for the current object."
+msgstr ""
+
+#: admin/pageshandler.class.php:160
+msgid "Configured title separator."
+msgstr ""
+
+#: admin/pageshandler.class.php:161
+msgid "Site name."
+msgstr ""
+
+#: admin/pageshandler.class.php:162
+msgid "Site description."
+msgstr ""
+
+#: admin/pageshandler.class.php:163
+msgid "Current search query."
+msgstr ""
+
+#: admin/pageshandler.class.php:164
+msgid "Generated resume of the current post."
+msgstr ""
+
+#: admin/pageshandler.class.php:165
+msgid "Excerpt of the current post."
+msgstr ""
+
+#: admin/pageshandler.class.php:166
+msgid "Number of found posts."
+msgstr ""
+
+#: admin/pageshandler.class.php:167
+msgid "Total pages for the current query."
+msgstr ""
+
+#: admin/pageshandler.class.php:168
+msgid "Current page number."
+msgstr ""
+
+#: admin/pageshandler.class.php:169
+msgid "Site language."
+msgstr ""
+
+#: admin/pageshandler.class.php:170
+msgid "Current date."
+msgstr ""
+
+#: admin/pageshandler.class.php:171
+msgid "Current time."
+msgstr ""
+
+#: admin/pageshandler.class.php:172
+msgid "Any WordPress query variable."
+msgstr ""
+
+#: admin/pageshandler.class.php:173
+msgid "Meta value of the current queried object."
+msgstr ""
+
+#: admin/pageshandler.class.php:174
+msgid "Property of the current queried object."
+msgstr ""
+
+#: admin/pageshandler.class.php:179
 msgid "N/A"
 msgstr ""
 
-#: admin/PagesHandler.class.php:105
+#: admin/pageshandler.class.php:180
 msgid "Settings Saved"
 msgstr ""
 
-#: admin/PagesHandler.class.php:106
+#: admin/pageshandler.class.php:181
 msgid "Request fail"
 msgstr ""
 
-#: admin/PagesHandler.class.php:107
+#: admin/pageshandler.class.php:182
 msgid "Request succeed"
 msgstr ""
 
-#: admin/PagesHandler.class.php:108
+#: admin/pageshandler.class.php:183
 msgid "Running"
 msgstr ""
 
-#: admin/PagesHandler.class.php:124
-msgid "How Flexy-Breadcrumbs works?"
+#: admin/pageshandler.class.php:196
+msgid "Example page title"
 msgstr ""
 
-#: admin/PagesHandler.class.php:128
-msgid ""
-"To use Breadcrumbs put this code in your theme, exactly where you want "
-"breadcrumbs to be displayed."
+#: admin/pageshandler.class.php:197
+msgid "This is an example search snippet generated from your SEO template."
 msgstr ""
 
-#: admin/PagesHandler.class.php:130
-msgid ""
-"You can use your own $pre and $after wrapper, default value is no "
-"wrapper."
+#: admin/pageshandler.class.php:198
+msgid "A concise excerpt for the current content."
 msgstr ""
 
-#: admin/PagesHandler.class.php:131 admin/PagesHandler.class.php:246
-msgid "Options:"
+#: admin/pageshandler.class.php:257
+msgid "SEO title rewriting is active"
 msgstr ""
 
-#: admin/PagesHandler.class.php:133
-msgid ""
-"In Breadcrumb page configure your options and set up your breadcrumb "
-"structure for each entity."
+#: admin/pageshandler.class.php:262
+msgid "Home SEO title template is configured"
 msgstr ""
 
-#: admin/PagesHandler.class.php:134
-msgid ""
-"With flexed breadcrumb is possible to personalize the crumb structure "
-"with personalized url or text:"
+#: admin/pageshandler.class.php:267
+msgid "Home meta description is configured"
 msgstr ""
 
-#: admin/PagesHandler.class.php:137
-msgid ">>"
+#: admin/pageshandler.class.php:272
+msgid "Social metadata output is enabled"
 msgstr ""
 
-#: admin/PagesHandler.class.php:137
-msgid "separate each crumb"
+#: admin/pageshandler.class.php:277
+msgid "Default social image is set"
 msgstr ""
 
-#: admin/PagesHandler.class.php:140 admin/PagesHandler.class.php:143
-msgid "Text"
+#: admin/pageshandler.class.php:282
+msgid "Schema.org output is enabled"
 msgstr ""
 
-#: admin/PagesHandler.class.php:140
-msgid "Text will be considered only for the breadcrumb text."
+#: admin/pageshandler.class.php:290
+msgid "SEO module is active"
 msgstr ""
 
-#: admin/PagesHandler.class.php:143
-msgid "Text will be considered only for the breadcrumb link."
+#: admin/pageshandler.class.php:295
+msgid "Breadcrumbs module is active"
 msgstr ""
 
-#: admin/PagesHandler.class.php:146
-msgid "/custom/link/"
+#: admin/pageshandler.class.php:300
+msgid "XML sitemap is active"
 msgstr ""
 
-#: admin/PagesHandler.class.php:146
-msgid "Specify a custom link structure."
+#: admin/pageshandler.class.php:305
+msgid "Redirect manager module is active"
 msgstr ""
 
-#: admin/PagesHandler.class.php:149
-msgid ""
-"Replace the value of the corresponding query_var specified, if not "
-"available it will be discarded."
+#: admin/pageshandler.class.php:310
+msgid "404 monitor module is active"
 msgstr ""
 
-#: admin/PagesHandler.class.php:152
-msgid ""
-"Replace the meta variable of the current queried object, if not "
-"available it will be discarded."
+#: admin/pageshandler.class.php:315
+msgid "SEO Audit module is active"
 msgstr ""
 
-#: admin/PagesHandler.class.php:155
-msgid "Replace the home text and home url."
+#: admin/pageshandler.class.php:365
+msgid "SEO readiness breakdown"
 msgstr ""
 
-#: admin/PagesHandler.class.php:159
-msgid ""
-"Replace the taxonomy, or the category of the current queried object. If "
-"it's hierarchical will generate multiple crumbs."
-msgstr ""
-
-#: admin/PagesHandler.class.php:163
-msgid ""
-"Same as previous but each term link contain also the the taxonomy "
-"prefix."
-msgstr ""
-
-#: admin/PagesHandler.class.php:166
-msgid "Replace the parent post of the current queried object."
-msgstr ""
-
-#: admin/PagesHandler.class.php:169
-msgid "Replace the post type of the current queried object."
-msgstr ""
-
-#: admin/PagesHandler.class.php:172
-msgid "Replace the title and link of the current queried object."
-msgstr ""
-
-#: admin/PagesHandler.class.php:176
+#: admin/pageshandler.class.php:366
 #, php-format
-msgid ""
-"Example: %%home%% >> (/%%meta_var%%-%%custom_var%%/)%%category%% >> "
-"%%queried_object%%"
+msgid "Core SEO: %1$s/%2$s"
 msgstr ""
 
-#: admin/PagesHandler.class.php:180
-msgid ""
-"Filter <em>wpfs_breadcrumb_style</em> to change the default css applied"
-msgstr ""
-
-#: admin/PagesHandler.class.php:181
-msgid ""
-"Filter <em>wpfs_breadcrumb_replacements</em> to add or change "
-"replacements based on flexed breadcrumbs, if enabled.<br><strong>return "
-"format must be array(array('text' =>, 'url' => ))</strong>"
-msgstr ""
-
-#: admin/PagesHandler.class.php:189
-msgid "How Flexy-SEO works?"
-msgstr ""
-
-#: admin/PagesHandler.class.php:193
-msgid ""
-"Uses replacements to construct the perfect description or keywords for "
-"each page."
-msgstr ""
-
-#: admin/PagesHandler.class.php:195
+#: admin/pageshandler.class.php:367
 #, php-format
-msgid "See about replacements <a href=\"%s\">here</a>."
+msgid "Technical tools: %1$s/%2$s"
 msgstr ""
 
-#: admin/PagesHandler.class.php:235
-msgid "Configuration:"
+#: admin/pageshandler.class.php:369
+msgid "SEO readiness checks completed"
 msgstr ""
 
-#: admin/PagesHandler.class.php:240
-#, php-format
-msgid "Configure SEO options: <a href=\"%s\">here</a>."
+#: admin/pageshandler.class.php:369
+msgid "Next recommended steps"
 msgstr ""
 
-#: admin/PagesHandler.class.php:241
-#, php-format
-msgid "Configure Breadcrumbs options: <a href=\"%s\">here</a>."
+#: admin/pageshandler.class.php:406
+msgid "Rapid metadata check"
 msgstr ""
 
-#: admin/PagesHandler.class.php:249
-msgid "Reset Flexy SEO cache"
+#: admin/pageshandler.class.php:407 admin/pageshandler.class.php:1764 modules/seo_audit.class.php:40
+msgid "SEO Audit"
 msgstr ""
 
-#: admin/PagesHandler.class.php:256
-msgid "Tips:"
+#: admin/pageshandler.class.php:408
+msgid "Review titles, meta descriptions, image alt coverage, heavy images, dimensions, noindex status and canonical availability."
 msgstr ""
 
-#: admin/PagesHandler.class.php:259
-#, php-format
-msgid ""
-"For a better SEO optimization, it's recommended to install also <a "
-"href=\"%s\">this</a> plugin."
+#: admin/pageshandler.class.php:412
+msgid "SEO Audit summary"
 msgstr ""
 
-#: admin/PagesHandler.class.php:271
-msgid "Support this project, buy me a coffee."
+#: admin/pageshandler.class.php:415
+msgid "Items shown"
 msgstr ""
 
-#: admin/PagesHandler.class.php:285
-msgid "Want to support in other ways?"
+#: admin/pageshandler.class.php:419
+msgid "Need attention here"
 msgstr ""
 
-#: admin/PagesHandler.class.php:288
-msgid "Help me translating"
+#: admin/pageshandler.class.php:423
+msgid "Missing descriptions"
 msgstr ""
 
-#: admin/PagesHandler.class.php:291
-msgid "Leave a review"
+#: admin/pageshandler.class.php:427
+msgid "Image issues"
 msgstr ""
 
-#: admin/PagesHandler.class.php:297
-msgid "Source code"
+#: admin/pageshandler.class.php:433 admin/pageshandler.class.php:580
+msgid "Content"
 msgstr ""
 
-#: admin/PagesHandler.class.php:300
-msgid "About me"
+#: admin/pageshandler.class.php:441
+msgid "Issue"
 msgstr ""
 
-#: admin/PluginInit.class.php:203
-msgid "Buy me a beer"
+#: admin/pageshandler.class.php:449
+msgid "Search"
 msgstr ""
 
-#: inc/wpfs_functions.php:79
-#, php-format
-msgid "Protected: %s"
+#: admin/pageshandler.class.php:450
+msgid "Title or type..."
 msgstr ""
 
-#: inc/wpfs_functions.php:84
-#, php-format
-msgid "Private: %s"
+#: admin/pageshandler.class.php:452
+msgid "Filter"
 msgstr ""
 
-#: inc/wpfs_functions.php:90
-msgid "Page not found"
+#: admin/pageshandler.class.php:453
+msgid "Reset"
 msgstr ""
 
-#: inc/wpfs_functions.php:94
-#, php-format
-msgid "Search Results for &#8220;%s&#8221;"
+#: admin/pageshandler.class.php:460 admin/pageshandler.class.php:463 admin/pageshandler.class.php:591
+msgid "Open detail"
 msgstr ""
 
-#: inc/wpfs_functions.php:121
-msgid "Y"
+#: admin/pageshandler.class.php:461 admin/pageshandler.class.php:589
+msgid "ID, title, slug, URL or row key..."
 msgstr ""
 
-#: inc/wpfs_functions.php:126
-msgid "F Y"
+#: admin/pageshandler.class.php:468
+msgid "Item"
 msgstr ""
 
-#: inc/wpfs_functions.php:135
-#, php-format
-msgid "Page %s"
+#: admin/pageshandler.class.php:469
+msgid "Type"
 msgstr ""
 
-#: modules/breadcrumbs.class.php:82
-msgid "Status:"
-msgstr ""
-
-#: modules/breadcrumbs.class.php:83 modules/seo.class.php:220
-#: modules/seo.class.php:226 modules/seo.class.php:232
-#: modules/seo.class.php:237 modules/seo.class.php:243
-#: modules/seo.class.php:248 modules/seo.class.php:253
-#: modules/seo.class.php:258 modules/seo.class.php:263
-#: modules/seo.class.php:268 modules/seo.class.php:313
-msgid "Active"
-msgstr ""
-
-#: modules/breadcrumbs.class.php:88
-msgid "Flexed Breadcrumbs"
-msgstr ""
-
-#: modules/breadcrumbs.class.php:89
-msgid "Highlight last page"
-msgstr ""
-
-#: modules/breadcrumbs.class.php:90
-msgid "Separator"
-msgstr ""
-
-#: modules/breadcrumbs.class.php:95 modules/seo.class.php:193
-msgid "Home:"
-msgstr ""
-
-#: modules/breadcrumbs.class.php:96 modules/breadcrumbs.class.php:102
-#: modules/breadcrumbs.class.php:108 modules/breadcrumbs.class.php:114
-#: modules/breadcrumbs.class.php:119
-msgid "Prefix"
-msgstr ""
-
-#: modules/breadcrumbs.class.php:97 modules/breadcrumbs.class.php:103
-#: modules/breadcrumbs.class.php:109 modules/breadcrumbs.class.php:120
-msgid "Format"
-msgstr ""
-
-#: modules/breadcrumbs.class.php:101
-msgid "Author:"
-msgstr ""
-
-#: modules/breadcrumbs.class.php:107
-msgid "Search:"
-msgstr ""
-
-#: modules/breadcrumbs.class.php:113
-msgid "Archive:"
-msgstr ""
-
-#: modules/breadcrumbs.class.php:118
-msgid "404:"
-msgstr ""
-
-#: modules/breadcrumbs.class.php:136
-#, php-format
-msgid "%s archive format"
-msgstr ""
-
-#: modules/breadcrumbs.class.php:137
-#, php-format
-msgid "Show post type for %s"
-msgstr ""
-
-#: modules/breadcrumbs.class.php:143
-msgid "Breadcrumb Taxonomies Archive format:"
-msgstr ""
-
-#: modules/breadcrumbs/WPFS_Breadcrumb.php:132
-msgid ""
-"Conditional query tags do not work before the query is run. Before "
-"then, they always return false."
-msgstr ""
-
-#: modules/seo.class.php:64 modules/seo.class.php:214
-msgid "General"
-msgstr ""
-
-#: modules/seo.class.php:70
-msgid "Special pages"
-msgstr ""
-
-#: modules/seo.class.php:76
-msgid "Post types"
-msgstr ""
-
-#: modules/seo.class.php:82
-msgid "Archives"
-msgstr ""
-
-#: modules/seo.class.php:88
-msgid "Taxonomy"
-msgstr ""
-
-#: modules/seo.class.php:94
-msgid "Social"
-msgstr ""
-
-#: modules/seo.class.php:100
-msgid "Webmaster"
-msgstr ""
-
-#: modules/seo.class.php:106
-msgid "Schema.org"
-msgstr ""
-
-#: modules/seo.class.php:112
-msgid "Replacers"
-msgstr ""
-
-#: modules/seo.class.php:118
-msgid "Save Changes"
-msgstr ""
-
-#: modules/seo.class.php:166
-msgid "Titles:"
-msgstr ""
-
-#: modules/seo.class.php:167
-msgid "Rewrite titles"
-msgstr ""
-
-#: modules/seo.class.php:168
-msgid "Force blog name as trailing part of the title"
-msgstr ""
-
-#: modules/seo.class.php:169
-msgid "Title separator"
-msgstr ""
-
-#: modules/seo.class.php:172
-msgid "Addon:"
-msgstr ""
-
-#: modules/seo.class.php:173
-msgid "Custom Term Description"
-msgstr ""
-
-#: modules/seo.class.php:174
-msgid "Edit page meta-boxes"
-msgstr ""
-
-#: modules/seo.class.php:177
-msgid "Media:"
-msgstr ""
-
-#: modules/seo.class.php:178
-msgid "Rewrite media url to attachment"
-msgstr ""
-
-#: modules/seo.class.php:181
-msgid "Knowledge Graph configuration:"
-msgstr ""
-
-#: modules/seo.class.php:182
-msgid "Default snippet image url (wide)"
-msgstr ""
-
-#: modules/seo.class.php:182 modules/seo.class.php:183
-#: modules/seo.class.php:187 modules/seo.class.php:338
-msgid "Paste your image URL or select a new image"
-msgstr ""
-
-#: modules/seo.class.php:183
-msgid "Default snippet image url (small)"
-msgstr ""
-
-#: modules/seo.class.php:184
-msgid "Add Twitter Card metadata"
-msgstr ""
-
-#: modules/seo.class.php:185
-msgid "Use larger images for Twitter Card"
-msgstr ""
-
-#: modules/seo.class.php:186
-msgid "Enable Facebook Open-Graph metadata"
-msgstr ""
-
-#: modules/seo.class.php:187
-msgid "Facebook default share image"
-msgstr ""
-
-#: modules/seo.class.php:194
-msgid "SEO title"
-msgstr ""
-
-#: modules/seo.class.php:195 modules/seo.class.php:202
-#: modules/seo.class.php:298 modules/seo.class.php:306
-#: modules/seo.class.php:368 modules/seo.class.php:391
-#: modules/seo.class.php:402
-msgid "Meta description"
-msgstr ""
-
-#: modules/seo.class.php:196
-msgid "Keywords (comma separate)"
-msgstr ""
-
-#: modules/seo.class.php:199
-msgid "Search page:"
-msgstr ""
-
-#: modules/seo.class.php:200
-msgid "Show search page"
-msgstr ""
-
-#: modules/seo.class.php:201 modules/seo.class.php:208
-#: modules/seo.class.php:297 modules/seo.class.php:305
-#: modules/seo.class.php:367 modules/seo.class.php:390
-#: modules/seo.class.php:401
+#: admin/pageshandler.class.php:470 admin/pageshandler.class.php:799 modules/seo.class.php:249 modules/seo.class.php:256
+#: modules/seo.class.php:345 modules/seo.class.php:353 modules/seo.class.php:415 modules/seo.class.php:438 modules/seo.class.php:449
 msgid "Title"
 msgstr ""
 
-#: modules/seo.class.php:203 modules/seo.class.php:299
-#: modules/seo.class.php:307 modules/seo.class.php:369
-#: modules/seo.class.php:392 modules/seo.class.php:403
-msgid "Keywords"
-msgstr ""
-
-#: modules/seo.class.php:207
-msgid "404 page:"
-msgstr ""
-
-#: modules/seo.class.php:215
-msgid "Use same username"
-msgstr ""
-
-#: modules/seo.class.php:216
-msgid "Username"
-msgstr ""
-
-#: modules/seo.class.php:219
-msgid "Facebook:"
-msgstr ""
-
-#: modules/seo.class.php:221 modules/seo.class.php:227
-#: modules/seo.class.php:233 modules/seo.class.php:238
-#: modules/seo.class.php:244 modules/seo.class.php:249
-#: modules/seo.class.php:254 modules/seo.class.php:259
-#: modules/seo.class.php:264 modules/seo.class.php:269
-msgid "Profile name or url"
-msgstr ""
-
-#: modules/seo.class.php:222 modules/seo.class.php:228
-#: modules/seo.class.php:239
-msgid "Confirmation code"
-msgstr ""
-
-#: modules/seo.class.php:225
-msgid "Twitter:"
-msgstr ""
-
-#: modules/seo.class.php:231
-msgid "Linkedin:"
-msgstr ""
-
-#: modules/seo.class.php:236
-msgid "Pinterest:"
-msgstr ""
-
-#: modules/seo.class.php:242
-msgid "Instagram:"
-msgstr ""
-
-#: modules/seo.class.php:247
-msgid "YouTube:"
-msgstr ""
-
-#: modules/seo.class.php:252
-msgid "Tumblr:"
-msgstr ""
-
-#: modules/seo.class.php:257
-msgid "Yelp:"
-msgstr ""
-
-#: modules/seo.class.php:262
-msgid "SoundCloud:"
-msgstr ""
-
-#: modules/seo.class.php:267
-msgid "WikiPedia:"
-msgstr ""
-
-#: modules/seo.class.php:275
-msgid "Google:"
-msgstr ""
-
-#: modules/seo.class.php:276 modules/seo.class.php:280
-#: modules/seo.class.php:284 modules/seo.class.php:288
-msgid "Verification code"
-msgstr ""
-
-#: modules/seo.class.php:279
-msgid "Bing:"
-msgstr ""
-
-#: modules/seo.class.php:283
-msgid "Yandex:"
-msgstr ""
-
-#: modules/seo.class.php:287
-msgid "Baidu:"
-msgstr ""
-
-#: modules/seo.class.php:294
-msgid "Date archive:"
-msgstr ""
-
-#: modules/seo.class.php:295 modules/seo.class.php:303
-#: modules/seo.class.php:365 modules/seo.class.php:388
-msgid "Status"
-msgstr ""
-
-#: modules/seo.class.php:296
-msgid "Show date archive in search results"
-msgstr ""
-
-#: modules/seo.class.php:302
-msgid "Author archive:"
-msgstr ""
-
-#: modules/seo.class.php:304
-msgid "Show author archive in search results"
-msgstr ""
-
-#: modules/seo.class.php:312
-msgid "Schema settings:"
-msgstr ""
-
-#: modules/seo.class.php:314
-msgid "Organization"
-msgstr ""
-
-#: modules/seo.class.php:315
-msgid "Organization Type"
-msgstr ""
-
-#: modules/seo.class.php:334
-msgid "Name"
-msgstr ""
-
-#: modules/seo.class.php:335 modules/seo.class.php:427
+#: admin/pageshandler.class.php:471 modules/seo.class.php:383 modules/seo.class.php:494
 #: modules/seo/seo_engine/extensions/XRE_MetaBox.php:114
 msgid "Description"
 msgstr ""
 
-#: modules/seo.class.php:336
-msgid "Address"
+#: admin/pageshandler.class.php:472 admin/pageshandler.class.php:823
+msgid "Images"
 msgstr ""
 
-#: modules/seo.class.php:337
-msgid "Founders (comma separated)"
+#: admin/pageshandler.class.php:473 admin/pageshandler.class.php:815
+msgid "Indexing"
 msgstr ""
 
-#: modules/seo.class.php:338
-msgid "Logo"
+#: admin/pageshandler.class.php:474 admin/pageshandler.class.php:819
+msgid "Canonical"
 msgstr ""
 
-#: modules/seo.class.php:339
-msgid "Contact Type"
+#: admin/pageshandler.class.php:475 modules/redirects.class.php:246
+msgid "Actions"
+msgstr ""
+
+#: admin/pageshandler.class.php:481
+msgid "No items match the selected filters."
+msgstr ""
+
+#: admin/pageshandler.class.php:495 admin/pageshandler.class.php:500 admin/pageshandler.class.php:802 admin/pageshandler.class.php:810
+#, php-format
+msgid "%s char"
+msgstr ""
+
+#: admin/pageshandler.class.php:496 admin/pageshandler.class.php:501 admin/pageshandler.class.php:804 admin/pageshandler.class.php:812
+msgid "Empty"
+msgstr ""
+
+#: admin/pageshandler.class.php:505 admin/pageshandler.class.php:826
+#, php-format
+msgid "%s image"
+msgstr ""
+
+#: admin/pageshandler.class.php:508
+msgid "Noindex"
+msgstr ""
+
+#: admin/pageshandler.class.php:508
+msgid "Index"
+msgstr ""
+
+#: admin/pageshandler.class.php:510
+msgid "Present"
+msgstr ""
+
+#: admin/pageshandler.class.php:510 admin/pageshandler.class.php:820 admin/pageshandler.class.php:1090
+msgid "Missing"
+msgstr ""
+
+#: admin/pageshandler.class.php:518 admin/pageshandler.class.php:793 modules/redirects.class.php:266
+msgid "Edit"
+msgstr ""
+
+#: admin/pageshandler.class.php:520
+msgid "Unavailable"
+msgstr ""
+
+#: admin/pageshandler.class.php:522
+msgid "Details"
+msgstr ""
+
+#: admin/pageshandler.class.php:532 inc/wpfs_functions.php:140
+#, php-format
+msgid "Page %s"
+msgstr ""
+
+#: admin/pageshandler.class.php:533
+#, php-format
+msgid "%s items per page"
+msgstr ""
+
+#: admin/pageshandler.class.php:537 admin/pageshandler.class.php:539
+msgid "Previous"
+msgstr ""
+
+#: admin/pageshandler.class.php:542 admin/pageshandler.class.php:544
+msgid "Next"
+msgstr ""
+
+#: admin/pageshandler.class.php:566
+msgid "Single item metadata check"
+msgstr ""
+
+#: admin/pageshandler.class.php:567 modules/seo_audit.class.php:41
+msgid "SEO Audit Detail"
+msgstr ""
+
+#: admin/pageshandler.class.php:568
+msgid "Inspect one post, page or category with complete metadata values and direct edit links."
+msgstr ""
+
+#: admin/pageshandler.class.php:570
+msgid "SEO Audit detail quick links"
+msgstr ""
+
+#: admin/pageshandler.class.php:571
+msgid "Back to audit"
+msgstr ""
+
+#: admin/pageshandler.class.php:572 admin/pageshandler.class.php:1762 modules/seo.class.php:40
+msgid "SEO Settings"
+msgstr ""
+
+#: admin/pageshandler.class.php:588
+msgid "Detail item"
+msgstr ""
+
+#: admin/pageshandler.class.php:592
+msgid "Back"
+msgstr ""
+
+#: admin/pageshandler.class.php:597
+msgid "Enter an ID, title, slug, edit URL or row key to inspect a single item."
+msgstr ""
+
+#: admin/pageshandler.class.php:610 admin/pageshandler.class.php:620
+msgid "All"
+msgstr ""
+
+#: admin/pageshandler.class.php:611
+msgid "Posts"
+msgstr ""
+
+#: admin/pageshandler.class.php:612
+msgid "Pages"
+msgstr ""
+
+#: admin/pageshandler.class.php:613
+msgid "Categories"
+msgstr ""
+
+#: admin/pageshandler.class.php:621
+msgid "Title too long"
+msgstr ""
+
+#: admin/pageshandler.class.php:622
+msgid "Title too short"
+msgstr ""
+
+#: admin/pageshandler.class.php:623
+msgid "Description missing"
+msgstr ""
+
+#: admin/pageshandler.class.php:624
+msgid "Image alt missing"
+msgstr ""
+
+#: admin/pageshandler.class.php:625
+msgid "Heavy image"
+msgstr ""
+
+#: admin/pageshandler.class.php:626
+msgid "Image dimensions missing"
+msgstr ""
+
+#: admin/pageshandler.class.php:627 admin/pageshandler.class.php:816
+msgid "Noindex active"
+msgstr ""
+
+#: admin/pageshandler.class.php:628
+msgid "Canonical missing"
+msgstr ""
+
+#: admin/pageshandler.class.php:773
+msgid "No matching item found for the detail field."
+msgstr ""
+
+#: admin/pageshandler.class.php:781
+msgid "SEO Audit detail"
+msgstr ""
+
+#: admin/pageshandler.class.php:790
+msgid "View"
+msgstr ""
+
+#: admin/pageshandler.class.php:807 modules/seo.class.php:243 modules/seo.class.php:250 modules/seo.class.php:346
+#: modules/seo.class.php:354 modules/seo.class.php:416 modules/seo.class.php:439 modules/seo.class.php:450
+msgid "Meta description"
+msgstr ""
+
+#: admin/pageshandler.class.php:816
+msgid "Indexable"
+msgstr ""
+
+#: admin/pageshandler.class.php:841
+msgid "Issues"
+msgstr ""
+
+#: admin/pageshandler.class.php:843
+msgid "No issues detected for this item."
+msgstr ""
+
+#: admin/pageshandler.class.php:1018
+#, php-format
+msgid "Post #%s"
+msgstr ""
+
+#: admin/pageshandler.class.php:1047
+msgid "Category"
+msgstr ""
+
+#: admin/pageshandler.class.php:1049
+#, php-format
+msgid "%s item"
+msgstr ""
+
+#: admin/pageshandler.class.php:1067 admin/pageshandler.class.php:1069 admin/pageshandler.class.php:1073
+#: admin/pageshandler.class.php:1419
+msgid "OK"
+msgstr ""
+
+#: admin/pageshandler.class.php:1079
+msgid "Too short"
+msgstr ""
+
+#: admin/pageshandler.class.php:1084
+msgid "Too long"
+msgstr ""
+
+#: admin/pageshandler.class.php:1096
+msgid "Missing alt"
+msgstr ""
+
+#: admin/pageshandler.class.php:1103
+msgid "Heavy"
+msgstr ""
+
+#: admin/pageshandler.class.php:1111
+msgid "No dimensions"
+msgstr ""
+
+#: admin/pageshandler.class.php:1293
+msgid "Featured image"
+msgstr ""
+
+#: admin/pageshandler.class.php:1323
+msgid "Content image"
+msgstr ""
+
+#: admin/pageshandler.class.php:1349
+msgid "Term image"
+msgstr ""
+
+#: admin/pageshandler.class.php:1401
+msgid "alt missing"
+msgstr ""
+
+#: admin/pageshandler.class.php:1405
+#, php-format
+msgid "heavy: %s KB"
+msgstr ""
+
+#: admin/pageshandler.class.php:1409
+msgid "dimensions missing"
+msgstr ""
+
+#: admin/pageshandler.class.php:1460
+msgid "No images found."
+msgstr ""
+
+#: admin/pageshandler.class.php:1466
+#, php-format
+msgid "%s missing alt"
+msgstr ""
+
+#: admin/pageshandler.class.php:1470
+#, php-format
+msgid "%s heavy image"
+msgstr ""
+
+#: admin/pageshandler.class.php:1474
+#, php-format
+msgid "%s without dimensions"
+msgstr ""
+
+#: admin/pageshandler.class.php:1477
+msgid "Images OK."
+msgstr ""
+
+#: admin/pageshandler.class.php:1534
+msgid "Flexy SEO knowledge base"
+msgstr ""
+
+#: admin/pageshandler.class.php:1536
+msgid "Quick reference for breadcrumbs, replacements and dynamic SEO output."
+msgstr ""
+
+#: admin/pageshandler.class.php:1538
+msgid "FAQ quick links"
+msgstr ""
+
+#: admin/pageshandler.class.php:1539
+msgid "SEO"
+msgstr ""
+
+#: admin/pageshandler.class.php:1540 admin/pageshandler.class.php:1766
+msgid "Breadcrumbs"
+msgstr ""
+
+#: admin/pageshandler.class.php:1550
+msgid "How do Flexy Breadcrumbs work?"
+msgstr ""
+
+#: admin/pageshandler.class.php:1554
+msgid ""
+"Flexy Breadcrumbs generates a contextual path for posts, pages, taxonomies and archives. Add the function in your theme where the "
+"breadcrumb trail should appear."
+msgstr ""
+
+#: admin/pageshandler.class.php:1556
+msgid ""
+"The $pre and $after arguments let you wrap the output with your own markup. If you leave them empty, Flexy SEO prints only the "
+"breadcrumb markup."
+msgstr ""
+
+#: admin/pageshandler.class.php:1557 admin/pageshandler.class.php:1798
+msgid "Options:"
+msgstr ""
+
+#: admin/pageshandler.class.php:1559
+msgid "Use the Breadcrumbs page to define a structure for every entity: posts, pages, taxonomies, archives and custom post types."
+msgstr ""
+
+#: admin/pageshandler.class.php:1560
+msgid "With flexible breadcrumbs you can mix dynamic replacements, custom text and custom links in the same path:"
+msgstr ""
+
+#: admin/pageshandler.class.php:1563
+msgid ">>"
+msgstr ""
+
+#: admin/pageshandler.class.php:1563
+msgid "separates each breadcrumb item."
+msgstr ""
+
+#: admin/pageshandler.class.php:1566 admin/pageshandler.class.php:1569
+msgid "Text"
+msgstr ""
+
+#: admin/pageshandler.class.php:1566
+msgid "uses the value only as visible breadcrumb text."
+msgstr ""
+
+#: admin/pageshandler.class.php:1569
+msgid "uses the value only as breadcrumb URL."
+msgstr ""
+
+#: admin/pageshandler.class.php:1572
+msgid "/custom/link/"
+msgstr ""
+
+#: admin/pageshandler.class.php:1572
+msgid "adds a custom link structure."
+msgstr ""
+
+#: admin/pageshandler.class.php:1575
+msgid "replaces the matching WordPress query variable. If it is not available, it is discarded."
+msgstr ""
+
+#: admin/pageshandler.class.php:1578
+msgid "replaces a meta value from the current queried object. If it is empty, it is discarded."
+msgstr ""
+
+#: admin/pageshandler.class.php:1581
+msgid "prints the configured home breadcrumb item."
+msgstr ""
+
+#: admin/pageshandler.class.php:1585
+msgid "prints the taxonomy or category path for the current object. Hierarchical terms generate multiple breadcrumb items."
+msgstr ""
+
+#: admin/pageshandler.class.php:1589
+msgid "works like the taxonomy/category replacements, but keeps the taxonomy prefix in each term link."
+msgstr ""
+
+#: admin/pageshandler.class.php:1592
+msgid "Replace the parent post of the current queried object."
+msgstr ""
+
+#: admin/pageshandler.class.php:1595
+msgid "Replace the post type of the current queried object."
+msgstr ""
+
+#: admin/pageshandler.class.php:1598
+msgid "Replace the title and link of the current queried object."
+msgstr ""
+
+#: admin/pageshandler.class.php:1602
+#, php-format
+msgid "Example: %%home%% >> (/%%meta_var%%-%%custom_var%%/)%%category%% >> %%queried_object%%"
+msgstr ""
+
+#: admin/pageshandler.class.php:1606
+msgid "Use the <em>wpfs_breadcrumb_style</em> filter to change the default breadcrumb CSS."
+msgstr ""
+
+#: admin/pageshandler.class.php:1607
+msgid ""
+"Use the <em>wpfs_breadcrumb_replacements</em> filter to add or override breadcrumb replacements. The return format must be "
+"<strong>array(array('text' =>, 'url' => ))</strong>."
+msgstr ""
+
+#: admin/pageshandler.class.php:1615
+msgid "How does Flexy SEO generate metadata?"
+msgstr ""
+
+#: admin/pageshandler.class.php:1619
+msgid ""
+"Flexy SEO starts from the template configured for the current context, applies WordPress filters, replaces dynamic tokens and then "
+"normalizes the final title, description, keywords, social metadata and schema output."
+msgstr ""
+
+#: admin/pageshandler.class.php:1620
+msgid ""
+"This means one template can adapt to posts, taxonomies, archives, search pages and custom post types without duplicating manual SEO "
+"rules."
+msgstr ""
+
+#: admin/pageshandler.class.php:1622
+#, php-format
+msgid "See the complete replacer list <a href=\"%s\">here</a>."
+msgstr ""
+
+#: admin/pageshandler.class.php:1629
+msgid "What are replacers and when should I use them?"
+msgstr ""
+
+#: admin/pageshandler.class.php:1633
+#, php-format
+msgid ""
+"Replacers are dynamic tokens such as %%title%%, %%description%%, %%sitename%%, %%sep%% and %%meta_price%%. They are replaced with the "
+"value available in the current page context."
+msgstr ""
+
+#: admin/pageshandler.class.php:1634
+msgid ""
+"Use them when a rule should work across many pages. For example, a product post type can use one title template while each product "
+"still receives its own title, category, excerpt and custom fields."
+msgstr ""
+
+#: admin/pageshandler.class.php:1642
+msgid "How does autosave work in the SEO panel?"
+msgstr ""
+
+#: admin/pageshandler.class.php:1646
+msgid ""
+"The SEO settings page saves changes automatically after you edit a field. A status badge and toast notification show whether changes "
+"are pending, saving, saved or blocked by a connection error."
+msgstr ""
+
+#: admin/pageshandler.class.php:1647
+msgid "If you leave the page while a change is still pending, the browser warns you before closing so you do not lose unsaved settings."
+msgstr ""
+
+#: admin/pageshandler.class.php:1654
+msgid "What should I configure first?"
+msgstr ""
+
+#: admin/pageshandler.class.php:1658
+msgid ""
+"Start with General settings, then configure the Home page, Post types and Taxonomies. After that, review Social and Schema.org "
+"settings so shared links and structured data are consistent with your brand."
+msgstr ""
+
+#: admin/pageshandler.class.php:1660
+msgid "Set the title separator and whether the site name should be appended automatically."
+msgstr ""
+
+#: admin/pageshandler.class.php:1661
+msgid "Create one strong title and description template for each important post type."
+msgstr ""
+
+#: admin/pageshandler.class.php:1662
+msgid "Add a default wide and small image for pages that do not have a usable featured image."
+msgstr ""
+
+#: admin/pageshandler.class.php:1663
+msgid "Enable Schema.org and fill organization data if the site represents a business, agency or brand."
+msgstr ""
+
+#: admin/pageshandler.class.php:1671
+msgid "How are title and meta description fallbacks handled?"
+msgstr ""
+
+#: admin/pageshandler.class.php:1675
+msgid ""
+"If a configured template produces an empty value, Flexy SEO builds a fallback from the current context: post excerpt or content, term "
+"description, author description, search query or site description."
+msgstr ""
+
+#: admin/pageshandler.class.php:1676
+msgid ""
+"The final text is cleaned before output: unresolved tokens, shortcodes, HTML tags and excessive spaces are removed so search engines "
+"receive a readable value."
+msgstr ""
+
+#: admin/pageshandler.class.php:1683
+msgid "How do Open Graph and Twitter Card settings affect sharing?"
+msgstr ""
+
+#: admin/pageshandler.class.php:1687
+msgid ""
+"Open Graph controls how links appear on Facebook, LinkedIn and other platforms that read og:* tags. Twitter Card controls twitter:* "
+"tags and lets you choose standard or large image cards."
+msgstr ""
+
+#: admin/pageshandler.class.php:1688
+msgid ""
+"Flexy SEO reuses the generated SEO title, description, canonical URL and best available image, so social previews stay aligned with "
+"the page metadata."
+msgstr ""
+
+#: admin/pageshandler.class.php:1695
+msgid "Which Schema.org type should I choose?"
+msgstr ""
+
+#: admin/pageshandler.class.php:1699
+msgid ""
+"Use WebPage for static pages, Article or BlogPosting for editorial posts, CollectionPage for archives and listing pages, "
+"SearchResultsPage for search pages and RealEstateListing for property listing contexts."
+msgstr ""
+
+#: admin/pageshandler.class.php:1700
+msgid ""
+"The selected graph type is still dynamic: Flexy SEO fills URL, title, description, language, breadcrumb, dates, author and image data "
+"from the current WordPress object when available."
+msgstr ""
+
+#: admin/pageshandler.class.php:1707
+msgid "When should I clear the Flexy SEO cache?"
+msgstr ""
+
+#: admin/pageshandler.class.php:1711
+msgid ""
+"Clear the cache after major template changes, taxonomy restructures, permalink changes or when you suspect old generated data is still "
+"being reused."
+msgstr ""
+
+#: admin/pageshandler.class.php:1712
+msgid ""
+"For normal edits in the SEO panel, autosave updates the stored settings immediately and the frontend generator will use the new rules "
+"on subsequent requests."
+msgstr ""
+
+#: admin/pageshandler.class.php:1734
+msgid "Flexy SEO cache cleared."
+msgstr ""
+
+#: admin/pageshandler.class.php:1740
+msgid "Permalink and sitemap rewrite rules refreshed."
+msgstr ""
+
+#: admin/pageshandler.class.php:1757
+msgid "WordPress SEO toolkit"
+msgstr ""
+
+#: admin/pageshandler.class.php:1759
+msgid "Manage dynamic metadata, breadcrumbs, social sharing and schema from one focused panel."
+msgstr ""
+
+#: admin/pageshandler.class.php:1761
+msgid "Flexy SEO quick links"
+msgstr ""
+
+#: admin/pageshandler.class.php:1768
+msgid "Redirects"
+msgstr ""
+
+#: admin/pageshandler.class.php:1771 modules/not_found_monitor.class.php:128
+msgid "404 Monitor"
+msgstr ""
+
+#: admin/pageshandler.class.php:1773 admin/pageshandler.class.php:1820
+msgid "Modules"
+msgstr ""
+
+#: admin/pageshandler.class.php:1778
+msgid "Configuration:"
+msgstr ""
+
+#: admin/pageshandler.class.php:1784
+#, php-format
+msgid "SEO readiness: %s%%"
+msgstr ""
+
+#: admin/pageshandler.class.php:1785
+#, php-format
+msgid "Core SEO is %1$s%% complete and technical tools are %2$s%% active. Enable the missing tools only if they match your SEO workflow."
+msgstr ""
+
+#: admin/pageshandler.class.php:1788
+msgid "Configure SEO"
+msgstr ""
+
+#: admin/pageshandler.class.php:1790
+msgid "Run SEO Audit"
+msgstr ""
+
+#: admin/pageshandler.class.php:1792
+msgid "Configure Breadcrumbs"
+msgstr ""
+
+#: admin/pageshandler.class.php:1802
+msgid "Cache"
+msgstr ""
+
+#: admin/pageshandler.class.php:1803
+msgid "Clear generated SEO cache after template, schema or metadata changes."
+msgstr ""
+
+#: admin/pageshandler.class.php:1804
+msgid "Reset Flexy SEO cache"
+msgstr ""
+
+#: admin/pageshandler.class.php:1808
+msgid "Permalinks"
+msgstr ""
+
+#: admin/pageshandler.class.php:1809
+msgid "Refresh rewrite rules when sitemap or redirect URLs do not resolve as expected."
+msgstr ""
+
+#: admin/pageshandler.class.php:1810
+msgid "Refresh rewrite rules"
+msgstr ""
+
+#: admin/pageshandler.class.php:1814
+msgid "XML Sitemap"
+msgstr ""
+
+#: admin/pageshandler.class.php:1815
+msgid "Open the generated sitemap in a new tab and confirm search engines can crawl it."
+msgstr ""
+
+#: admin/pageshandler.class.php:1816
+msgid "View sitemap"
+msgstr ""
+
+#: admin/pageshandler.class.php:1821
+msgid "Enable only the SEO tools you use to keep the admin and frontend output focused."
+msgstr ""
+
+#: admin/pageshandler.class.php:1822
+msgid "Manage modules"
+msgstr ""
+
+#: admin/pageshandler.class.php:1830
+msgid "Tips:"
+msgstr ""
+
+#: admin/pageshandler.class.php:1833
+#, php-format
+msgid "For a better SEO optimization, it's recommended to install also <a href=\"%s\">this</a> plugin."
+msgstr ""
+
+#: admin/pageshandler.class.php:1844
+msgid "Flexy SEO saving you time?"
+msgstr ""
+
+#: admin/pageshandler.class.php:1845
+msgid "Support maintenance, fixes, and new features with a donation, or help more users discover the plugin with a 5-star review."
+msgstr ""
+
+#: admin/pageshandler.class.php:1849 admin/pluginInit.class.php:317
+msgid "Donate with PayPal"
+msgstr ""
+
+#: admin/pageshandler.class.php:1854
+msgid "Leave a 5-star review"
+msgstr ""
+
+#: admin/pageshandler.class.php:1859
+msgid "Want to support in other ways?"
+msgstr ""
+
+#: admin/pageshandler.class.php:1860
+msgid "Support links"
+msgstr ""
+
+#: admin/pageshandler.class.php:1863
+msgid "Help me translating"
+msgstr ""
+
+#: admin/pageshandler.class.php:1868
+msgid "Flexy SEO links"
+msgstr ""
+
+#: admin/pageshandler.class.php:1871
+msgid "Source code"
+msgstr ""
+
+#: admin/pageshandler.class.php:1876
+msgid "About me"
+msgstr ""
+
+#: admin/pluginInit.class.php:161 admin/pluginInit.class.php:184 admin/pluginInit.class.php:219 modules/breadcrumbs.class.php:436
+#: modules/seo.class.php:609 modules/seo.class.php:616 modules/settings.class.php:95 modules/settings.class.php:125
+#: modules/settings.class.php:165
+msgid "It seems that you are not allowed to do this request."
+msgstr ""
+
+#: admin/pluginInit.class.php:162 admin/pluginInit.class.php:185 admin/pluginInit.class.php:211 admin/pluginInit.class.php:220
+#: admin/pluginInit.class.php:230 modules/breadcrumbs.class.php:437 modules/breadcrumbs.class.php:454 modules/breadcrumbs.class.php:464
+#: modules/seo.class.php:610 modules/seo.class.php:617 modules/seo.class.php:634 modules/seo.class.php:644 modules/settings.class.php:96
+#: modules/settings.class.php:126 modules/settings.class.php:157 modules/settings.class.php:166 modules/settings.class.php:176
+msgid "Autosave error"
+msgstr ""
+
+#: admin/pluginInit.class.php:210
+msgid "Cannot detect which module must be saved."
+msgstr ""
+
+#: admin/pluginInit.class.php:229 modules/breadcrumbs.class.php:463 modules/seo.class.php:643 modules/settings.class.php:175
+msgid "Unable to save settings."
+msgstr ""
+
+#: admin/pluginInit.class.php:236 modules/breadcrumbs.class.php:470 modules/seo.class.php:650 modules/settings.class.php:182
+msgid "Autosave"
+msgstr ""
+
+#: inc/wpfs_functions.php:84
+#, php-format
+msgid "Protected: %s"
+msgstr ""
+
+#: inc/wpfs_functions.php:89
+#, php-format
+msgid "Private: %s"
+msgstr ""
+
+#: inc/wpfs_functions.php:95
+msgid "Page not found"
+msgstr ""
+
+#: inc/wpfs_functions.php:99
+#, php-format
+msgid "Search Results for &#8220;%s&#8221;"
+msgstr ""
+
+#: inc/wpfs_functions.php:126
+msgid "Y"
+msgstr ""
+
+#: inc/wpfs_functions.php:131
+msgid "F Y"
+msgstr ""
+
+#: modules/breadcrumbs.class.php:354 modules/sitemap.class.php:327
+msgid "Status:"
+msgstr ""
+
+#: modules/breadcrumbs.class.php:355 modules/seo.class.php:268 modules/seo.class.php:274 modules/seo.class.php:280
+#: modules/seo.class.php:285 modules/seo.class.php:291 modules/seo.class.php:296 modules/seo.class.php:301 modules/seo.class.php:306
+#: modules/seo.class.php:311 modules/seo.class.php:316 modules/seo.class.php:361
+msgid "Active"
+msgstr ""
+
+#: modules/breadcrumbs.class.php:360
+msgid "Flexed Breadcrumbs"
+msgstr ""
+
+#: modules/breadcrumbs.class.php:361
+msgid "Highlight last page"
+msgstr ""
+
+#: modules/breadcrumbs.class.php:362
+msgid "Separator"
+msgstr ""
+
+#: modules/breadcrumbs.class.php:363
+msgid "Show child categories dropdown"
+msgstr ""
+
+#: modules/breadcrumbs.class.php:364
+msgid "Child dropdown label"
+msgstr ""
+
+#: modules/breadcrumbs.class.php:364 modules/breadcrumbs/WPFS_Breadcrumb.php:1081 modules/breadcrumbs/WPFS_Breadcrumb.php:1242
+msgid "Scegli l'area geografica"
+msgstr ""
+
+#: modules/breadcrumbs.class.php:365
+msgid "Hide empty child categories"
+msgstr ""
+
+#: modules/breadcrumbs.class.php:369 modules/seo.class.php:241 modules/sitemap.class.php:372
+msgid "Home:"
+msgstr ""
+
+#: modules/breadcrumbs.class.php:370 modules/breadcrumbs.class.php:376 modules/breadcrumbs.class.php:382
+#: modules/breadcrumbs.class.php:388 modules/breadcrumbs.class.php:393
+msgid "Prefix"
+msgstr ""
+
+#: modules/breadcrumbs.class.php:371 modules/breadcrumbs.class.php:377 modules/breadcrumbs.class.php:383
+#: modules/breadcrumbs.class.php:394
+msgid "Format"
+msgstr ""
+
+#: modules/breadcrumbs.class.php:375
+msgid "Author:"
+msgstr ""
+
+#: modules/breadcrumbs.class.php:381
+msgid "Search:"
+msgstr ""
+
+#: modules/breadcrumbs.class.php:387
+msgid "Archive:"
+msgstr ""
+
+#: modules/breadcrumbs.class.php:392
+msgid "404:"
+msgstr ""
+
+#: modules/breadcrumbs.class.php:410
+#, php-format
+msgid "%s archive format"
+msgstr ""
+
+#: modules/breadcrumbs.class.php:411
+#, php-format
+msgid "Show post type for %s"
+msgstr ""
+
+#: modules/breadcrumbs.class.php:417
+msgid "Breadcrumb Taxonomies Archive format:"
+msgstr ""
+
+#: modules/breadcrumbs.class.php:453 modules/seo.class.php:633 modules/settings.class.php:156
+msgid "Invalid settings payload."
+msgstr ""
+
+#: modules/breadcrumbs/WPFS_Breadcrumb.php:158
+msgid "Conditional query tags do not work before the query is run. Before then, they always return false."
+msgstr ""
+
+#: modules/breadcrumbs/WPFS_Breadcrumb.php:1249
+msgid "Cerca"
+msgstr ""
+
+#: modules/modules_handler.class.php:29
+msgid ""
+"Disable the Flexy SEO modules you do not use. Core settings and this module manager stay active so you can re-enable modules later."
+msgstr ""
+
+#: modules/not_found_monitor.class.php:127 modules/redirects.class.php:151
+msgid "URL lifecycle"
+msgstr ""
+
+#: modules/not_found_monitor.class.php:129
+msgid "Review missing URLs, count visits and create redirects directly from the log."
+msgstr ""
+
+#: modules/not_found_monitor.class.php:135
+msgid "404 log"
+msgstr ""
+
+#: modules/not_found_monitor.class.php:136
+msgid "Bot traffic and common spam probes are excluded before logging."
+msgstr ""
+
+#: modules/not_found_monitor.class.php:142
+msgid "Clear the 404 log?"
+msgstr ""
+
+#: modules/not_found_monitor.class.php:142
+msgid "Clear log"
+msgstr ""
+
+#: modules/not_found_monitor.class.php:146
+msgid "404 summary"
+msgstr ""
+
+#: modules/not_found_monitor.class.php:149
+msgid "404 URLs"
+msgstr ""
+
+#: modules/not_found_monitor.class.php:153 modules/not_found_monitor.class.php:165
+msgid "Visits"
+msgstr ""
+
+#: modules/not_found_monitor.class.php:157
+msgid "Redirected"
+msgstr ""
+
+#: modules/not_found_monitor.class.php:164
+msgid "404 URL"
+msgstr ""
+
+#: modules/not_found_monitor.class.php:166
+msgid "First seen"
+msgstr ""
+
+#: modules/not_found_monitor.class.php:167
+msgid "Last seen"
+msgstr ""
+
+#: modules/not_found_monitor.class.php:168
+msgid "Referrer"
+msgstr ""
+
+#: modules/not_found_monitor.class.php:169
+msgid "Quick redirect"
+msgstr ""
+
+#: modules/not_found_monitor.class.php:175
+msgid "No 404 URLs logged yet."
+msgstr ""
+
+#: modules/not_found_monitor.class.php:184
+msgid "Direct"
+msgstr ""
+
+#: modules/not_found_monitor.class.php:188 modules/redirects.class.php:178
+msgid "Edit redirect"
+msgstr ""
+
+#: modules/not_found_monitor.class.php:196
+msgid "/new-url/"
+msgstr ""
+
+#: modules/not_found_monitor.class.php:196
+msgid "Redirect target"
+msgstr ""
+
+#: modules/not_found_monitor.class.php:197
+msgid "Create redirect"
+msgstr ""
+
+#: modules/not_found_monitor.class.php:253
+msgid "404 URL is required."
+msgstr ""
+
+#: modules/not_found_monitor.class.php:257
+msgid "Target URL is required to create a redirect."
+msgstr ""
+
+#: modules/not_found_monitor.class.php:265
+msgid "Created from the 404 monitor."
+msgstr ""
+
+#: modules/not_found_monitor.class.php:274
+msgid "Redirect created from 404 log."
+msgstr ""
+
+#: modules/not_found_monitor.class.php:274
+msgid "Unable to create redirect from 404 log."
+msgstr ""
+
+#: modules/not_found_monitor.class.php:285
+msgid "404 log cleared."
+msgstr ""
+
+#: modules/not_found_monitor.class.php:567 modules/redirects.class.php:742
+msgid "You are not allowed to do this request."
+msgstr ""
+
+#: modules/redirects.class.php:152
+msgid "Redirect manager"
+msgstr ""
+
+#: modules/redirects.class.php:153
+msgid "Manage 301, 302 and 410 responses, import CSV rules and track how often old URLs are requested."
+msgstr ""
+
+#: modules/redirects.class.php:157
+msgid "Redirect summary"
+msgstr ""
+
+#: modules/redirects.class.php:160
+msgid "Rules"
+msgstr ""
+
+#: modules/redirects.class.php:164
+msgid "Tracked hits"
+msgstr ""
+
+#: modules/redirects.class.php:168
+msgid "Automatic"
+msgstr ""
+
+#: modules/redirects.class.php:172
+msgid "410 gone"
+msgstr ""
+
+#: modules/redirects.class.php:178
+msgid "Add redirect"
+msgstr ""
+
+#: modules/redirects.class.php:184 modules/redirects.class.php:240
+msgid "Old URL"
+msgstr ""
+
+#: modules/redirects.class.php:188
+msgid "Target URL"
+msgstr ""
+
+#: modules/redirects.class.php:192 modules/redirects.class.php:242 modules/seo.class.php:343 modules/seo.class.php:351
+#: modules/seo.class.php:413 modules/seo.class.php:436
+msgid "Status"
+msgstr ""
+
+#: modules/redirects.class.php:200
+msgid "Notes"
+msgstr ""
+
+#: modules/redirects.class.php:204
+msgid "Save redirect"
+msgstr ""
+
+#: modules/redirects.class.php:206
+msgid "Cancel edit"
+msgstr ""
+
+#: modules/redirects.class.php:212
+msgid "CSV import/export"
+msgstr ""
+
+#: modules/redirects.class.php:221
+msgid "CSV file"
+msgstr ""
+
+#: modules/redirects.class.php:222
+msgid "Drop or choose a .csv redirect file."
+msgstr ""
+
+#: modules/redirects.class.php:224
+msgid "Choose file"
+msgstr ""
+
+#: modules/redirects.class.php:226
+msgid "No file selected"
+msgstr ""
+
+#: modules/redirects.class.php:229
+msgid "Import CSV"
+msgstr ""
+
+#: modules/redirects.class.php:230
+msgid "Export CSV"
+msgstr ""
+
+#: modules/redirects.class.php:236
+msgid "Redirect rules"
+msgstr ""
+
+#: modules/redirects.class.php:241
+msgid "Target"
+msgstr ""
+
+#: modules/redirects.class.php:243
+msgid "Hits"
+msgstr ""
+
+#: modules/redirects.class.php:244
+msgid "Last hit"
+msgstr ""
+
+#: modules/redirects.class.php:245
+msgid "Source"
+msgstr ""
+
+#: modules/redirects.class.php:252
+msgid "No redirects configured yet."
+msgstr ""
+
+#: modules/redirects.class.php:258
+msgid "None"
+msgstr ""
+
+#: modules/redirects.class.php:261
+msgid "Never"
+msgstr ""
+
+#: modules/redirects.class.php:262
+msgid "Auto"
+msgstr ""
+
+#: modules/redirects.class.php:262
+msgid "Manual"
+msgstr ""
+
+#: modules/redirects.class.php:272
+msgid "Delete this redirect?"
+msgstr ""
+
+#: modules/redirects.class.php:273
+msgid "Delete"
+msgstr ""
+
+#: modules/redirects.class.php:318
+msgid "This URL is gone."
+msgstr ""
+
+#: modules/redirects.class.php:318
+msgid "Gone"
+msgstr ""
+
+#: modules/redirects.class.php:414
+msgid "Created automatically after slug change."
+msgstr ""
+
+#: modules/redirects.class.php:427
+msgid "Old URL is required."
+msgstr ""
+
+#: modules/redirects.class.php:431
+msgid "Target URL is required for 301 and 302 redirects."
+msgstr ""
+
+#: modules/redirects.class.php:444
+msgid "Redirect saved."
+msgstr ""
+
+#: modules/redirects.class.php:444
+msgid "Unable to save redirect."
+msgstr ""
+
+#: modules/redirects.class.php:461
+msgid "Redirect deleted."
+msgstr ""
+
+#: modules/redirects.class.php:461
+msgid "Unable to delete redirect."
+msgstr ""
+
+#: modules/redirects.class.php:469
+msgid "CSV file is required."
+msgstr ""
+
+#: modules/redirects.class.php:475
+msgid "Unable to read CSV file."
+msgstr ""
+
+#: modules/redirects.class.php:526
+#, php-format
+msgid "%d redirect imported."
+msgstr ""
+
+#: modules/redirects.class.php:662
+msgid "301 Permanent redirect"
+msgstr ""
+
+#: modules/redirects.class.php:663
+msgid "302 Temporary redirect"
+msgstr ""
+
+#: modules/redirects.class.php:664
+msgid "410 Gone"
+msgstr ""
+
+#: modules/seo.class.php:39 modules/sitemap.class.php:248
+msgid "Flexy SEO control panel"
+msgstr ""
+
+#: modules/seo.class.php:41
+msgid "Configure dynamic titles, meta descriptions, social metadata and schema output using the existing replacement system."
+msgstr ""
+
+#: modules/seo.class.php:63
+msgid "Snippet preview"
+msgstr ""
+
+#: modules/seo.class.php:64
+msgid "Live example based on the active SEO template and sample replacement values."
+msgstr ""
+
+#: modules/seo.class.php:72
+msgid "Search snippet preview"
+msgstr ""
+
+#: modules/seo.class.php:100 modules/seo.class.php:262 modules/sitemap.class.php:266
+msgid "General"
+msgstr ""
+
+#: modules/seo.class.php:106
+msgid "Special pages"
+msgstr ""
+
+#: modules/seo.class.php:112 modules/sitemap.class.php:272
+msgid "Post types"
+msgstr ""
+
+#: modules/seo.class.php:118 modules/sitemap.class.php:284
+msgid "Archives"
+msgstr ""
+
+#: modules/seo.class.php:124
+msgid "Taxonomy"
+msgstr ""
+
+#: modules/seo.class.php:130
+msgid "Social"
+msgstr ""
+
+#: modules/seo.class.php:136
+msgid "Webmaster"
+msgstr ""
+
+#: modules/seo.class.php:142
+msgid "Schema.org"
+msgstr ""
+
+#: modules/seo.class.php:148
+msgid "Replacers"
+msgstr ""
+
+#: modules/seo.class.php:159
+#, php-format
+msgid "Use replacements like %%title%%, %%sep%%, %%sitename%% and %%description%%."
+msgstr ""
+
+#: modules/seo.class.php:165
+msgid "Use dynamic replacements when useful."
+msgstr ""
+
+#: modules/seo.class.php:210
+msgid "Titles:"
+msgstr ""
+
+#: modules/seo.class.php:211
+msgid "Rewrite titles"
+msgstr ""
+
+#: modules/seo.class.php:212
+msgid "Force blog name as trailing part of the title"
+msgstr ""
+
+#: modules/seo.class.php:213
+msgid "Title separator"
+msgstr ""
+
+#: modules/seo.class.php:216
+msgid "Addon:"
+msgstr ""
+
+#: modules/seo.class.php:217
+msgid "Custom Term Description"
+msgstr ""
+
+#: modules/seo.class.php:218
+msgid "Edit page meta-boxes"
+msgstr ""
+
+#: modules/seo.class.php:221
+msgid "Media:"
+msgstr ""
+
+#: modules/seo.class.php:222
+msgid "Rewrite media url to attachment"
+msgstr ""
+
+#: modules/seo.class.php:223
+msgid "Generate missing image alt text"
+msgstr ""
+
+#: modules/seo.class.php:224
+msgid "Image alt template"
+msgstr ""
+
+#: modules/seo.class.php:225
+msgid "Heavy image threshold (KB)"
+msgstr ""
+
+#: modules/seo.class.php:228
+msgid "Knowledge Graph configuration:"
+msgstr ""
+
+#: modules/seo.class.php:229
+msgid "Default snippet image url (wide)"
+msgstr ""
+
+#: modules/seo.class.php:229 modules/seo.class.php:230 modules/seo.class.php:235 modules/seo.class.php:386
+msgid "Paste your image URL or select a new image"
+msgstr ""
+
+#: modules/seo.class.php:230
+msgid "Default snippet image url (small)"
+msgstr ""
+
+#: modules/seo.class.php:231
+msgid "Add Twitter Card metadata"
+msgstr ""
+
+#: modules/seo.class.php:232
+msgid "Use larger images for Twitter Card"
+msgstr ""
+
+#: modules/seo.class.php:233
+msgid "Enable Facebook Open-Graph metadata"
+msgstr ""
+
+#: modules/seo.class.php:234
+msgid "Smart og:image fallback"
+msgstr ""
+
+#: modules/seo.class.php:235
+msgid "Facebook default share image"
+msgstr ""
+
+#: modules/seo.class.php:242
+msgid "SEO title"
+msgstr ""
+
+#: modules/seo.class.php:244
+msgid "Keywords (comma separate)"
+msgstr ""
+
+#: modules/seo.class.php:247
+msgid "Search page:"
+msgstr ""
+
+#: modules/seo.class.php:248
+msgid "Show search page"
+msgstr ""
+
+#: modules/seo.class.php:251 modules/seo.class.php:347 modules/seo.class.php:355 modules/seo.class.php:417 modules/seo.class.php:440
+#: modules/seo.class.php:451
+msgid "Keywords"
+msgstr ""
+
+#: modules/seo.class.php:255
+msgid "404 page:"
+msgstr ""
+
+#: modules/seo.class.php:263
+msgid "Use same username"
+msgstr ""
+
+#: modules/seo.class.php:264
+msgid "Username"
+msgstr ""
+
+#: modules/seo.class.php:267
+msgid "Facebook:"
+msgstr ""
+
+#: modules/seo.class.php:269 modules/seo.class.php:275 modules/seo.class.php:281 modules/seo.class.php:286 modules/seo.class.php:292
+#: modules/seo.class.php:297 modules/seo.class.php:302 modules/seo.class.php:307 modules/seo.class.php:312 modules/seo.class.php:317
+msgid "Profile name or url"
+msgstr ""
+
+#: modules/seo.class.php:270 modules/seo.class.php:276 modules/seo.class.php:287
+msgid "Confirmation code"
+msgstr ""
+
+#: modules/seo.class.php:273
+msgid "Twitter:"
+msgstr ""
+
+#: modules/seo.class.php:279
+msgid "Linkedin:"
+msgstr ""
+
+#: modules/seo.class.php:284
+msgid "Pinterest:"
+msgstr ""
+
+#: modules/seo.class.php:290
+msgid "Instagram:"
+msgstr ""
+
+#: modules/seo.class.php:295
+msgid "YouTube:"
+msgstr ""
+
+#: modules/seo.class.php:300
+msgid "Tumblr:"
+msgstr ""
+
+#: modules/seo.class.php:305
+msgid "Yelp:"
+msgstr ""
+
+#: modules/seo.class.php:310
+msgid "SoundCloud:"
+msgstr ""
+
+#: modules/seo.class.php:315
+msgid "WikiPedia:"
+msgstr ""
+
+#: modules/seo.class.php:323
+msgid "Google:"
+msgstr ""
+
+#: modules/seo.class.php:324 modules/seo.class.php:328 modules/seo.class.php:332 modules/seo.class.php:336
+msgid "Verification code"
+msgstr ""
+
+#: modules/seo.class.php:327
+msgid "Bing:"
+msgstr ""
+
+#: modules/seo.class.php:331
+msgid "Yandex:"
+msgstr ""
+
+#: modules/seo.class.php:335
+msgid "Baidu:"
+msgstr ""
+
+#: modules/seo.class.php:342
+msgid "Date archive:"
+msgstr ""
+
+#: modules/seo.class.php:344
+msgid "Show date archive in search results"
+msgstr ""
+
+#: modules/seo.class.php:350
+msgid "Author archive:"
 msgstr ""
 
 #: modules/seo.class.php:352
+msgid "Show author archive in search results"
+msgstr ""
+
+#: modules/seo.class.php:360
+msgid "Schema settings:"
+msgstr ""
+
+#: modules/seo.class.php:362
+msgid "Organization"
+msgstr ""
+
+#: modules/seo.class.php:363
+msgid "Organization Type"
+msgstr ""
+
+#: modules/seo.class.php:382
+msgid "Name"
+msgstr ""
+
+#: modules/seo.class.php:384
+msgid "Address"
+msgstr ""
+
+#: modules/seo.class.php:385
+msgid "Founders (comma separated)"
+msgstr ""
+
+#: modules/seo.class.php:386
+msgid "Logo"
+msgstr ""
+
+#: modules/seo.class.php:387
+msgid "Contact Type"
+msgstr ""
+
+#: modules/seo.class.php:400
 msgid "Phone"
 msgstr ""
 
-#: modules/seo.class.php:353
+#: modules/seo.class.php:401
 msgid "E-mail"
 msgstr ""
 
-#: modules/seo.class.php:354
+#: modules/seo.class.php:402
 msgid "Enable Sitelinks Search Box"
 msgstr ""
 
-#: modules/seo.class.php:366
+#: modules/seo.class.php:414
 #, php-format
 msgid "Show \"<i>%s</i>\" in search results"
 msgstr ""
 
-#: modules/seo.class.php:370
+#: modules/seo.class.php:418
 msgid "Remove type prefix"
 msgstr ""
 
-#: modules/seo.class.php:387
+#: modules/seo.class.php:435 modules/sitemap.class.php:399
 #, php-format
 msgid "%s archive:"
 msgstr ""
 
-#: modules/seo.class.php:389
+#: modules/seo.class.php:437
 #, php-format
 msgid "Show %s archive in search results"
 msgstr ""
 
-#: modules/seo.class.php:399
+#: modules/seo.class.php:447
 #, php-format
 msgid "Show <i>\"%s\"</i> in search results"
 msgstr ""
 
-#: modules/seo.class.php:400
+#: modules/seo.class.php:448
 msgid "Follow link directive"
 msgstr ""
 
-#: modules/seo.class.php:405 modules/seo.class.php:406
+#: modules/seo.class.php:453 modules/seo.class.php:454
 #, php-format
 msgid "Predefined %s schema.org type"
 msgstr ""
 
-#: modules/seo.class.php:426
-msgid "Replacer"
-msgstr ""
-
-#: modules/seo.class.php:433
-msgid "Will replace the specified query var."
-msgstr ""
-
-#: modules/seo.class.php:437
-msgid "Will replace the specified meta of the queried object."
-msgstr ""
-
-#: modules/seo.class.php:441
-msgid ""
-"Will replace the WordPress queried object property if it's available "
-"(display_name, ID, post_modified...) ."
-msgstr ""
-
-#: modules/seo.class.php:445
-msgid "Default separator."
-msgstr ""
-
-#: modules/seo.class.php:449
-msgid "The search query."
-msgstr ""
-
-#: modules/seo.class.php:453
-msgid "The site name."
-msgstr ""
-
-#: modules/seo.class.php:457
-msgid "The resume of the current queried post."
-msgstr ""
-
-#: modules/seo.class.php:461
-msgid "The excerpt of the current queried post."
-msgstr ""
-
-#: modules/seo.class.php:465
-msgid "The default WordPress title of the current queried object."
-msgstr ""
-
-#: modules/seo.class.php:469
-msgid "The number of found posts."
-msgstr ""
-
 #: modules/seo.class.php:473
-msgid "The total number of pages for the current query."
+msgid "Dynamic replacements"
+msgstr ""
+
+#: modules/seo.class.php:474
+msgid "Use these tokens inside title, description and keyword templates. Empty values are discarded automatically by the generator."
 msgstr ""
 
 #: modules/seo.class.php:477
-msgid "The current page number for the current query."
+msgid "Search replacers"
+msgstr ""
+
+#: modules/seo.class.php:478
+msgid "Search replacers..."
 msgstr ""
 
 #: modules/seo.class.php:481
-msgid "The site language."
-msgstr ""
-
-#: modules/seo.class.php:485
-msgid "Current date in Y-m-d format."
-msgstr ""
-
-#: modules/seo.class.php:489
-msgid "Current time in H:i:s format."
+msgid "Common replacers"
 msgstr ""
 
 #: modules/seo.class.php:493
+msgid "Replacer"
+msgstr ""
+
+#: modules/seo.class.php:500
+msgid "Will replace the specified query var."
+msgstr ""
+
+#: modules/seo.class.php:504
+msgid "Will replace the specified meta of the queried object."
+msgstr ""
+
+#: modules/seo.class.php:508
+msgid "Will replace the WordPress queried object property if it's available (display_name, ID, post_modified...) ."
+msgstr ""
+
+#: modules/seo.class.php:512
+msgid "Default separator."
+msgstr ""
+
+#: modules/seo.class.php:516
+msgid "The search query."
+msgstr ""
+
+#: modules/seo.class.php:520
+msgid "The site name."
+msgstr ""
+
+#: modules/seo.class.php:524
+msgid "The resume of the current queried post."
+msgstr ""
+
+#: modules/seo.class.php:528
+msgid "The excerpt of the current queried post."
+msgstr ""
+
+#: modules/seo.class.php:532
+msgid "The default WordPress title of the current queried object."
+msgstr ""
+
+#: modules/seo.class.php:536
+msgid "The number of found posts."
+msgstr ""
+
+#: modules/seo.class.php:540
+msgid "The total number of pages for the current query."
+msgstr ""
+
+#: modules/seo.class.php:544
+msgid "The current page number for the current query."
+msgstr ""
+
+#: modules/seo.class.php:548
+msgid "The site language."
+msgstr ""
+
+#: modules/seo.class.php:552
+msgid "Current date in Y-m-d format."
+msgstr ""
+
+#: modules/seo.class.php:556
+msgid "Current time in H:i:s format."
+msgstr ""
+
+#: modules/seo.class.php:560
 msgid "The site description."
+msgstr ""
+
+#: modules/seo/seo_engine/Generator.php:440
+#, php-format
+msgid "Search results for \"%s\""
 msgstr ""
 
 #: modules/seo/seo_engine/extensions/ExtraTermFields.php:62
@@ -802,26 +1981,180 @@ msgstr ""
 msgid "Published on %1$s."
 msgstr ""
 
-#: modules/settings.class.php:70
+#: modules/settings.class.php:71
 msgid "Action was correctly executed"
 msgstr ""
 
-#: modules/settings.class.php:73
+#: modules/settings.class.php:74
 msgid "Action execution failed"
 msgstr ""
 
-#: modules/settings.class.php:90
+#: modules/settings.class.php:220
 msgid "Reset Plugin options"
 msgstr ""
 
-#: modules/settings.class.php:92
+#: modules/settings.class.php:222
 msgid "Restore Plugin options"
 msgstr ""
 
-#: modules/settings.class.php:94
+#: modules/settings.class.php:224
 msgid "Export Plugin options"
 msgstr ""
 
-#: modules/settings.class.php:107
+#: modules/settings.class.php:237
 msgid "Import Plugin options"
+msgstr ""
+
+#: modules/sitemap.class.php:249
+msgid "Sitemap XML"
+msgstr ""
+
+#: modules/sitemap.class.php:250
+msgid "Configure XML sitemap entries, image tags and automatic search engine pings."
+msgstr ""
+
+#: modules/sitemap.class.php:255
+msgid "Sitemap URL:"
+msgstr ""
+
+#: modules/sitemap.class.php:278
+msgid "Taxonomies"
+msgstr ""
+
+#: modules/sitemap.class.php:290
+msgid "Ping"
+msgstr ""
+
+#: modules/sitemap.class.php:297
+msgid "Save Changes"
+msgstr ""
+
+#: modules/sitemap.class.php:328
+msgid "Enable Flexy SEO sitemap"
+msgstr ""
+
+#: modules/sitemap.class.php:329
+msgid "Disable default WordPress sitemap"
+msgstr ""
+
+#: modules/sitemap.class.php:330
+msgid "Cache sitemap XML"
+msgstr ""
+
+#: modules/sitemap.class.php:331
+msgid "Cache duration (minutes)"
+msgstr ""
+
+#: modules/sitemap.class.php:332
+msgid "Include images in post URLs"
+msgstr ""
+
+#: modules/sitemap.class.php:333
+msgid "Include attached media images"
+msgstr ""
+
+#: modules/sitemap.class.php:334
+msgid "Maximum images per URL"
+msgstr ""
+
+#: modules/sitemap.class.php:335
+msgid "Maximum URLs"
+msgstr ""
+
+#: modules/sitemap.class.php:346 modules/sitemap.class.php:362
+msgid "Include in sitemap"
+msgstr ""
+
+#: modules/sitemap.class.php:347 modules/sitemap.class.php:363 modules/sitemap.class.php:374 modules/sitemap.class.php:380
+#: modules/sitemap.class.php:386 modules/sitemap.class.php:401
+msgid "Priority"
+msgstr ""
+
+#: modules/sitemap.class.php:348 modules/sitemap.class.php:364 modules/sitemap.class.php:375 modules/sitemap.class.php:381
+#: modules/sitemap.class.php:387 modules/sitemap.class.php:402
+msgid "Change frequency"
+msgstr ""
+
+#: modules/sitemap.class.php:349
+msgid "Add image tags"
+msgstr ""
+
+#: modules/sitemap.class.php:373
+msgid "Include home page"
+msgstr ""
+
+#: modules/sitemap.class.php:378
+msgid "Author archives:"
+msgstr ""
+
+#: modules/sitemap.class.php:379
+msgid "Include author archives"
+msgstr ""
+
+#: modules/sitemap.class.php:384
+msgid "Date archives:"
+msgstr ""
+
+#: modules/sitemap.class.php:385
+msgid "Include monthly date archives"
+msgstr ""
+
+#: modules/sitemap.class.php:400
+msgid "Include post type archive"
+msgstr ""
+
+#: modules/sitemap.class.php:409
+msgid "Automatic ping:"
+msgstr ""
+
+#: modules/sitemap.class.php:410
+msgid "Ping search engines when published content changes"
+msgstr ""
+
+#: modules/sitemap.class.php:411
+msgid "Google"
+msgstr ""
+
+#: modules/sitemap.class.php:412
+msgid "Bing"
+msgstr ""
+
+#: modules/sitemap.class.php:413
+msgid "Custom ping endpoints"
+msgstr ""
+
+#: modules/sitemap.class.php:413
+msgid "One URL per line. Use {sitemap} as placeholder for the encoded sitemap URL."
+msgstr ""
+
+#: vendors/wps-framework/UtilEnv.php:242
+msgid "Year"
+msgstr ""
+
+#: vendors/wps-framework/UtilEnv.php:242
+msgid "Years"
+msgstr ""
+
+#: vendors/wps-framework/UtilEnv.php:243
+msgid "Month"
+msgstr ""
+
+#: vendors/wps-framework/UtilEnv.php:243
+msgid "Months"
+msgstr ""
+
+#: vendors/wps-framework/UtilEnv.php:244
+msgid "Day"
+msgstr ""
+
+#: vendors/wps-framework/UtilEnv.php:244
+msgid "Days"
+msgstr ""
+
+#: vendors/wps-framework/UtilEnv.php:245
+msgid "Hour"
+msgstr ""
+
+#: vendors/wps-framework/UtilEnv.php:245
+msgid "Hours"
 msgstr ""

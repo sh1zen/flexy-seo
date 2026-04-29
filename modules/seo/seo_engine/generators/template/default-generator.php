@@ -10,6 +10,7 @@ namespace FlexySEO\Engine;
 use FlexySEO\Engine\Generators\OpenGraph;
 use FlexySEO\Engine\Generators\TwitterCard;
 use FlexySEO\Engine\Helpers\CurrentPage;
+use FlexySEO\Engine\Helpers\ImageSEO;
 
 class Default_Generator
 {
@@ -150,13 +151,17 @@ class Default_Generator
             list($id, $url) = wpfseo('helpers')->postHandler->get_first_usable_image($size);
         }
 
+        if (empty($url) and $use_default and wps('wpfs')->settings->get('seo.social.opengraph.smart_image_fallback', true)) {
+            $url = ImageSEO::get_smart_open_graph_image($this->current_page, $size);
+        }
+
         if (empty($url) and $use_default) {
 
             if ($size === 'thumbnail') {
                 $url = wps('wpfs')->settings->get('seo.org.logo_url.small', '');
             }
             else {
-                $url = wps('wpfs')->settings->get('seo.org.logo_url.wide', '');
+                $url = wps('wpfs')->settings->get('seo.social.facebook.logo_url', '') ?: wps('wpfs')->settings->get('seo.org.logo_url.wide', '');
             }
         }
 

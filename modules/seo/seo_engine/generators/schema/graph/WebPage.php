@@ -36,7 +36,7 @@ class WebPage extends Graph
             $this->type = $type;
         }
 
-        $url = $this->generator->get_permalink();
+        $url = $this->generator->generate_canonical() ?: $this->generator->get_permalink();
 
         $schema = new GraphBuilder([
             '@type'           => $this->type,

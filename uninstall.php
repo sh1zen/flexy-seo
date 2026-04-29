@@ -25,6 +25,11 @@ foreach ($option_names as $option_name) {
     delete_option($option_name);
 }
 
+delete_option('wpfs_redirects_db_version');
+delete_option('wpfs_404_monitor_db_version');
+
 $wpdb->query("DROP TABLE IF EXISTS " . wps('wpfs')->options->table_name());
+$wpdb->query("DROP TABLE IF EXISTS {$wpdb->prefix}flexy_seo_redirects");
+$wpdb->query("DROP TABLE IF EXISTS {$wpdb->prefix}flexy_seo_404_logs");
 
 wps_uninstall();

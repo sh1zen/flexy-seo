@@ -9,6 +9,7 @@ namespace FlexySEO\Engine;
 
 use FlexySEO\Engine\Helpers\ExtraTermFields;
 use FlexySEO\Engine\Helpers\Helpers;
+use FlexySEO\Engine\Helpers\ImageSEO;
 use FlexySEO\Engine\Helpers\XRE_MetaBox;
 
 if (!defined('WPFS_SEO_ENGINE')) {
@@ -88,6 +89,8 @@ class WPFS_SEO
 
         //pass the main query reference
         $this->helpers = new Helpers($wp_the_query);
+
+        ImageSEO::register_frontend_hooks();
 
         $this->generator = new Generator($this->helpers->currentPage);
 

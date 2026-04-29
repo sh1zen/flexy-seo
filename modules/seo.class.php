@@ -7,6 +7,7 @@
 
 namespace FlexySEO\modules;
 
+use WPS\core\Ajax;
 use WPS\core\Graphic;
 use WPS\modules\Module;
 
@@ -17,7 +18,7 @@ class Mod_seo extends Module
 {
     public static ?string $name = 'SEO';
 
-    public array $scopes = array('admin-page', 'settings', 'autoload');
+    public array $scopes = array('admin-page', 'settings', 'autoload', 'ajax');
 
     protected string $context = 'wpfs';
 
@@ -32,7 +33,14 @@ class Mod_seo extends Module
     public function render_sub_modules(): void
     {
         ?>
-        <section class="wps-wrap">
+        <section class="wps-wrap wpfs-admin-shell wpfs-settings-page">
+            <header class="wpfs-page-hero">
+                <div>
+                    <span class="wpfs-kicker"><?php esc_html_e('Flexy SEO control panel', 'wpfs'); ?></span>
+                    <h1><?php esc_html_e('SEO Settings', 'wpfs'); ?></h1>
+                    <p><?php esc_html_e('Configure dynamic titles, meta descriptions, social metadata and schema output using the existing replacement system.', 'wpfs'); ?></p>
+                </div>
+            </header>
             <div id="wps-ajax-message" class="wps-notice"></div>
             <?php
             if (!empty($this->performer_response)) {
@@ -49,7 +57,35 @@ class Mod_seo extends Module
             }
             ?>
             <block class="wps">
-                <section class='wps-header'><h1>SEO / <?php echo __('Settings', 'wpfs'); ?></h1></section>
+                <section class="wpfs-snippet-preview" data-wpfs-snippet-preview>
+                    <div class="wpfs-snippet-preview__head">
+                        <div>
+                            <h2><?php esc_html_e('Snippet preview', 'wpfs'); ?></h2>
+                            <p><?php esc_html_e('Live example based on the active SEO template and sample replacement values.', 'wpfs'); ?></p>
+                        </div>
+                        <div class="wpfs-snippet-preview__counters">
+                            <span data-wpfs-title-count><?php esc_html_e('Title length', 'wpfs'); ?>: 0</span>
+                            <span data-wpfs-description-count><?php esc_html_e('Description length', 'wpfs'); ?>: 0</span>
+                        </div>
+                    </div>
+                    <div class="wpfs-snippet-preview__grid">
+                        <article class="wpfs-serp-preview" aria-label="<?php esc_attr_e('Search snippet preview', 'wpfs'); ?>">
+                            <div class="wpfs-serp-preview__url" data-wpfs-preview-url></div>
+                            <h3 data-wpfs-preview-title></h3>
+                            <p data-wpfs-preview-description></p>
+                        </article>
+                        <article class="wpfs-social-preview" aria-label="<?php esc_attr_e('Social preview', 'wpfs'); ?>">
+                            <div class="wpfs-social-preview__media" data-wpfs-preview-image>
+                                <span><?php esc_html_e('No image selected', 'wpfs'); ?></span>
+                            </div>
+                            <div class="wpfs-social-preview__body">
+                                <span data-wpfs-preview-domain></span>
+                                <strong data-wpfs-preview-social-title></strong>
+                                <p data-wpfs-preview-social-description></p>
+                            </div>
+                        </article>
+                    </div>
+                </section>
                 <form id="wps-options" action="options.php" method="post">
                     <input type="hidden" name="<?php echo wps('wpfs')->settings->get_context() . "[change]" ?>"
                            value="<?php echo $this->slug; ?>">
@@ -114,19 +150,27 @@ class Mod_seo extends Module
                         ),
                     ));
                     ?>
-                    <p class="wps-submit">
-                        <input type="submit" class="button-primary" value="<?php _e('Save Changes', 'wpfs') ?>"/>
-                    </p>
                 </form>
             </block>
         </section>
         <script type="application/javascript">
-            jQuery('textarea.wps').TextBoxHighlighter({
-                highlight: [/(%%\w+%%)+/gi]
+            jQuery('textarea.wps').each(function () {
+                if (!jQuery(this).attr('placeholder')) {
+                    jQuery(this).attr('placeholder', '<?php echo esc_js(__('Use replacements like %%title%%, %%sep%%, %%sitename%% and %%description%%.', 'wpfs')); ?>');
+                }
             });
 
-            jQuery('input[type="text"].wps').TextBoxHighlighter({
-                highlight: [/(%%\w+%%)+/gi]
+            jQuery('input[type="text"].wps').each(function () {
+                if (!jQuery(this).attr('placeholder')) {
+                    jQuery(this).attr('placeholder', '<?php echo esc_js(__('Use dynamic replacements when useful.', 'wpfs')); ?>');
+                }
+            });
+
+            jQuery('.wpfs-replacer-search').on('input', function () {
+                var query = jQuery(this).val().toLowerCase();
+                jQuery('.wpfs-replacers-table tbody tr').each(function () {
+                    jQuery(this).toggle(jQuery(this).text().toLowerCase().indexOf(query) !== -1);
+                });
             });
         </script>
         <?php
@@ -176,6 +220,9 @@ class Mod_seo extends Module
                 $this->group_setting_fields(
                     $this->setting_field(__('Media:', 'wpfs'), false, 'separator'),
                     $this->setting_field(__('Rewrite media url to attachment', 'wpfs'), 'media.rewrite_url', 'checkbox', ['default_value' => true]),
+                    $this->setting_field(__('Generate missing image alt text', 'wpfs'), 'image.alt_generation', 'checkbox', ['default_value' => true]),
+                    $this->setting_field(__('Image alt template', 'wpfs'), 'image.alt_template', 'text', ['default_value' => '%%title%% %%category%%', 'parent' => 'image.alt_generation']),
+                    $this->setting_field(__('Heavy image threshold (KB)', 'wpfs'), 'image.heavy_threshold_kb', 'text', ['default_value' => '300']),
                 ),
                 $this->group_setting_fields(
                     $this->setting_field(__('Knowledge Graph configuration:', 'wpfs'), false, 'separator'),
@@ -184,6 +231,7 @@ class Mod_seo extends Module
                     $this->setting_field(__('Add Twitter Card metadata', 'wpfs'), 'social.twitter.card', 'checkbox', ['default_value' => true]),
                     $this->setting_field(__('Use larger images for Twitter Card', 'wpfs'), 'social.twitter.large_images', 'checkbox', ['default_value' => true]),
                     $this->setting_field(__('Enable Facebook Open-Graph metadata', 'wpfs'), 'social.facebook.opengraph', 'checkbox', ['default_value' => true]),
+                    $this->setting_field(__('Smart og:image fallback', 'wpfs'), 'social.opengraph.smart_image_fallback', 'checkbox', ['default_value' => true]),
                     $this->setting_field(__('Facebook default share image', 'wpfs'), 'social.facebook.logo_url', 'upload-input', ['placeholder' => __('Paste your image URL or select a new image', 'wpfs')])
                 )
             );
@@ -419,8 +467,27 @@ class Mod_seo extends Module
     {
         ob_start();
         ?>
-        <br><br>
-        <table class="wp-list-table widefat fixed striped table-view-list tables">
+        <div class="wpfs-replacers-panel">
+            <div class="wpfs-replacers-head">
+                <div>
+                    <h2><?php esc_html_e('Dynamic replacements', 'wpfs'); ?></h2>
+                    <p><?php esc_html_e('Use these tokens inside title, description and keyword templates. Empty values are discarded automatically by the generator.', 'wpfs'); ?></p>
+                </div>
+                <label>
+                    <span class="screen-reader-text"><?php esc_html_e('Search replacers', 'wpfs'); ?></span>
+                    <input type="search" class="wpfs-replacer-search" placeholder="<?php esc_attr_e('Search replacers...', 'wpfs'); ?>">
+                </label>
+            </div>
+            <div class="wpfs-token-strip" aria-label="<?php esc_attr_e('Common replacers', 'wpfs'); ?>">
+                <code>%%title%%</code>
+                <code>%%description%%</code>
+                <code>%%sep%%</code>
+                <code>%%sitename%%</code>
+                <code>%%excerpt%%</code>
+                <code>%%pagenumber%%</code>
+            </div>
+        </div>
+        <table class="wp-list-table widefat fixed striped table-view-list tables wpfs-replacers-table">
             <thead>
             <tr>
                 <th scope="col"><?php echo __('Replacer', 'wpfs'); ?></th>
@@ -517,6 +584,71 @@ class Mod_seo extends Module
         require_once WPFS_MODULES . 'seo/WPFS_SEO.php';
 
         WPFS_SEO::Init();
+
+        if (wp_doing_ajax()) {
+            add_action('wp_ajax_wpfs_autosave_settings', [$this, 'autosave_settings_ajax']);
+        }
+    }
+
+    public function ajax_handler($args = array()): void
+    {
+        if (($args['action'] ?? '') !== 'autosave_settings') {
+            parent::ajax_handler($args);
+            return;
+        }
+
+        $this->save_autosave_payload((string)($args['form_data'] ?? ''));
+    }
+
+    public function autosave_settings_ajax(): void
+    {
+        $nonce = sanitize_text_field(wp_unslash($_POST['nonce'] ?? ''));
+
+        if (!wp_verify_nonce($nonce, 'wpfs-ajax-nonce')) {
+            Ajax::response([
+                'text'  => __('It seems that you are not allowed to do this request.', 'wpfs'),
+                'title' => __('Autosave error', 'wpfs')
+            ], 'error');
+        }
+
+        if ($this->restricted_access('ajax')) {
+            Ajax::response([
+                'text'  => __('It seems that you are not allowed to do this request.', 'wpfs'),
+                'title' => __('Autosave error', 'wpfs')
+            ], 'error');
+        }
+
+        $this->save_autosave_payload((string)wp_unslash($_POST['form'] ?? ''));
+    }
+
+    private function save_autosave_payload(string $serialized_form): void
+    {
+        parse_str($serialized_form, $form_data);
+
+        $context = wps('wpfs')->settings->get_context();
+        $input = $form_data[$context] ?? [];
+
+        if (!is_array($input) or ($input['change'] ?? '') !== $this->slug) {
+            Ajax::response([
+                'text'  => __('Invalid settings payload.', 'wpfs'),
+                'title' => __('Autosave error', 'wpfs')
+            ], 'error');
+        }
+
+        $valid = $this->validate_settings($input);
+        $saved = wps('wpfs')->settings->update($this->slug, $valid, true);
+
+        if (!$saved) {
+            Ajax::response([
+                'text'  => __('Unable to save settings.', 'wpfs'),
+                'title' => __('Autosave error', 'wpfs')
+            ], 'error');
+        }
+
+        Ajax::response([
+            'text'  => __('Changes saved', 'wpfs'),
+            'title' => __('Autosave', 'wpfs')
+        ]);
     }
 }
 

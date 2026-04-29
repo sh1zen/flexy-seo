@@ -88,6 +88,7 @@
             if (typeof string === 'string') {
                 switch (string.toLowerCase().trim()) {
                     case "true":
+                    case "si":
                     case "yes":
                     case "1":
                     case "on":
@@ -595,6 +596,124 @@
 // Document ready
 (function ($) {
     let $window, $body, media_uploader;
+    let wpoptAutosaveNonce = null;
+
+    function wpoptStatusText(key, fallback) {
+        return wps.locale.get(key, fallback);
+    }
+
+    function ensureWpoptToastHost() {
+        let $host = $("#wpopt-toast-host");
+        if ($host.length) return $host;
+
+        $host = $("<div/>", {
+            id: "wpopt-toast-host",
+            "aria-live": "polite",
+            "aria-atomic": "true"
+        });
+
+        $("body").append($host);
+        return $host;
+    }
+
+    function showWpoptToast(state, text) {
+        const $host = ensureWpoptToastHost();
+        const $toast = $("<div/>", {
+            "class": "wpopt-toast is-" + state,
+            text: text
+        });
+
+        $host.append($toast);
+
+        window.setTimeout(function () {
+            $toast.addClass("is-visible");
+        }, 10);
+
+        window.setTimeout(function () {
+            $toast.removeClass("is-visible");
+            window.setTimeout(function () {
+                $toast.remove();
+            }, 220);
+        }, 1800);
+    }
+
+    function initWpoptAutosaveForm(form) {
+        const $form = $(form);
+
+        if (!wpoptAutosaveNonce) return;
+        if ($form.data("wpopt-autosave-init")) return;
+        if ($form.closest(".wpfs-core-settings-page, .wpfs-breadcrumbs-page, .wpfs-settings-page").length) return;
+
+        $form.data("wpopt-autosave-init", true);
+
+        let lastSaved = $form.serialize();
+        let timer = null;
+        let inFlight = false;
+        let queued = false;
+
+        const $submit = $form.find(".wps-submit");
+        $submit.find("input[type='submit'], button[type='submit'], .button-primary").remove();
+        if (!$submit.find("*").length && !$submit.text().trim()) {
+            $submit.hide();
+        }
+
+        const doSave = function () {
+            const snapshot = $form.serialize();
+
+            if (snapshot === lastSaved) return;
+            if (inFlight) {
+                queued = true;
+                return;
+            }
+
+            inFlight = true;
+
+            wps.ajaxHandler({
+                mod: "settings",
+                mod_action: "autosave_settings",
+                mod_nonce: wpoptAutosaveNonce,
+                mod_form: snapshot,
+                callback(data, state) {
+                    inFlight = false;
+
+                    if (state === "success") {
+                        lastSaved = snapshot;
+                        showWpoptToast("success", data?.text || wpoptStatusText("autosaved", "All changes saved"));
+                    } else {
+                        showWpoptToast("error", data?.text || wpoptStatusText("autosave_failed", "Autosave failed"));
+                    }
+
+                    if (queued) {
+                        queued = false;
+                        doSave();
+                    }
+                }
+            });
+        };
+
+        const debounceSave = function () {
+            clearTimeout(timer);
+            timer = setTimeout(doSave, 700);
+        };
+
+        $form.on("change input", ":input:not([type='submit']):not([type='button']):not([type='hidden'])", debounceSave);
+        $form.on("submit", function (e) {
+            e.preventDefault();
+            doSave();
+        });
+    }
+
+    function animateTabPanel(panelId) {
+        if (!panelId) return;
+
+        const $panel = $("#" + panelId);
+        if (!$panel.length) return;
+
+        $panel.removeClass("wpopt-tab-animate");
+        window.requestAnimationFrame(function () {
+            $panel.addClass("wpopt-tab-animate");
+        });
+    }
 
     function handleDependent($parent, visible = true, deep = true) {
         const parent = $parent.attr('id');
@@ -627,22 +746,23 @@
     $(function () {
         $window = $(window);
         $body = $('body');
+        wpoptAutosaveNonce = wps.locale.get("wpopt_ajax_nonce", "");
 
         // Event delegation
         $body.on('click', '.wps-uploader__init', function (e) {
-                e.preventDefault();
-                const btn = $(this);
-                if (!media_uploader) {
-                    media_uploader = wp.media({
-                        title: 'Upload media',
-                        library: {type: btn.data('type') || 'image'},
-                        multiple: false
-                    }).on('select', function () {
-                        btn.parent().find('input').val(media_uploader.state().get('selection').first().toJSON().url);
-                    });
-                }
-                media_uploader.open();
-            })
+            e.preventDefault();
+            const btn = $(this);
+            if (!media_uploader) {
+                media_uploader = wp.media({
+                    title: 'Upload media',
+                    library: {type: btn.data('type') || 'image'},
+                    multiple: false
+                }).on('select', function () {
+                    btn.parent().find('input').val(media_uploader.state().get('selection').first().toJSON().url);
+                });
+            }
+            media_uploader.open();
+        })
             .on('click', '.wps-collapse-handler', function () {
                 const $this = $(this);
                 $this.children('.wps-collapse-icon').toggleClass('wps-collapse-icon-close');
@@ -664,7 +784,24 @@
                 $dropdown.toggleClass('is-open');
             })
             .on('click', 'icon.wps-option-info-icon', function () {
-                $(this).closest('row').find('label.wps-option-info').slideToggle();
+                const $icon = $(this);
+                const $info = $icon.closest('row').find('label.wps-option-info');
+                const wasVisible = $info.is(":visible");
+
+                $info.slideToggle(160, function () {
+                    const isVisible = $info.is(":visible");
+                    $icon.toggleClass("is-active", isVisible);
+
+                    if (!wasVisible && isVisible) {
+                        $info.removeClass("is-entering");
+                        window.requestAnimationFrame(function () {
+                            $info.addClass("is-entering");
+                        });
+                        window.setTimeout(function () {
+                            $info.removeClass("is-entering");
+                        }, 420);
+                    }
+                });
             })
             .on('click', 'button[data-wps="ajax-action"]', function (e) {
                 e.preventDefault();
@@ -738,7 +875,16 @@
                 $this.attr('aria-selected', 'true');
                 $('#' + targetId).attr('aria-hidden', 'false');
                 history.pushState(null, null, location.pathname + location.search + '#' + targetId);
+                animateTabPanel(targetId);
             });
+        });
+
+        if (window.location.hash) {
+            animateTabPanel(window.location.hash.substring(1));
+        }
+
+        $(".wps-ar-tabcontent form[action='options.php']").each(function () {
+            initWpoptAutosaveForm(this);
         });
 
         // Init switches

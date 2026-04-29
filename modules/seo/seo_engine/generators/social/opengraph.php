@@ -60,6 +60,8 @@ class OpenGraph
             $locale = get_locale();
         }
 
+        $locale = str_replace('-', '_', $locale);
+
         $locale = apply_filters('wpfs_locale', $locale);
 
         // Catch some weird locales served out by WP that are not easily doubled up.
@@ -80,10 +82,10 @@ class OpenGraph
         }
 
         // Convert locales like "es" to "es_ES", in case that works for the given locale (sometimes it does).
-        if (strlen($locale) !== 2) {
+        if (!preg_match('/^[a-z]{2}_[A-Z]{2}$/', $locale)) {
             $locale = substr($locale, 0, 2);
+            $locale = strtolower($locale) . '_' . strtoupper($locale);
         }
-        $locale = strtolower($locale) . '_' . strtoupper($locale);
 
         // These are the locales FB supports.
         $fb_valid_fb_locales = [
@@ -268,7 +270,15 @@ class OpenGraph
      */
     public function has(string $name): bool
     {
-        return array_key_exists($name, $this->tags);
+        $name = str_starts_with($name, self::NAME_PREFIX) ? $name : self::NAME_PREFIX . $name;
+
+        foreach ($this->tags as $tag) {
+            if ($tag->name === $name) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
 
@@ -287,9 +297,11 @@ class OpenGraph
      */
     public function remove(string $name)
     {
-        foreach ($this->tags as $tag_name => $value) {
-            if ($tag_name == $name) {
-                unset($this->tags[$tag_name]);
+        $name = str_starts_with($name, self::NAME_PREFIX) ? $name : self::NAME_PREFIX . $name;
+
+        foreach ($this->tags as $tag_index => $tag) {
+            if ($tag->name === $name) {
+                unset($this->tags[$tag_index]);
             }
         }
     }
@@ -642,10 +654,9 @@ class OpenGraph
 
         $name = self::NAME_PREFIX . $name;
 
-        foreach ($this->tags as $key => $value) {
-            if ($key == $name) {
-                $lastTag = $value;
-                break;
+        foreach ($this->tags as $tag) {
+            if ($tag->name === $name) {
+                $lastTag = $tag->value;
             }
         }
 

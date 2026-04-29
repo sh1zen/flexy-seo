@@ -90,8 +90,8 @@ class PostType_Generator extends Default_Generator
         $og->type('article');
 
         $og->article([
-            'published_time' => wp_date("Y-m-d", strtotime($object->post_date)),
-            'modified_time'  => wp_date("Y-m-d", strtotime($object->post_modified)),
+            'published_time' => mysql2date(DATE_W3C, $object->post_date_gmt, false),
+            'modified_time'  => mysql2date(DATE_W3C, $object->post_modified_gmt, false),
             'author'         => get_author_posts_url($object->post_author),
         ]);
 
