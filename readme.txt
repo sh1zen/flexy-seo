@@ -5,7 +5,7 @@ Donate link: https://www.paypal.com/donate?business=dev.sh1zen%40outlook.it&item
 Requires at least: 5.0
 Tested up to: 6.9
 Requires PHP: 7.4
-Stable tag: 2.0.0
+Stable tag: 2.0.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -153,6 +153,10 @@ Running multiple SEO plugins at the same time can create duplicate meta tags, co
 Deactivate and reactivate the plugin first. If the problem continues, try resetting the plugin settings from the settings module or reinstalling the plugin. For support, use the WordPress.org support forum for Flexy SEO.
 
 == Changelog ==
+
+= 2.0.1 =
+
+* fixed camelcase filenames
 
 = 2.0.0 =
 

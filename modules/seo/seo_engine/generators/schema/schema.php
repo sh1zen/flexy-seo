@@ -227,9 +227,11 @@ class Schema
     {
         $namespace = false;
 
-        if (file_exists(WPFS_SEO_ENGINE . 'generators/schema/graph/' . $graphType . '.php')) {
+        $graphFile = $this->resolve_graph_file($graphType);
 
-            require_once WPFS_SEO_ENGINE . "generators/schema/graph/$graphType.php";
+        if ($graphFile) {
+
+            require_once $graphFile;
 
             if (class_exists("FlexySEO\Engine\Generators\Schema\Graphs\\$graphType")) {
                 $namespace = "FlexySEO\Engine\Generators\Schema\Graphs\\$graphType";
@@ -245,6 +247,24 @@ class Schema
         }
 
         return $namespace;
+    }
+
+    private function resolve_graph_file(string $graphType): string
+    {
+        $graphDir = WPFS_SEO_ENGINE . 'generators/schema/graph/';
+        $graphFile = $graphDir . $graphType . '.php';
+
+        if (file_exists($graphFile)) {
+            return $graphFile;
+        }
+
+        foreach (glob($graphDir . '*.php') ?: [] as $file) {
+            if (strcasecmp(pathinfo($file, PATHINFO_FILENAME), $graphType) === 0) {
+                return $file;
+            }
+        }
+
+        return '';
     }
 
     private function parse_graphs(): void
